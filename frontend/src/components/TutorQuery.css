@@ -1,0 +1,229 @@
+/* 
+  ================== GLOBAL STYLES ==================
+  NOTE: Colors from previous theme remain, but we'll
+  add background images, pseudo-elements, and more schizo math logos lol.
+*/
+
+/* Root theme variables for color and spacing */
+:root {
+  --primary-blue: #3498db;
+  --hover-blue:   #2980b9;
+  --dark-bg:      #0f0f0f; /* blackish background */
+  --panel-bg:     #1f1f1f;
+  --border-color: #333;
+}
+
+/* Reset & Base */
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+  background-color: var(--dark-bg);
+  color: #ffffff;
+  /* Example: a repeated public-domain math background 
+     from a placeholder link. Replace with your own if you wish. */
+  background-image: url('https://upload.wikimedia.org/wikipedia/commons/7/74/Math_symbol_pattern.png');
+  background-repeat: repeat;
+  background-size: 400px auto;  /* Adjust tile size to your liking */
+}
+
+/* A second overlay of subtle math symbols using a pseudo-element on <body>.
+   Using Unicode characters like ∞, ∑, √, π, etc. for decorative effect. */
+body::before {
+  content: "∑   √   π   ∞   ±   ≈   x²   x³   ∏   ∫ ";
+  position: fixed;
+  top: 20%;
+  left: 10%;
+  font-size: 8rem;
+  font-weight: bold;
+  color: rgba(255,255,255,0.03); /* Very faint, “watermark” style */
+  pointer-events: none;
+  transform: rotate(-20deg);
+}
+
+/* If you want multiple lines of math, you can stack them with repeated content or use ::after. */
+body::after {
+  content: "f(x) = ax² + bx + c   ∑   ∏   √   π   ∞ ";
+  position: fixed;
+  bottom: 20%;
+  right: 5%;
+  font-size: 6rem;
+  color: rgba(255,255,255,0.04);
+  pointer-events: none;
+  transform: rotate(10deg);
+}
+
+/* Remove default link styles */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Buttons */
+button {
+  cursor: pointer;
+}
+
+/* ================== LOGIN PAGE ================== */
+.login-container {
+  display: flex;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-box {
+  background: var(--panel-bg);
+  padding: 2rem;
+  border-radius: 8px;
+  width: 320px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  position: relative;
+}
+
+/* Example little math symbol in the corner for the login box */
+.login-box::before {
+  content: "Σ";
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 2rem;
+  color: rgba(255,255,255,0.1);
+  transform: rotate(15deg);
+}
+
+.login-box h2 {
+  margin: 0 0 1rem 0;
+  color: var(--primary-blue);
+  font-size: 1.8rem;
+}
+.login-box p {
+  margin-bottom: 1rem;
+  color: #bbb;
+}
+.form-group {
+  margin-bottom: 1rem;
+  text-align: left;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: bold;
+  color: #fff;
+}
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #111;
+  color: #eee;
+  font-size: 1rem;
+}
+.login-box button {
+  margin-top: 1rem;
+  background-color: var(--primary-blue);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 5px;
+  font-size: 1rem;
+  width: 100%;
+  transition: background 0.2s;
+}
+.login-box button:hover {
+  background-color: var(--hover-blue);
+}
+
+/* ================= DASHBOARD LAYOUT ================= */
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  background-color: #1c1c1c; /* Slightly different shade for contrast */
+  border-right: 1px solid var(--border-color);
+  padding-top: 1rem;
+  box-shadow: 2px 0 6px rgba(0,0,0,0.3);
+  position: relative;
+}
+.sidebar h3 {
+  text-align: center;
+  color: var(--primary-blue);
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+/* Optional: Add a big math symbol behind the sidebar text. */
+.sidebar::before {
+  content: "∞";
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  font-size: 6rem;
+  color: rgba(255,255,255,0.03);
+  transform: translate(-50%,-50%) rotate(-15deg);
+  pointer-events: none;
+}
+
+.sidebar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sidebar li {
+  padding: 15px;
+  border-bottom: 1px solid #2a2a2a;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  color: #eee;
+  display: flex;
+  align-items: center;
+}
+.sidebar li:hover {
+  background-color: #2b2b2b;
+}
+.sidebar li::before {
+  /* Another math symbol before each item, or an icon. You can randomize them if you want. */
+  content: "√";
+  margin-right: 8px;
+  color: var(--primary-blue);
+}
+.sidebar a {
+  color: inherit;
+  width: 100%;
+  display: block;
+}
+
+/* Main Content */
+.dashboard-content {
+  flex: 1;
+  padding: 2rem;
+  background-color: rgba(0,0,0,0.65); 
+  backdrop-filter: blur(2px);
+}
+.dashboard-content h2 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--primary-blue);
+  font-size: 1.6rem;
+}
+.dashboard-content p {
+  color: #ccc;
+  line-height: 1.6;
+}
+
+/* Example content box for consistent styling */
+.content-box {
+  background: var(--panel-bg);
+  border: 1px solid #333;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}

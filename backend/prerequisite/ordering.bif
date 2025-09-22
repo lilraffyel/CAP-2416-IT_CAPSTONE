@@ -1,0 +1,56 @@
+network BN_Tutoring_System {
+}
+
+variable Ordering_Numbers {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Compare_Order_Decimals {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Order_Numbers_10k {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Order_Numbers_1k {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Order_Numbers_100 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Order_Numbers_20 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+probability ( Order_Numbers_20 ) {
+    table 0.55, 0.45;
+}
+
+probability ( Order_Numbers_100 | Order_Numbers_20 ) {
+    ( 0 ) 0.54, 0.46;
+    ( 1 ) 0.54, 0.46;
+}
+
+probability ( Order_Numbers_1k | Order_Numbers_100 ) {
+    ( 0 ) 0.45, 0.55;  
+    ( 1 ) 0.55, 0.45; 
+}
+
+probability ( Order_Numbers_10k | Order_Numbers_1k ) {
+    ( 0 ) 0.4, 0.6;  
+    ( 1 ) 0.6, 0.4;  
+}
+
+probability ( Compare_Order_Decimals | Order_Numbers_10k ) {
+    ( 0 ) 0.35, 0.65;
+    ( 1 ) 0.65, 0.35;
+}
+
+probability ( Ordering_Numbers | Compare_Order_Decimals ) {
+    ( 0 ) 0.3, 0.7;  
+    ( 1 ) 0.7, 0.3;
+}
+

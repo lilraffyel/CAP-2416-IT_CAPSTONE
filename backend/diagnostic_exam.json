@@ -1,0 +1,124 @@
+[
+  {
+    "assessmentTitle": "Place Value and Number Representation",
+    "text": "Round 765,432 to the nearest hundred thousand.",
+    "choices": ["800,000", "700,000", "750,000", "760,000"],
+    "correctAnswer": "700,000"
+  },
+  {
+    "assessmentTitle": "Place Value and Number Representation",
+    "text": "Round 342,567 to the nearest hundred thousand.",
+    "choices": ["300,000", "350,000", "340,000", "400,000"],
+    "correctAnswer": "340,000"
+  },
+  {
+    "assessmentTitle": "Place Value and Number Representation",
+    "text": "Round 1,245,678 to the nearest hundred thousand.",
+    "choices": ["1,200,000", "1,300,000", "1,240,000", "1,250,000"],
+    "correctAnswer": "1,200,000"
+  },
+  {
+    "assessmentTitle": "Place Value and Number Representation",
+    "text": "Round 786,901 to the nearest hundred thousand.",
+    "choices": ["700,000", "800,000", "790,000", "780,000"],
+    "correctAnswer": "800,000"
+  },
+  {
+    "assessmentTitle": "Place Value and Number Representation",
+    "text": "What is the place value of the digit 7 in the number 745,392?",
+    "choices": ["Ten thousand", "Hundred thousand", "Thousand", "Ten"],
+    "correctAnswer": "Hundred thousand"
+  },
+  {
+    "assessmentTitle": "Place Value and Number Representation",
+    "text": "What is the value of the digit 6 in the number 863,451?",
+    "choices": ["600", "60,000", "6,000", "600,000"],
+    "correctAnswer": "600,000"
+  },
+  {
+    "assessmentTitle": "Place Value and Number Representation",
+    "text": "What digit is in the hundreds place in the number 905,763?",
+    "choices": ["5", "7", "6", "9"],
+    "correctAnswer": "6"
+  },
+  {
+    "assessmentTitle": "Place Value and Number Representation",
+    "text": "What is the decomposition of 45 into tens and ones?",
+    "choices": ["5 tens and 4 ones", "4 tens and 5 ones", "40 tens and 5 ones", "50 tens and 4 ones"],
+    "correctAnswer": "4 tens and 5 ones"
+  },
+  {
+    "assessmentTitle": "Place Value and Number Representation",
+    "text": "How can you decompose the number 73 into tens and ones?",
+    "choices": ["70 tens and 3 ones", "30 tens and 7 ones", "7 tens and 3 ones", "3 tens and 7 ones"],
+    "correctAnswer": "7 tens and 3 ones"
+  },
+  {
+    "assessmentTitle": "Place Value and Number Representation",
+    "text": "The number 86 can be broken into which of the following?",
+    "choices": ["80 and 6", "8 tens and 6 ones", "Both A and B", "None of the above"],
+    "correctAnswer": "Both A and B"
+  },
+  {
+    "assessmentTitle": "Estimation",
+    "text": "Estimate the product of 2,453 × 623.",
+    "choices": ["1,500,000", "1,600,000", "1,400,000", "1,700,000"],
+    "correctAnswer": "1,500,000"
+  },
+  {
+    "assessmentTitle": "Estimation",
+    "text": "Estimate the product of 573 × 987.",
+    "choices": ["500,000", "600,000", "700,000", "800,000"],
+    "correctAnswer": "600,000"
+  },
+  {
+    "assessmentTitle": "Estimation",
+    "text": "Estimate the product of 824 × 365.",
+    "choices": ["280,000", "300,000", "320,000", "400,000"],
+    "correctAnswer": "320,000"
+  },
+  {
+    "assessmentTitle": "Estimation",
+    "text": "Estimate the product of 1,245 × 876.",
+    "choices": ["1,100,000", "1,000,000", "900,000", "800,000"],
+    "correctAnswer": "1,100,000"
+  },
+  {
+    "assessmentTitle": "Estimation",
+    "text": "Estimate the product of 672 × 234.",
+    "choices": ["150,000", "170,000", "180,000", "160,000"],
+    "correctAnswer": "160,000"
+  },
+  {
+    "assessmentTitle": "Estimation",
+    "text": "Estimate: 3,248 ÷ 8",
+    "choices": ["400", "300", "450", "200"],
+    "correctAnswer": "400"
+  },
+  {
+    "assessmentTitle": "Estimation",
+    "text": "Estimate: 5,673 ÷ 9",
+    "choices": ["400", "500", "600", "700"],
+    "correctAnswer": "600"
+  },
+  {
+    "assessmentTitle": "Estimation",
+    "text": "Estimate: 7,850 ÷ 11",
+    "choices": ["400", "500", "600", "700"],
+    "correctAnswer": "700"
+  },
+  {
+    "assessmentTitle": "Estimation",
+    "text": "Estimate: 2,145 ÷ 6",
+    "choices": ["250", "300", "350", "400"],
+    "correctAnswer": "350"
+  },
+  {
+  "assessmentTitle": "Estimation",
+  "text": "Estimate: 4,932 ÷ 12",
+  "choices": ["400", "300", "500", "200"],
+  "correctAnswer": "400"
+ }
+]
+
+

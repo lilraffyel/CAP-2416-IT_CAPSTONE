@@ -1,0 +1,11 @@
+/project-root
+│
+├── /client                 ← React frontend
+│   ├── /src
+│   │   ├── /components     ← Reusable UI components
+│   │   ├── /views          ← Page-level components (View in MVC)
+│   │   ├── /services       ← API calls (Controller-ish)
+│   │   └── App.js/sx
+│   └── package.json
+│
+├── /other-folders

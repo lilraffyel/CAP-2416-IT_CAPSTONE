@@ -1,0 +1,3077 @@
+[
+    {
+        "text": "Arrange the numbers 5, 12, and 3, from smallest to largest.",
+        "choices": ["12, 5, 3", "3, 12, 5", "3, 5, 12", "5, 3, 12"],
+        "correctAnswer": "3, 5, 12",
+        "score": 1,
+        "assessmentTitle": "Ordering Numbers Test" 
+    },
+    {
+        "text": "Arrange the numbers 9, 14, and 6, from largest to smallest.",
+        "choices": ["6, 9, 14", "14, 6, 9", "9, 14, 6", "14, 9, 6"],
+        "correctAnswer": "14, 9, 6",
+        "score": 1,
+        "assessmentTitle": "Ordering Numbers Test"  
+    },
+    
+    {
+        "text": "Arrange the numbers 5, 12, and 3, from smallest to largest.",
+        "choices": ["12, 5, 3", "3, 12, 5", "3, 5, 12", "5, 3, 12"],
+        "correctAnswer": "3, 5, 12",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 20 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Arrange the numbers 9, 14, and 6, from largest to smallest.",
+        "choices": ["6, 9, 14", "14, 6, 9", "9, 14, 6", "14, 9, 6"],
+        "correctAnswer": "14, 9, 6",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 20 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "What is the order of 15, 4, and 11 from smallest to largest?",
+        "choices": ["4, 11, 15", "11, 4, 15", "4, 15, 11", "15, 11, 4"],
+        "correctAnswer": "4, 11, 15",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 20 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "What is the order of 12, 17, and 9 from largest to smallest?",
+        "choices": ["12, 17, 9", "9, 17, 12", "9, 12, 17", "17, 12, 9"],
+        "correctAnswer": "17, 12, 9",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 20 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Arrange the numbers 13, 7, 16, and 9 from smallest to largest.",
+        "choices": ["13, 16, 7, 9", "7, 9, 13, 16", "7, 16, 9, 13", "13, 7, 16, 9"],
+        "correctAnswer": "7, 9, 13, 16",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 20 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Arrange the numbers 4, 18, 20, and 9 from largest to smallest.",
+        "choices": ["4, 9, 20, 18", "20, 18, 9, 4", "20, 9, 4, 18", "18, 9, 4, 20"],
+        "correctAnswer": "20, 18, 9, 4",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 20 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "What is the order of 15, 2, and 11 from smallest to largest?",
+        "choices": ["11, 2, 15", "15, 2, 11", "2, 11, 15", "2, 15, 11"],
+        "correctAnswer": "2, 11, 15",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 20 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "What is the order of 3, 16, 7, and 19 from smallest to largest?",
+        "choices": ["3, 7, 16, 19", "19, 3, 7, 16", "7, 3, 16, 19", "3, 7, 19, 16"],
+        "correctAnswer": "3, 7, 16, 19",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 20 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "What is the order of 16, 6, and 12 from largest to smallest?",
+        "choices": ["6, 16, 12", "16, 6, 12", "12, 16, 6", "16, 12, 6"],
+        "correctAnswer": "16, 12, 6",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 20 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Arrange 7, 11, 4, and 20 from smallest to largest.",
+        "choices": ["20, 11, 7, 4", "4, 7, 11, 20", "7, 4, 20, 11", "11, 4, 7, 20"],
+        "correctAnswer": "4, 7, 11, 20",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 20 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Arrange these numbers from smallest to largest: 53, 28, 11, 14, 29.",
+        "choices": ["14, 11, 28, 53, 29", "14, 11, 28, 29, 53", "11, 14, 29, 28, 53", "11, 14, 28, 29, 53"],
+        "correctAnswer": "11, 14, 28, 29, 53",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 100 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Arrange these numbers from largest to smallest: 74, 32, 33, 25, 26.",
+        "choices": ["74, 32, 33, 26, 25", "74, 33, 32, 26, 25", "74, 33, 32, 25, 26", "74, 32, 33, 25, 26"],
+        "correctAnswer": "74, 33, 32, 26, 25",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 100 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Arrange these numbers from smallest to largest: 23, 47, 18, 50, 28.",
+        "choices": ["47, 50, 23, 28, 18", "18, 28, 23, 47, 50", "18, 23, 28, 47, 50", "23, 18, 28, 50, 47"],
+        "correctAnswer": "18, 23, 28, 47, 50",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 100 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Arrange these numbers from largest to smallest: 89, 57, 33, 64, 41.",
+        "choices": ["89, 57, 64, 41, 33", " 89, 64, 57, 41, 33", "64, 89, 57, 41, 33", "57, 89, 64, 33, 41"],
+        "correctAnswer": "89, 64, 57, 41, 33",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 100 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Arrange these numbers from smallest to largest: 35, 43, 28, 16, 67.",
+        "choices": ["16, 28, 35, 43, 67", "67, 43, 35, 28, 16", "16, 35, 28, 43, 67", "28, 35, 16, 43, 67"],
+        "correctAnswer": "16, 28, 35, 43, 67",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 100 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Arrange these numbers from largest to smallest: 24, 89, 36, 93, 31.",
+        "choices": ["24, 31, 36, 93, 89", "89, 93, 36, 24, 31", "93, 89, 36, 24, 31", "93, 89, 36, 31, 24"],
+        "correctAnswer": "93, 89, 36, 31, 24",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 100 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Put these numbers in ascending order: 73, 19, 56, 38, 84",
+        "choices": ["73, 56, 19, 38, 84", "19, 38, 56, 73, 84", "38, 19, 56, 73, 84", "84, 73, 56, 38, 19"],
+        "correctAnswer": "19, 38, 56, 73, 84",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 100 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Put these numbers in descending order: 15, 66, 28, 45, 87",
+        "choices": ["87, 45, 66, 28, 15", "87, 45, 66, 15, 28", "87, 66, 45, 28, 15", "87, 66, 45, 15, 28"],
+        "correctAnswer": "87, 66, 45, 28, 15",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 100 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Put these numbers in ascending order: 40, 13, 39, 56, 25",
+        "choices": ["13, 25, 39, 40, 56", "13, 39, 25, 40, 56", "13, 25, 39, 56, 40", "25, 13, 56, 40, 39"],
+        "correctAnswer": "13, 25, 39, 40, 56",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 100 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Put these numbers in descending order: 85, 49, 77, 60, 91",
+        "choices": ["91, 85, 77, 60, 49", "49, 60, 77, 85, 91", "60, 49, 77, 91, 85", "77, 60, 49, 85, 91"],
+        "correctAnswer": "91, 85, 77, 60, 49",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 100 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Arrange the following numbers in descending order: 31, 87, 49, 22.",
+        "choices": ["22, 31, 49, 87", "87, 49, 31, 22", "49, 87, 31, 22", "31, 22, 87, 49"],
+        "correctAnswer": "87, 49, 31, 22",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 1000 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Which of the following sets of numbers is arranged from smallest to largest?",
+        "choices": ["50, 10, 30, 40", "10, 20, 30, 40", "40, 50, 20, 30", "30, 20, 10, 50"],
+        "correctAnswer": "10, 20, 30, 40",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 1000 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Arrange the following numbers from smallest to largest: 345, 789, 123, 501.",
+        "choices": ["123, 345, 501, 789", "345, 789, 123, 501", "123, 789, 345, 501", "789, 123, 501, 345"],
+        "correctAnswer": "123, 345, 501, 789",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 1000 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Arrange the following numbers from largest to smallest: 250, 145, 981, 432.",
+        "choices": ["250, 145, 981, 432", "145, 250, 432, 981", "432, 981, 250, 145", "981, 432, 250, 145"],
+        "correctAnswer": "981, 432, 250, 145",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 1000 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Which of the following sets of numbers is arranged from smallest to largest?",
+        "choices": ["500, 150, 800, 700", "150, 500, 700, 800", "700, 800, 150, 500", "800, 700, 500, 150"],
+        "correctAnswer": "150, 500, 700, 800",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 1000 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Arrange the following numbers in ascending order: 600, 783, 911, 430.",
+        "choices": ["430, 600, 783, 911", "600, 783, 911, 430", "911, 783, 600, 430", "783, 600, 430, 911"],
+        "correctAnswer": "430, 600, 783, 911",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 1000 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Arrange the following numbers in descending order: 238, 560, 849, 970.",
+        "choices": ["849, 970, 560, 238", "238, 560, 970, 849", "970, 849, 560, 238", "560, 238, 970, 849"],
+        "correctAnswer": "970, 849, 560, 238",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 1000 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Which of the following sets of numbers is arranged from largest to smallest?",
+        "choices": ["500, 300, 400, 200", "200, 400, 300, 500", "500, 400, 300, 200", "300, 200, 400, 500"],
+        "correctAnswer": "500, 400, 300, 200",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 1000 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Arrange the following numbers from smallest to largest: 715, 621, 530, 850.",
+        "choices": ["715, 530, 850, 621", "850, 715, 621, 530", "621, 530, 850, 715", "530, 621, 715, 850"],
+        "correctAnswer": "530, 621, 715, 850",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 1000 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Arrange the following numbers from smallest to largest: 7812, 7128, 7821, 7281",
+        "choices": ["7812, 7821, 7281, 7128", "7128, 7281, 7812, 7821", "7281, 7128, 7812, 7821", "7821, 7812, 7281, 7128"],
+        "correctAnswer": "7128, 7281, 7812, 7821",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 10000 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Which of the following lists is arranged from largest to smallest?",
+        "choices": ["2109, 2901, 2019, 2910", "9876, 9678, 9768, 9867", "5432, 5423, 5342, 5234", "8765, 8657, 8756, 8675"],
+        "correctAnswer": "5432, 5423, 5342, 5234",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 10000 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "John wrote down four numbers: 4578, 4875, 4587, 4857. What is the correct order from smallest to largest?",
+        "choices": ["4578, 4587, 4857, 4875", "4587, 4578, 4857, 4875", "4875, 4857, 4587, 4578", "4578, 4857, 4587, 4875"],
+        "correctAnswer": "4578, 4587, 4857, 4875",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 10000 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Arrange 6203, 6032, 6230, 6320 from smallest to largest.",
+        "choices": ["6203, 6032, 6230, 6320", "6320, 6230, 6203, 6032", "6230, 6032, 6203, 6320", "6032, 6203, 6230, 6320"],
+        "correctAnswer": "6032, 6203, 6230, 6320",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 10000 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Which of the following is ordered from largest to smallest?",
+        "choices": ["9121, 9211, 9112, 9011", "3476, 3764, 3647, 3746", "8909, 8901, 8091, 8019", "5678, 5867, 5786, 5768"],
+        "correctAnswer": "8909, 8901, 8091, 8019",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 10000 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Arrange the numbers 1234, 2134, 1432, 2341 from smallest to largest.",
+        "choices": ["1234, 2134, 1432, 2341", "2341, 2134, 1432, 1234", "1432, 1234, 2341, 2134", "1234, 1432, 2134, 2341"],
+        "correctAnswer": "1234, 1432, 2134, 2341",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 10000 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Which sequence is ordered from smallest to largest?",
+        "choices": ["7909, 7990, 7099, 7909", "5401, 5014, 5104, 5140", "2876, 2678, 2768, 2867", "3129, 3219, 3912, 3921"],
+        "correctAnswer": "3129, 3219, 3912, 3921",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 10000 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "What is the correct order of 9234, 9432, 9243, 9342 from largest to smallest?",
+        "choices": ["9432, 9342, 9243, 9234", "9234, 9243, 9342, 9432", "9342, 9432, 9243, 9234", "9243, 9234, 9342, 9432"],
+        "correctAnswer": "9432, 9342, 9243, 9234",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 10000 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Isaac listed four numbers: 8765, 8657, 8756, 8675. Arrange them from smallest to largest.",
+        "choices": ["8765, 8756, 8675, 8657", "8657, 8675, 8756, 8765", "8756, 8765, 8657, 8675", "8657, 8765, 8675, 8756"],
+        "correctAnswer": "8657, 8675, 8756, 8765",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 10000 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Which of the following is ordered from smallest to largest?",
+        "choices": ["4612, 4162, 4621, 4126", "7301, 7103, 7013, 7130", "6019, 6091, 6190, 6910", "5324, 5243, 5342, 5234"],
+        "correctAnswer": "6019, 6091, 6190, 6910",
+        "score": 1,
+        "assessmentTitle": "Order numbers up to 10000 from smallest to largest, and vice versa"
+    },
+    {
+        "text": "Which number is the greatest?",
+        "choices": ["5.67", "5.76", "5.68", "5.69"],
+        "correctAnswer": "5.76",
+        "score": 1,
+        "assessmentTitle": "Compare and Order decimal numbers with decimal parts to hundredths"
+    },
+    {
+        "text": "Which number is the smallest?",
+        "choices": ["3.45", "3.54", "3.46", "3.44"],
+        "correctAnswer": "3.44",
+        "score": 1,
+        "assessmentTitle": "Compare and Order decimal numbers with decimal parts to hundredths"
+    },
+    {
+        "text": "Arrange the numbers from least to greatest: 7.89, 7.98, 7.87, 7.88",
+        "choices": ["7.98, 7.89, 7.88, 7.87", "7.87, 7.88, 7.89, 7.98", "7.87, 7.89, 7.88, 7.98", "7.88, 7.87, 7.98, 7.89"],
+        "correctAnswer": "7.87, 7.88, 7.89, 7.98",
+        "score": 1,
+        "assessmentTitle": "Compare and Order decimal numbers with decimal parts to hundredths"
+    },
+    {
+        "text": "Which number is greater than 4.62 but less than 4.71?",
+        "choices": ["4.60", "4.72", "4.65", "4.75"],
+        "correctAnswer": "4.65",
+        "score": 1,
+        "assessmentTitle": "Compare and Order decimal numbers with decimal parts to hundredths"
+    },
+    {
+        "text": "Which of the following is the correct order from greatest to least?",
+        "choices": ["6.45, 6.47, 6.42, 6.40", "6.47, 6.45, 6.42, 6.40", "6.42, 6.45, 6.47, 6.40", "6.40, 6.42, 6.45, 6.47"],
+        "correctAnswer": "6.47, 6.45, 6.42, 6.40",
+        "score": 1,
+        "assessmentTitle": "Compare and Order decimal numbers with decimal parts to hundredths"
+    },
+    {
+        "text": "Which number is less than 2.99?",
+        "choices": ["3.01", "3.00", "2.98", "2.99"],
+        "correctAnswer": "2.98",
+        "score": 1,
+        "assessmentTitle": "Compare and Order decimal numbers with decimal parts to hundredths"
+    },
+    {
+        "text": "Compare 8.75 and 8.57 using <, >, or =.",
+        "choices": ["8.75 < 8.57", "8.75 = 8.57", "8.75 > 8.57", "8.57 > 8.75"],
+        "correctAnswer": "8.75 > 8.57",
+        "score": 1,
+        "assessmentTitle": "Compare and Order decimal numbers with decimal parts to hundredths"
+    },
+    {
+        "text": "Arrange the following in ascending order: 9.12, 9.21, 9.10, 9.20",
+        "choices": ["9.21, 9.20, 9.12, 9.10", "9.10, 9.12, 9.20, 9.21", "9.12, 9.10, 9.20, 9.21", "9.20, 9.21, 9.10, 9.12"],
+        "correctAnswer": "9.10, 9.12, 9.20, 9.21",
+        "score": 1,
+        "assessmentTitle": "Compare and Order decimal numbers with decimal parts to hundredths"
+    },
+    {
+        "text": "Which number is the greatest?",
+        "choices": ["10.01", "10.10", "10.02", "10.09"],
+        "correctAnswer": "10.10",
+        "score": 1,
+        "assessmentTitle": "Compare and Order decimal numbers with decimal parts to hundredths"
+    },
+    {
+        "text": "Which number is between 5.32 and 5.37?",
+        "choices": ["5.38", "5.30", "5.34", "5.28"],
+        "correctAnswer": "5.34",
+        "score": 1,
+        "assessmentTitle": "Compare and Order decimal numbers with decimal parts to hundredths"
+    },
+    {
+        "text": "Which number is greater?",
+        "choices": ["15", "18", "Both are equal", "Cannot compare"],
+        "correctAnswer": "18",
+        "score": 1,
+        "assessmentTitle": "Compare two numbers up to 20"
+    },
+    {
+        "text": "Which number is smaller?",
+        "choices": ["6", "9", "Both are equal", "Cannot compare"],
+        "correctAnswer": "6",
+        "score": 1,
+        "assessmentTitle": "Compare two numbers up to 20"
+    },
+    {
+        "text": "Compare 4 and 6. Which symbol correctly compares the two numbers?",
+        "choices": ["4 = 6", "4 < 6", "4 > 6", "Cannot compare"],
+        "correctAnswer": "4 < 6",
+        "score": 1,
+        "assessmentTitle": "Compare two numbers up to 20"
+    },
+    {
+        "text": "Compare 13 and 5. Which symbol correctly compares the two numbers?",
+        "choices": ["13 = 5", "13 < 5", "13 > 5", "Cannot compare"],
+        "correctAnswer": "13 > 5",
+        "score": 1,
+        "assessmentTitle": "Compare two numbers up to 20"
+    },
+    {
+        "text": "What is the larger number between 3 and 10?",
+        "choices": ["3", "10", "Both are equal", "Cannot compare"],
+        "correctAnswer": "10",
+        "score": 1,
+        "assessmentTitle": "Compare two numbers up to 20"
+    },
+    {
+        "text": "Compare 8 and 8. Which symbol correctly compares the two numbers?",
+        "choices": ["8 = 8", "8 < 8", "8 > 8", "Cannot compare"],
+        "correctAnswer": "8 = 8",
+        "score": 1,
+        "assessmentTitle": "Compare two numbers up to 20"
+    },
+    {
+        "text": "Which is greater, 14 or 15?",
+        "choices": ["14", "15", "Both are equal", "Cannot compare"],
+        "correctAnswer": "15",
+        "score": 1,
+        "assessmentTitle": "Compare two numbers up to 20"
+    },
+    {
+        "text": "Which number is greater?",
+        "choices": ["9", "6", "Both are equal", "Cannot compare"],
+        "correctAnswer": "9",
+        "score": 1,
+        "assessmentTitle": "Compare two numbers up to 20"
+    },
+    {
+        "text": "Compare 11 and 17. Which symbol correctly compares the two numbers?",
+        "choices": ["11 = 17", "11 < 17", "11 > 17", "Cannot compare"],
+        "correctAnswer": "11 < 17",
+        "score": 1,
+        "assessmentTitle": "Compare two numbers up to 20"
+    },
+    {
+        "text": "Arrange 7, 11, 4, and 20 from smallest to largest.",
+        "choices": ["10", "12", "Both are equal", "Cannot compare"],
+        "correctAnswer": "12",
+        "score": 1,
+        "assessmentTitle": "Compare two numbers up to 20"
+    },
+
+    {
+    "text": "Which has a greater value: 5 coins of ₱5 or 10 coins of ₱2?",
+    "choices": ["5 coins of ₱5", "10 coins of ₱2", "Both are equal", "Cannot be determined"],
+    "correctAnswer": "5 coins of ₱5",
+    "score": 1,
+    "assessmentTitle": "Compare the values of different denominations of peso coins and bills up to ₱1000"
+},
+{
+    "text": "Which is worth more: 8 coins of ₱10 or 25 coins of ₱1?",
+    "choices": ["25 coins of ₱1", "8 coins of ₱10", "Both are equal", "Cannot be determined"],
+    "correctAnswer": "8 coins of ₱10",
+    "score": 1,
+    "assessmentTitle": "Compare the values of different denominations of peso coins and bills up to ₱1000"
+},
+{
+    "text": "What is the larger amount: 15 coins of ₱2 or 6 coins of ₱5?",
+    "choices": ["15 coins of ₱2", "6 coins of ₱5", "Both are equal", "Cannot be determined"],
+    "correctAnswer": "6 coins of ₱5",
+    "score": 1,
+    "assessmentTitle": "Compare the values of different denominations of peso coins and bills up to ₱1000"
+},
+{
+    "text": "Which is greater: 2 ₱100 bills or 5 ₱50 bills?",
+    "choices": ["2 ₱100 bills", "5 ₱50 bills", "Both are equal", "Cannot be determined"],
+    "correctAnswer": "5 ₱50 bills",
+    "score": 1,
+    "assessmentTitle": "Compare the values of different denominations of peso coins and bills up to ₱1000"
+},
+{
+    "text": "Compare: 3 ₱500 bills or 6 ₱200 bills. Which is larger?",
+    "choices": ["3 ₱500 bills", "6 ₱200 bills", "Both are equal", "Cannot be determined"],
+    "correctAnswer": "3 ₱500 bills",
+    "score": 1,
+    "assessmentTitle": "Compare the values of different denominations of peso coins and bills up to ₱1000"
+},
+{
+    "text": "Which has a higher value: 1 ₱1000 bill or 12 ₱100 bills?",
+    "choices": ["1 ₱1000 bill", "12 ₱100 bills", "Both are equal", "Cannot be determined"],
+    "correctAnswer": "12 ₱100 bills",
+    "score": 1,
+    "assessmentTitle": "Compare the values of different denominations of peso coins and bills up to ₱1000"
+},
+{
+    "text": "What is worth more: 10 coins of ₱10 and 1 ₱500 bill or 1 ₱100 bill and 30 coins of ₱20?",
+    "choices": ["10 coins of ₱10 and 1 ₱500 bill", "1 ₱100 bill and 30 coins of ₱20", "Both are equal", "Cannot be determined"],
+    "correctAnswer": "1 ₱100 bill and 30 coins of ₱20",
+    "score": 1,
+    "assessmentTitle": "Compare the values of different denominations of peso coins and bills up to ₱1000"
+},
+{
+    "text": "Compare: 4 ₱200 bills or 1 ₱500 bill and 3 ₱100 bills.",
+    "choices": ["4 ₱200 bills", "1 ₱500 bill and 3 ₱100 bills.", "Both are equal", "Cannot be determined"],
+    "correctAnswer": "Both are equal",
+    "score": 1,
+    "assessmentTitle": "Compare the values of different denominations of peso coins and bills up to ₱1000"
+},
+{
+    "text": "Which is greater: 2 ₱200 bills, 5 ₱50 bills, and 10 coins of ₱10, or 10 ₱20 bills and 1 ₱500 bills?",
+    "choices": ["2 ₱200 bills, 5 coins of ₱50, and 10 coins of ₱10", "10 coins of ₱20 and 2 ₱500 bills", "Both are equal", "Cannot be determined"],
+    "correctAnswer": "2 ₱200 bills, 5 coins of ₱50, and 10 coins of ₱10",
+    "score": 1,
+    "assessmentTitle": "Compare the values of different denominations of peso coins and bills up to ₱1000"
+},
+{
+    "text": "Which has more value: 5 ₱100 bills and 5 coins of ₱10 or 1 ₱500 bill and 5 coins of ₱10?",
+    "choices": ["5 ₱100 bills and 5 coins of ₱10", "1 ₱500 bill and 5 coins of ₱10", "Both are equal", "Cannot be determined"],
+    "correctAnswer": "Both are equal",
+    "score": 1,
+    "assessmentTitle": "Compare the values of different denominations of peso coins and bills up to ₱1000"
+},
+{
+    "text": "Maria has 3745 marbles, and John has 3754 marbles. Which symbol correctly compares their numbers?",
+    "choices": ["3745 > 3754", "3745 < 3754", "3745 = 3754", "3745 ≥ 3754"],
+    "correctAnswer": "3745 < 3754",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 10,000 using the symbols =, >, and < (Grade 3, QTR 1)"
+},
+{
+    "text": "Which of the following comparisons is correct?",
+    "choices": ["9432 > 9523", "8765 = 8675", "4890 < 4981", "6001 > 6100"],
+    "correctAnswer": "4890 < 4981",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 10,000 using the symbols =, >, and < (Grade 3, QTR 1)"
+},
+{
+    "text": "A city has 6498 residents, and a nearby town has 6849 residents. Which symbol should go between the numbers?",
+    "choices": ["6498 < 6849", "6498 > 6849", "6498 = 6849", "6498 ≥ 6849"],
+    "correctAnswer": "6498 < 6849",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 10,000 using the symbols =, >, and < (Grade 3, QTR 1)"
+},
+{
+    "text": "Compare 2709 and 2790. Which of the following is true?",
+    "choices": ["2709 > 2790", "2709 ≥ 2790", "2709 = 2790", "2709 < 2790"],
+    "correctAnswer": "2709 < 2790",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 10,000 using the symbols =, >, and < (Grade 3, QTR 1)"
+},
+{
+    "text": "A store earned 5555 dollars on Monday and 5555 dollars on Tuesday. How do these numbers compare?",
+    "choices": ["5555 > 5555", "5555 < 5555", "5555 ≠ 5555", "5555 = 5555"],
+    "correctAnswer": "5555 = 5555",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 10,000 using the symbols =, >, and < (Grade 3, QTR 1)"
+},
+{
+    "text": "Which comparison is incorrect?",
+    "choices": ["7321 > 7123", "8765 < 8756", "9999 > 9990", "6432 < 6789"],
+    "correctAnswer": "8765 < 8756",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 10,000 using the symbols =, >, and < (Grade 3, QTR 1)"
+},
+{
+    "text": "A school has 3890 books, and a library has 3908 books. Compare the two numbers.",
+    "choices": ["3890 > 3908", "3890 = 3908", "3890 < 3908", "3890 ≥ 3908"],
+    "correctAnswer": "3890 < 3908",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 10,000 using the symbols =, >, and < (Grade 3, QTR 1)"
+},
+{
+    "text": "Which of the following is true?",
+    "choices": ["4321 > 4312", "7890 < 7098", "6222 = 6122", "5675 > 5765"],
+    "correctAnswer": "4321 > 4312",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 10,000 using the symbols =, >, and < (Grade 3, QTR 1)"
+},
+{
+    "text": "A farmer harvested 9375 apples and 9735 oranges. How do the numbers compare?",
+    "choices": ["9375 > 9735", "9375 ≥ 9735", "9375 = 9735", "9375 < 9735"],
+    "correctAnswer": "9375 < 9735",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 10,000 using the symbols =, >, and < (Grade 3, QTR 1)"
+},
+{
+    "text": "Which number is greater?",
+    "choices": ["5987 < 5978", "6543 > 6534", "7111 = 7112", "8222 < 8122"],
+    "correctAnswer": "6543 > 6534",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 10,000 using the symbols =, >, and < (Grade 3, QTR 1)"
+},
+{
+    "text": "Which of the following is true? 342,567 ___ 345,678",
+    "choices": ["<", ">", "=", "None of the above"],
+    "correctAnswer": "<",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 1,000,000 using =, <, and >"
+},
+{
+    "text": "Which of the following is true? 987,654 ___ 987,645",
+    "choices": ["<", ">", "=", "None of the above"],
+    "correctAnswer": "<",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 1,000,000 using =, <, and >"
+},
+{
+    "text": "Which of the following is true? 1,234,567 ___ 1,234,567",
+    "choices": ["<", ">", "=", "None of the above"],
+    "correctAnswer": "=",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 1,000,000 using =, <, and >"
+},
+{
+    "text": "Which of the following is true? 750,210 ___ 800,000",
+    "choices": ["<", ">", "=", "None of the above"],
+    "correctAnswer": "<",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 1,000,000 using =, <, and >"
+},
+{
+    "text": "Which of the following is true? 650,123 ___ 650,100",
+    "choices": ["<", ">", "=", "None of the above"],
+    "correctAnswer": ">",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 1,000,000 using =, <, and >"
+},
+{
+    "text": "Which of the following is true? 532,489 ___ 532,499",
+    "choices": ["<", ">", "=", "None of the above"],
+    "correctAnswer": "<",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 1,000,000 using =, <, and >"
+},
+{
+    "text": "Which of the following is true? 1,100,001 ___ 1,100,100",
+    "choices": ["<", ">", "=", "None of the above"],
+    "correctAnswer": "<",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 1,000,000 using =, <, and >"
+},
+{
+    "text": "Which of the following is true? 9,876,543 ___ 9,876,544",
+    "choices": ["<", ">", "=", "None of the above"],
+    "correctAnswer": "<",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 1,000,000 using =, <, and >"
+},
+{
+    "text": "Which of the following is true? 876,543 ___ 876,542",
+    "choices": ["<", ">", "=", "None of the above"],
+    "correctAnswer": ">",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 1,000,000 using =, <, and >"
+},
+{
+    "text": "Which of the following is true? 123,456 ___ 124,567",
+    "choices": ["<", ">", "=", "None of the above"],
+    "correctAnswer": "<",
+    "score": 1,
+    "assessmentTitle": "Compare numbers up to 1,000,000 using =, <, and >"
+},
+{
+    "text": "Which number is the greatest?",
+    "choices": ["5.67", "5.76", "5.68", "5.69"],
+    "correctAnswer": "5.76",
+    "score": 1,
+    "assessmentTitle": "Compare and order decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "Which number is the smallest?",
+    "choices": ["3.45", "3.54", "3.46", "3.44"],
+    "correctAnswer": "3.44",
+    "score": 1,
+    "assessmentTitle": "Compare and order decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "Arrange the numbers from least to greatest: 7.89, 7.98, 7.87, 7.88",
+    "choices": ["7.98, 7.89, 7.88, 7.87", "7.87, 7.88, 7.89, 7.98", "7.87, 7.89, 7.88, 7.98", "7.88, 7.87, 7.98, 7.89"],
+    "correctAnswer": "7.87, 7.88, 7.89, 7.98",
+    "score": 1,
+    "assessmentTitle": "Compare and order decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "Which number is greater than 4.62 but less than 4.71?",
+    "choices": ["4.60", "4.72", "4.65", "4.75"],
+    "correctAnswer": "4.65",
+    "score": 1,
+    "assessmentTitle": "Compare and order decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "Which of the following is the correct order from greatest to least?",
+    "choices": ["6.45, 6.47, 6.42, 6.40", "6.47, 6.45, 6.42, 6.40", "6.42, 6.45, 6.47, 6.40", "6.40, 6.42, 6.45, 6.47"],
+    "correctAnswer": "6.47, 6.45, 6.42, 6.40",
+    "score": 1,
+    "assessmentTitle": "Compare and order decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "Which number is less than 2.99?",
+    "choices": ["3.01", "3.00", "2.98", "2.99"],
+    "correctAnswer": "2.98",
+    "score": 1,
+    "assessmentTitle": "Compare and order decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "Compare 8.75 and 8.57 using <, >, or =.",
+    "choices": ["8.75 < 8.57", "8.75 = 8.57", "8.75 > 8.57", "8.57 > 8.75"],
+    "correctAnswer": "8.75 > 8.57",
+    "score": 1,
+    "assessmentTitle": "Compare and order decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "Arrange the following in ascending order: 9.12, 9.21, 9.10, 9.20",
+    "choices": ["9.21, 9.20, 9.12, 9.10", "9.10, 9.12, 9.20, 9.21", "9.12, 9.10, 9.20, 9.21", "9.20, 9.21, 9.10, 9.12"],
+    "correctAnswer": "9.10, 9.12, 9.20, 9.21",
+    "score": 1,
+    "assessmentTitle": "Compare and order decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "Which number is the greatest?",
+    "choices": ["10.01", "10.10", "10.02", "10.09"],
+    "correctAnswer": "10.10",
+    "score": 1,
+    "assessmentTitle": "Compare and order decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "Which number is between 5.32 and 5.37?",
+    "choices": ["5.38", "5.30", "5.34", "5.28"],
+    "correctAnswer": "5.34",
+    "score": 1,
+    "assessmentTitle": "Compare and order decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "What number is before 97?",
+    "choices": ["95", "96", "98", "99"],
+    "correctAnswer": "96",
+    "score": 1,
+    "assessmentTitle": "Count up to 100"
+},
+{
+    "text": "What number is after 45?",
+    "choices": ["46", "47", "48", "49"],
+    "correctAnswer": "46",
+    "score": 1,
+    "assessmentTitle": "Count up to 100"
+},
+{
+    "text": "Count forward from 23. What is the next number?",
+    "choices": ["21", "22", "23", "24"],
+    "correctAnswer": "24",
+    "score": 1,
+    "assessmentTitle": "Count up to 100"
+},
+{
+    "text": "Count backward from 455. What is the previous number?",
+    "choices": ["451", "452", "453", "454"],
+    "correctAnswer": "454",
+    "score": 1,
+    "assessmentTitle": "Count up to 100"
+},
+{
+    "text": "What is 1 more than 898?",
+    "choices": ["900", "899", "897", "896"],
+    "correctAnswer": "899",
+    "score": 1,
+    "assessmentTitle": "Count up to 100"
+},
+{
+    "text": "What is the number before 367?",
+    "choices": ["366", "365", "364", "363"],
+    "correctAnswer": "366",
+    "score": 1,
+    "assessmentTitle": "Count up to 100"
+},
+{
+    "text": "What is the number after 112?",
+    "choices": ["111", "115", "113", "120"],
+    "correctAnswer": "113",
+    "score": 1,
+    "assessmentTitle": "Count up to 100"
+},
+{
+    "text": "Count backward from 512. What is the previous number?",
+    "choices": ["508", "509", "510", "511"],
+    "correctAnswer": "511",
+    "score": 1,
+    "assessmentTitle": "Count up to 100"
+},
+{
+    "text": "Count forward from 300. What is the next number?",
+    "choices": ["400", "301", "200", "299"],
+    "correctAnswer": "301",
+    "score": 1,
+    "assessmentTitle": "Count up to 100"
+},
+{
+    "text": "What is the numeral for 'fifty-three'?",
+    "choices": ["53", "35", "55", "23"],
+    "correctAnswer": "53",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 1000"
+},
+{
+    "text": "What number is this: 58?",
+    "choices": ["Fifty-eight", "Fifty-two", "Fifty-five", "Eighty-five"],
+    "correctAnswer": "Fifty-eight",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 1000"
+},
+{
+    "text": "What is the numeral for 'thirty-four'?",
+    "choices": ["34", "43", "33", "44"],
+    "correctAnswer": "34",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 1000"
+},
+{
+    "text": "What is the numeral for 'two hundred and twelve'?",
+    "choices": ["2012", "212", "221", "120"],
+    "correctAnswer": "212",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 1000"
+},
+{
+    "text": "What number is this: 501?",
+    "choices": ["Five hundred one", "Five hundred ten", "Fifty-one", "Five thousand one"],
+    "correctAnswer": "Five hundred one",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 1000"
+},
+{
+    "text": "What is the numeral for 'one hundred ninety-eight'?",
+    "choices": ["198", "189", "1980", "180"],
+    "correctAnswer": "198",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 1000"
+},
+{
+    "text": "What number is this: 657?",
+    "choices": ["Six hundred seventy-five", "Sixty-seven", "Six hundred fifty-seven", "Six hundred fifty"],
+    "correctAnswer": "Six hundred fifty-seven",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 1000"
+},
+{
+    "text": "How is 'nine hundred eight' written as a numeral?",
+    "choices": ["980", "909", "908", "890"],
+    "correctAnswer": "908",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 1000"
+},
+{
+    "text": "What is the numeral for 'five hundred seventy'?",
+    "choices": ["570", "507", "705", "5070"],
+    "correctAnswer": "570",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 1000"
+},
+{
+    "text": "What number is this: 423?",
+    "choices": ["Four hundred thirty-two", "Four hundred thirty", "Four hundred twenty", "Four hundred twenty-three"],
+    "correctAnswer": "Four hundred twenty-three",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 1000"
+},
+{
+    "text": "What is the numeral for 'Three thousand two hundred fifteen'?",
+    "choices": ["3250", "3215", "3251", "3210"],
+    "correctAnswer": "3215",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 10,000 in numerals and in words"
+},
+{
+    "text": "What is the word form of 4,806?",
+    "choices": ["Four thousand eighty-six", "Forty thousand eight hundred six", "Four thousand eight hundred six", "Four thousand eight hundred sixty"],
+    "correctAnswer": "Four thousand eight hundred six",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 10,000 in numerals and in words"
+},
+{
+    "text": "Write 'seven thousand six hundred eighty-one' in numerals.",
+    "choices": ["7681", "7861", "7618", "7816"],
+    "correctAnswer": "7681",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 10,000 in numerals and in words"
+},
+{
+    "text": "Which of the following is correct for 'two thousand twenty-seven'?",
+    "choices": ["2072", "2027", "2270", "2720"],
+    "correctAnswer": "2027",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 10,000 in numerals and in words"
+},
+{
+    "text": "Which numeral matches 'four thousand four-hundred forty-four'?",
+    "choices": ["4044", "4404", "4440", "4444"],
+    "correctAnswer": "4444",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 10,000 in numerals and in words"
+},
+{
+    "text": "What is the word form of 3965?",
+    "choices": ["Three thousand nine hundred five", "Three thousand nine hundred fifty-six", "Three thousand nine hundred sixty-five", "Three thousand nine hundred sixty"],
+    "correctAnswer": "Three thousand nine hundred sixty-five",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 10,000 in numerals and in words"
+},
+{
+    "text": "Write 'one thousand nine' in numerals",
+    "choices": ["1009", "1090", "1019", "1900"],
+    "correctAnswer": "1009",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 10,000 in numerals and in words"
+},
+{
+    "text": "What is the numeral for 'five thousand four hundred three'?",
+    "choices": ["5043", "5403", "5430", "5400"],
+    "correctAnswer": "5403",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 10,000 in numerals and in words"
+},
+{
+    "text": "What is the word form of 1600?",
+    "choices": ["One thousand sixty", "One thousand six hundred one", "One thousand six hundred ten", "One thousand six hundred"],
+    "correctAnswer": "One thousand six hundred",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 10,000 in numerals and in words"
+},
+{
+    "text": "Which of the following is the numeral for 'ten thousand'?",
+    "choices": ["10000", "100000", "10100", "1000"],
+    "correctAnswer": "10000",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 10,000 in numerals and in words"
+},
+{
+    "text": "What number is this: 36?",
+    "choices": ["Thirty-six", "Twenty-six", "Forty-six", "Thirty-five"],
+    "correctAnswer": "Thirty-six",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 100"
+},
+{
+    "text": "What numeral represents the word 'eighty-nine'?",
+    "choices": ["88", "98", "85", "89"],
+    "correctAnswer": "89",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 100"
+},
+{
+    "text": "How is the number 24 written in words?",
+    "choices": ["Forty-two", "Twenty-three", "Twenty-four", "Twenty-two"],
+    "correctAnswer": "Twenty-four",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 100"
+},
+{
+    "text": "Write the numeral for 'sixty-five'.",
+    "choices": ["65", "62", "66", "64"],
+    "correctAnswer": "65",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 100"
+},
+{
+    "text": "Write the number 41 in words.",
+    "choices": ["Forty-three", "Forty-one", "Forty", "Forty-five"],
+    "correctAnswer": "Forty-one",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 100"
+},
+{
+    "text": "What is the word for the numeral 100?",
+    "choices": ["Ten", "One thousand", "One hundred", "Zero"],
+    "correctAnswer": "One hundred",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 100"
+},
+{
+    "text": "Which numeral is 14?",
+    "choices": ["Twelve", "Sixteen", "Fourteen", "Eighteen"],
+    "correctAnswer": "Fourteen",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 100"
+},
+{
+    "text": "Write the numeral for the word forty-eight.",
+    "choices": ["42", "48", "84", "82"],
+    "correctAnswer": "48",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 100"
+},
+{
+    "text": "Which numeral is 'seventy-three'?",
+    "choices": ["73", "76", "70", "79"],
+    "correctAnswer": "73",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 100"
+},
+{
+    "text": "Which numeral is 95?",
+    "choices": ["Fifty-nine", "Ninety-three", "Fifty-seven", "Ninety-five"],
+    "correctAnswer": "Ninety-five",
+    "score": 1,
+    "assessmentTitle": "Read and write numerals up to 100"
+},
+{
+    "text": "Write the number in words: 345,678",
+    "choices": ["Three hundred forty-five thousand six hundred seventy-eight", "Three hundred fifty-six thousand four hundred seventy-eight", "Three hundred forty-five thousand six hundred seventy", "Three hundred forty-five thousand six hundred seven"],
+    "correctAnswer": "Three hundred forty-five thousand six hundred seventy-eight",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 1,000,000 in numerals and in words"
+},
+{
+    "text": "Write the number in numerals: One hundred twenty-five thousand, four hundred sixty-seven",
+    "choices": ["100,245", "124,567", "125,467", "125,467"],
+    "correctAnswer": "125,467",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 1,000,000 in numerals and in words"
+},
+{
+    "text": "Write the number in words: 98,234",
+    "choices": ["Ninety-eight thousand three hundred twenty-four", "Ninety-eight thousand four hundred thirty-two", "Ninety-eight thousand two hundred thirty-four", "Ninety thousand two hundred thirty-four"],
+    "correctAnswer": "Ninety-eight thousand two hundred thirty-four",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 1,000,000 in numerals and in words"
+},
+{
+    "text": "Write the number in numerals: Six hundred seventy-nine thousand, three hundred twelve",
+    "choices": ["679,132", "679,312", "679,123", "678,312"],
+    "correctAnswer": "679,312",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 1,000,000 in numerals and in words"
+},
+{
+    "text": "Write the number in words: 520,801",
+    "choices": ["Five hundred twenty thousand eight hundred one", "Five hundred twenty thousand one hundred eight", "Fifty-two thousand eight hundred one", "Five hundred two thousand eight hundred one"],
+    "correctAnswer": "Five hundred twenty thousand eight hundred one",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 1,000,000 in numerals and in words"
+},
+{
+    "text": "Write the number in numerals: Two hundred fifteen thousand, six hundred seventy-eight",
+    "choices": ["205,678", "215,687", "215,678", "210,678"],
+    "correctAnswer": "215,678",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 1,000,000 in numerals and in words"
+},
+{
+    "text": "Write the number in words: 7,890,654",
+    "choices": ["Seven hundred million eight hundred thousand six hundred fifty-four", "Seven million eight hundred thousand six hundred fifty-four", "Seven million eight hundred thousand six hundred fifty-four", "Seven million eight hundred ninety thousand six hundred fifty-four"],
+    "correctAnswer": "Seven million eight hundred ninety thousand six hundred fifty-four",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 1,000,000 in numerals and in words"
+},
+{
+    "text": "Write the number in numerals: One million, fifty-three thousand, two hundred ten",
+    "choices": ["1,053,210", "1,053,021", "1,052,310", "1,053,120"],
+    "correctAnswer": "1,053,210",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 1,000,000 in numerals and in words"
+},
+{
+    "text": "Write the number in words: 345,000",
+    "choices": ["Three hundred forty thousand", "Three hundred forty-five thousand", "Three thousand four hundred fifty", "Three hundred thousand"],
+    "correctAnswer": "Three hundred forty-five thousand",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 1,000,000 in numerals and in words"
+},
+{
+    "text": "Write the number in numerals: Nine hundred eighty-seven thousand, six hundred forty-two",
+    "choices": ["978,642", "987,264", "987,642", "976,842"],
+    "correctAnswer": "987,642",
+    "score": 1,
+    "assessmentTitle": "Read and write numbers up to 1,000,000 in numerals and in words"
+},
+{
+    "text": "What number is before 97?",
+    "choices": ["95", "96", "98", "99"],
+    "correctAnswer": "96",
+    "score": 1,
+    "assessmentTitle": "Count up to 1000"
+},
+{
+    "text": "What number is after 45?",
+    "choices": ["46", "47", "48", "49"],
+    "correctAnswer": "46",
+    "score": 1,
+    "assessmentTitle": "Count up to 1000"
+},
+{
+    "text": "Count forward from 23. What is the next number?",
+    "choices": ["21", "22", "23", "24"],
+    "correctAnswer": "24",
+    "score": 1,
+    "assessmentTitle": "Count up to 1000"
+},
+{
+    "text": "Count backward from 455. What is the previous number?",
+    "choices": ["451", "452", "453", "454"],
+    "correctAnswer": "454",
+    "score": 1,
+    "assessmentTitle": "Count up to 1000"
+},
+{
+    "text": "What is 1 more than 898?",
+    "choices": ["900", "899", "897", "896"],
+    "correctAnswer": "899",
+    "score": 1,
+    "assessmentTitle": "Count up to 1000"
+},
+{
+    "text": "What is the number before 367?",
+    "choices": ["366", "365", "364", "363"],
+    "correctAnswer": "366",
+    "score": 1,
+    "assessmentTitle": "Count up to 1000"
+},
+{
+    "text": "What is the number after 112?",
+    "choices": ["111", "115", "113", "120"],
+    "correctAnswer": "113",
+    "score": 1,
+    "assessmentTitle": "Count up to 1000"
+},
+{
+    "text": "Count backward from 512. What is the previous number?",
+    "choices": ["508", "509", "510", "511"],
+    "correctAnswer": "511",
+    "score": 1,
+    "assessmentTitle": "Count up to 1000"
+},
+{
+    "text": "Count forward from 300. What is the next number?",
+    "choices": ["400", "301", "200", "299"],
+    "correctAnswer": "301",
+    "score": 1,
+    "assessmentTitle": "Count up to 1000"
+},
+{
+    "text": "Estimate the sum of 3478 and 2716 by rounding to the nearest thousand.",
+    "choices": ["5629", "5649", "5639", "5659"],
+    "correctAnswer": "5659",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum of addends with up to 4 digits"
+},
+{
+    "text": "Estimate the sum of 5483 and 2319 by rounding to the nearest hundred.",
+    "choices": ["7800", "7700", "7900", "7600"],
+    "correctAnswer": "7700",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum of addends with up to 4 digits"
+},
+{
+    "text": "Estimate the sum of 7645 and 3289 by rounding to the nearest thousand.",
+    "choices": ["11000", "10900", "10800", "10700"],
+    "correctAnswer": "11000",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum of addends with up to 4 digits"
+},
+{
+    "text": "Estimate the sum of 4862 and 1523 by rounding to the nearest hundred.",
+    "choices": ["6400", "6300", "6500", "6200"],
+    "correctAnswer": "6500",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum of addends with up to 4 digits"
+},
+{
+    "text": "Estimate the sum of 9124 and 4786 by rounding to the nearest thousand.",
+    "choices": ["13000", "14000", "13900", "13800"],
+    "correctAnswer": "14000",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum of addends with up to 4 digits"
+},
+{
+    "text": "Estimate the sum of 3297 and 2461 by rounding to the nearest hundred.",
+    "choices": ["5700", "5800", "5600", "5500"],
+    "correctAnswer": "5700",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum of addends with up to 4 digits"
+},
+{
+    "text": "Estimate the sum of 5732 and 1918 by rounding to the nearest thousand.",
+    "choices": ["7800", "7700", "8000", "7600"],
+    "correctAnswer": "7600",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum of addends with up to 4 digits"
+},
+{
+    "text": "Estimate the sum of 8624 and 3295 by rounding to the nearest hundred.",
+    "choices": ["11900", "12000", "12100", "11800"],
+    "correctAnswer": "12000",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum of addends with up to 4 digits"
+},
+{
+    "text": "Estimate the sum of 4789 and 3625 by rounding to the nearest thousand.",
+    "choices": ["8300", "8400", "8500", "8600"],
+    "correctAnswer": "8500",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum of addends with up to 4 digits"
+},
+{
+    "text": "Estimate the sum of 7523 and 6472 by rounding to the nearest hundred.",
+    "choices": ["14000", "13900", "13800", "13700"],
+    "correctAnswer": "13800",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum of addends with up to 4 digits"
+},
+{
+    "text": "A factory produced 7982 toys in January and 3627 toys in February. Estimate the difference between the two numbers.",
+    "choices": ["4000", "4300", "4400", "4500"],
+    "correctAnswer": "4300",
+    "score": 1,
+    "assessmentTitle": "Estimate the difference of numbers with up to 4 digits"
+},
+{
+    "text": "A bookstore had 9125 books in stock. After selling 3689 books, estimate how many books remain.",
+    "choices": ["5300", "5400", "5500", "5600"],
+    "correctAnswer": "5500",
+    "score": 1,
+    "assessmentTitle": "Estimate the difference of numbers with up to 4 digits"
+},
+{
+    "text": "An online store received 6742 orders last month and 3489 orders this month. Estimate how many more orders were placed last month.",
+    "choices": ["3300", "3400", "3500", "3600"],
+    "correctAnswer": "3300",
+    "score": 1,
+    "assessmentTitle": "Estimate the difference of numbers with up to 4 digits"
+},
+{
+    "text": "A zoo had 8357 visitors on Saturday and 5294 visitors on Sunday. Estimate how many more visitors were there on Saturday.",
+    "choices": ["3300", "3200", "3100", "3000"],
+    "correctAnswer": "3000",
+    "score": 1,
+    "assessmentTitle": "Estimate the difference of numbers with up to 4 digits"
+},
+{
+    "text": "A farmer harvested 7420 apples in one season. The previous season, he harvested 2985 apples. Estimate the difference.",
+    "choices": ["4200", "4300", "4400", "4500"],
+    "correctAnswer": "4400",
+    "score": 1,
+    "assessmentTitle": "Estimate the difference of numbers with up to 4 digits"
+},
+{
+    "text": "A school has 6785 students enrolled, while another school has 4123 students. Estimate how many more students are in the first school.",
+    "choices": ["2600", "2700", "2800", "2900"],
+    "correctAnswer": "2600",
+    "score": 1,
+    "assessmentTitle": "Estimate the difference of numbers with up to 4 digits"
+},
+{
+    "text": "A supermarket sold 9542 loaves of bread in one month and 4789 loaves the next month. Estimate the difference in sales.",
+    "choices": ["4600", "4700", "4800", "4900"],
+    "correctAnswer": "4700",
+    "score": 1,
+    "assessmentTitle": "Estimate the difference of numbers with up to 4 digits"
+},
+{
+    "text": "An airport recorded 8253 passengers on Monday and 3697 passengers on Tuesday. Estimate the difference in the number of passengers.",
+    "choices": ["4300", "4400", "4500", "4600"],
+    "correctAnswer": "4600",
+    "score": 1,
+    "assessmentTitle": "Estimate the difference of numbers with up to 4 digits"
+},
+{
+    "text": "A company had 9985 employees last year but reduced its workforce to 5721 employees this year. Estimate the number of employees lost.",
+    "choices": ["4100", "4200", "4300", "4400"],
+    "correctAnswer": "4200",
+    "score": 1,
+    "assessmentTitle": "Estimate the difference of numbers with up to 4 digits"
+},
+{
+    "text": "A clothing store had 7459 shirts in stock, but after a big sale, only 3182 remained. Estimate how many shirts were sold.",
+    "choices": ["4100", "4200", "4300", "4400"],
+    "correctAnswer": "4300",
+    "score": 1,
+    "assessmentTitle": "Estimate the difference of numbers with up to 4 digits"
+},
+{
+    "text": "Estimate the sum of 765,432 + 349,876 by rounding the addends",
+    "choices": ["1,100,500", "1,200,000", "1,100,000", "1,000,000"],
+    "correctAnswer": "1,100,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum and difference of two 5- to 6-digit numbers by rounding the addends to the nearest large place value of the numbers"
+},
+{
+    "text": "Estimate the difference of 965,432 - 487,654 by rounding the numbers.",
+    "choices": ["500,000", "400,000", "600,000", "700,000"],
+    "correctAnswer": "500,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum and difference of two 5- to 6-digit numbers by rounding the addends to the nearest large place value of the numbers"
+},
+{
+    "text": "Estimate the sum of 1,234,567 + 987,654 by rounding.",
+    "choices": ["2,000,000", "2,200,000", "2,100,500", "2,100,000"],
+    "correctAnswer": "2,100,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum and difference of two 5- to 6-digit numbers by rounding the addends to the nearest large place value of the numbers"
+},
+{
+    "text": "Estimate the difference of 876,543 - 234,567 by rounding.",
+    "choices": ["640,000", "9, 17, 12", "9, 12, 17", "17, 12, 9"],
+    "correctAnswer": "640,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum and difference of two 5- to 6-digit numbers by rounding the addends to the nearest large place value of the numbers"
+},
+{
+    "text": "Estimate the sum of 678,123 + 321,876 by rounding.",
+    "choices": ["1,100,000", "1,000,000", "1,200,000", "900,000"],
+    "correctAnswer": "1,000,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum and difference of two 5- to 6-digit numbers by rounding the addends to the nearest large place value of the numbers"
+},
+{
+    "text": "Estimate the difference of 1,005,432 - 432,876 by rounding.",
+    "choices": ["500,000", "600,000", "700,000", "18, 9, 4, 20"],
+    "correctAnswer": "600,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum and difference of two 5- to 6-digit numbers by rounding the addends to the nearest large place value of the numbers"
+},
+{
+    "text": "Estimate the sum of 543,210 + 876,543 by rounding.",
+    "choices": ["1,500,000", "1,300,000", "1,400,000", "1,200,000"],
+    "correctAnswer": "1,400,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum and difference of two 5- to 6-digit numbers by rounding the addends to the nearest large place value of the numbers"
+},
+{
+    "text": "Estimate the difference of 989,765 - 654,321 by rounding.",
+    "choices": ["400,000", "300,000", "350,000", "330,000"],
+    "correctAnswer": "330,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum and difference of two 5- to 6-digit numbers by rounding the addends to the nearest large place value of the numbers"
+},
+{
+    "text": "Estimate the sum of 654,321 + 987,654 by rounding.",
+    "choices": ["1,600,000", "1,500,000", "1,700,000", "1,800,000"],
+    "correctAnswer": "1,600,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum and difference of two 5- to 6-digit numbers by rounding the addends to the nearest large place value of the numbers"
+},
+{
+    "text": "Estimate the difference of 1,234,567 - 876,543 by rounding.",
+    "choices": ["400,000", "300,000", "500,000", "200,000"],
+    "correctAnswer": "400,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the sum and difference of two 5- to 6-digit numbers by rounding the addends to the nearest large place value of the numbers"
+},
+{
+    "text": "Estimate the product of 2,453 × 623.",
+    "choices": ["1,500,000", "1,600,000", "1,400,000", "1,700,000"],
+    "correctAnswer": "1,500,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the result of multiplying two numbers where the product is less than 1,000,000"
+},
+{
+    "text": "Estimate the product of 573 × 987.",
+    "choices": ["500,000", "600,000", "700,000", "800,000"],
+    "correctAnswer": "600,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the result of multiplying two numbers where the product is less than 1,000,000"
+},
+{
+    "text": "Estimate the product of 824 × 365.",
+    "choices": ["280,000", "300,000", "320,000", "400,000"],
+    "correctAnswer": "320,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the result of multiplying two numbers where the product is less than 1,000,000"
+},
+{
+    "text": "Estimate the product of 1,245 × 876.",
+    "choices": ["1,100,000", "1,000,000", "900,000", "800,000"],
+    "correctAnswer": "1,100,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the result of multiplying two numbers where the product is less than 1,000,000"
+},
+{
+    "text": "Estimate the product of 672 × 234.",
+    "choices": ["150,000", "170,000", "180,000", "160,000"],
+    "correctAnswer": "160,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the result of multiplying two numbers where the product is less than 1,000,000"
+},
+{
+    "text": "Estimate the product of 2,361 × 587.",
+    "choices": ["1,400,000", "1,500,000", "1,600,000", "1,700,000"],
+    "correctAnswer": "1,400,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the result of multiplying two numbers where the product is less than 1,000,000"
+},
+{
+    "text": "Estimate the product of 1,347 × 945.",
+    "choices": ["1,000,000", "1,200,000", "1,300,000", "1,600,000"],
+    "correctAnswer": "1,300,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the result of multiplying two numbers where the product is less than 1,000,000"
+},
+{
+    "text": "Estimate the product of 432 × 561.",
+    "choices": ["200,000", "240,000", "250,000", "260,000"],
+    "correctAnswer": "240,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the result of multiplying two numbers where the product is less than 1,000,000"
+},
+{
+    "text": "Estimate the product of 876 × 432.",
+    "choices": ["300,000", "350,000", "380,000", "360,000"],
+    "correctAnswer": "360,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the result of multiplying two numbers where the product is less than 1,000,000"
+},
+{
+    "text": "Estimate the product of 1,234 × 698.",
+    "choices": ["800,000", "820,000", "840,000", "860,000"],
+    "correctAnswer": "840,000",
+    "score": 1,
+    "assessmentTitle": "Estimate the result of multiplying two numbers where the product is less than 1,000,000"
+},
+{
+    "text": "Estimate: 3,248 ÷ 8",
+    "choices": ["400", "300", "450", "200"],
+    "correctAnswer": "400",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient when dividing 3- to 4-digit dividends by 1- to 2-digit divisors, by first estimating the dividends and divisors using multiples of 10"
+},
+{
+    "text": "Estimate: 5,673 ÷ 9",
+    "choices": ["400", "500", "600", "700"],
+    "correctAnswer": "600",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient when dividing 3- to 4-digit dividends by 1- to 2-digit divisors, by first estimating the dividends and divisors using multiples of 10"
+},
+{
+    "text": "Estimate: 7,850 ÷ 11",
+    "choices": ["400", "500", "600", "700"],
+    "correctAnswer": "700",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient when dividing 3- to 4-digit dividends by 1- to 2-digit divisors, by first estimating the dividends and divisors using multiples of 10"
+},
+{
+    "text": "Estimate: 2,145 ÷ 6",
+    "choices": ["250", "300", "350", "400"],
+    "correctAnswer": "350",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient when dividing 3- to 4-digit dividends by 1- to 2-digit divisors, by first estimating the dividends and divisors using multiples of 10"
+},
+{
+    "text": "Estimate: 4,932 ÷ 12",
+    "choices": ["400", "300", "500", "200"],
+    "correctAnswer": "400",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient when dividing 3- to 4-digit dividends by 1- to 2-digit divisors, by first estimating the dividends and divisors using multiples of 10"
+},
+{
+    "text": "Estimate: 6,274 ÷ 13",
+    "choices": ["400", "300", "500", "200"],
+    "correctAnswer": "500",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient when dividing 3- to 4-digit dividends by 1- to 2-digit divisors, by first estimating the dividends and divisors using multiples of 10"
+},
+{
+    "text": "Estimate: 9,426 ÷ 21",
+    "choices": ["400", "450", "500", "550"],
+    "correctAnswer": "450",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient when dividing 3- to 4-digit dividends by 1- to 2-digit divisors, by first estimating the dividends and divisors using multiples of 10"
+},
+{
+    "text": "Estimate: 3,584 ÷ 7",
+    "choices": ["400", "450", "550", "500"],
+    "correctAnswer": "500",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient when dividing 3- to 4-digit dividends by 1- to 2-digit divisors, by first estimating the dividends and divisors using multiples of 10"
+},
+{
+    "text": "Estimate: 8,912 ÷ 19",
+    "choices": ["400", "450", "550", "500"],
+    "correctAnswer": "450",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient when dividing 3- to 4-digit dividends by 1- to 2-digit divisors, by first estimating the dividends and divisors using multiples of 10"
+},
+{
+    "text": "Estimate: 1,936 ÷ 4",
+    "choices": ["500", "450", "550", "400"],
+    "correctAnswer": "500",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient when dividing 3- to 4-digit dividends by 1- to 2-digit divisors, by first estimating the dividends and divisors using multiples of 10"
+},
+{
+    "text": "Estimate: 235 ÷ 42",
+    "choices": ["5", "6", "7", "8"],
+    "correctAnswer": "6",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient of 2- to 3-digit numbers divided by 1- to 2-digit numbers, using multiples of 10 or 100 as appropriate"
+},
+{
+    "text": "Estimate: 768 ÷ 82",
+    "choices": ["10", "9", "8", "7"],
+    "correctAnswer": "8",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient of 2- to 3-digit numbers divided by 1- to 2-digit numbers, using multiples of 10 or 100 as appropriate"
+},
+{
+    "text": "Estimate: 654 ÷ 30",
+    "choices": ["20", "21", "22", "23"],
+    "correctAnswer": "20",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient of 2- to 3-digit numbers divided by 1- to 2-digit numbers, using multiples of 10 or 100 as appropriate"
+},
+{
+    "text": "Estimate: 849 ÷ 150",
+    "choices": ["9", "8", "7", "6"],
+    "correctAnswer": "6",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient of 2- to 3-digit numbers divided by 1- to 2-digit numbers, using multiples of 10 or 100 as appropriate"
+},
+{
+    "text": "Estimate: 902 ÷ 49",
+    "choices": ["20", "19", "18", "17"],
+    "correctAnswer": "18",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient of 2- to 3-digit numbers divided by 1- to 2-digit numbers, using multiples of 10 or 100 as appropriate"
+},
+{
+    "text": "Estimate: 492 ÷ 67",
+    "choices": ["6", "7", "8", "9"],
+    "correctAnswer": "7",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient of 2- to 3-digit numbers divided by 1- to 2-digit numbers, using multiples of 10 or 100 as appropriate"
+},
+{
+    "text": "Estimate: 378 ÷ 26",
+    "choices": ["14", "15", "16", "17"],
+    "correctAnswer": "14",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient of 2- to 3-digit numbers divided by 1- to 2-digit numbers, using multiples of 10 or 100 as appropriate"
+},
+{
+    "text": "Estimate: 616 ÷ 72",
+    "choices": ["5", "6", "7", "8"],
+    "correctAnswer": "8",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient of 2- to 3-digit numbers divided by 1- to 2-digit numbers, using multiples of 10 or 100 as appropriate"
+},
+{
+    "text": "Estimate: 543 ÷ 47",
+    "choices": ["11", "12", "13", "14"],
+    "correctAnswer": "11",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient of 2- to 3-digit numbers divided by 1- to 2-digit numbers, using multiples of 10 or 100 as appropriate"
+},
+{
+    "text": "Estimate: 988 ÷ 99",
+    "choices": ["11", "10", "9", "8"],
+    "correctAnswer": "10",
+    "score": 1,
+    "assessmentTitle": "Estimate the quotient of 2- to 3-digit numbers divided by 1- to 2-digit numbers, using multiples of 10 or 100 as appropriate"
+},
+{
+    "text": "A farmer sells 47 eggs in one day. About how many eggs does he sell in 9 days?",
+    "choices": ["300", "400", "440", "450"],
+    "correctAnswer": "450",
+    "score": 1,
+    "assessmentTitle": "Estimate the product of 2- to 3-digit numbers by 1- to 2-digit numbers by estimating the factors using multiples of 10"
+},
+{
+    "text": "A toy store sells 214 toy cars per week. Estimate how many toy cars they sell in 7 weeks.",
+    "choices": ["1300", "1400", "1200", "1500"],
+    "correctAnswer": "1400",
+    "score": 1,
+    "assessmentTitle": "Estimate the product of 2- to 3-digit numbers by 1- to 2-digit numbers by estimating the factors using multiples of 10"
+},
+{
+    "text": "A library orders 68 books per shipment. If they order 12 shipments, about how many books do they receive?",
+    "choices": ["700", "600", "800", "750"],
+    "correctAnswer": "700",
+    "score": 1,
+    "assessmentTitle": "Estimate the product of 2- to 3-digit numbers by 1- to 2-digit numbers by estimating the factors using multiples of 10"
+},
+{
+    "text": "A bakery bakes 325 loaves of bread each day. Estimate how many loaves are baked in 4 days.",
+    "choices": ["1500", "1000", "1200", "1300"],
+    "correctAnswer": "1200",
+    "score": 1,
+    "assessmentTitle": "Estimate the product of 2- to 3-digit numbers by 1- to 2-digit numbers by estimating the factors using multiples of 10"
+},
+{
+    "text": "A classroom has 56 students, and each student gets 23 worksheets. Estimate how many worksheets are needed.",
+    "choices": ["1000", "1200", "1300", "1100"],
+    "correctAnswer": "1200",
+    "score": 1,
+    "assessmentTitle": "Estimate the product of 2- to 3-digit numbers by 1- to 2-digit numbers by estimating the factors using multiples of 10"
+},
+{
+    "text": "A factory produces 135 toys per batch. About how many toys are produced in 18 batches?",
+    "choices": ["2000", "3200", "1000", "1500"],
+    "correctAnswer": "2000",
+    "score": 1,
+    "assessmentTitle": "Estimate the product of 2- to 3-digit numbers by 1- to 2-digit numbers by estimating the factors using multiples of 10"
+},
+{
+    "text": "A box contains 29 pencils. If a school orders 7 boxes, estimate the total number of pencils.",
+    "choices": ["300", "350", "200", "210"],
+    "correctAnswer": "210",
+    "score": 1,
+    "assessmentTitle": "Estimate the product of 2- to 3-digit numbers by 1- to 2-digit numbers by estimating the factors using multiples of 10"
+},
+{
+    "text": "A company prints 219 flyers per week. Estimate the number of flyers printed in 22 weeks.",
+    "choices": ["4000", "4500", "5000", "5500"],
+    "correctAnswer": "4000",
+    "score": 1,
+    "assessmentTitle": "Estimate the product of 2- to 3-digit numbers by 1- to 2-digit numbers by estimating the factors using multiples of 10"
+},
+{
+    "text": "A hotel has 78 rooms, and each room has 35 chairs. Estimate the total number of chairs.",
+    "choices": ["4000", "3000", "3200", "2200"],
+    "correctAnswer": "3200",
+    "score": 1,
+    "assessmentTitle": "Estimate the product of 2- to 3-digit numbers by 1- to 2-digit numbers by estimating the factors using multiples of 10"
+},
+{
+    "text": "A bookstore sells 426 books per month. Estimate how many books are sold in 5 months.",
+    "choices": ["2000", "2100", "2200", "2300"],
+    "correctAnswer": "2000",
+    "score": 1,
+    "assessmentTitle": "Estimate the product of 2- to 3-digit numbers by 1- to 2-digit numbers by estimating the factors using multiples of 10"
+},
+{
+    "text": "Round 765,432 to the nearest hundred thousand.",
+    "choices": ["800,000", "700,000", "750,000", "760,000"],
+    "correctAnswer": "700,000",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest hundred thousand"
+},
+{
+    "text": "Round 342,567 to the nearest hundred thousand.",
+    "choices": ["300,000", "350,000", "340,000", "400,000"],
+    "correctAnswer": "300,000",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest hundred thousand"
+},
+{
+    "text": "Round 1,245,678 to the nearest hundred thousand.",
+    "choices": ["1,200,000", "1,300,000", "1,240,000", "1,250,000"],
+    "correctAnswer": "1,200,000",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest hundred thousand"
+},
+{
+    "text": "Round 786,901 to the nearest hundred thousand.",
+    "choices": ["700,000", "800,000", "790,000", "780,000"],
+    "correctAnswer": "800,000",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest hundred thousand"
+},
+{
+    "text": "Round 923,465 to the nearest hundred thousand.",
+    "choices": ["900,000", "1,000,000", "920,000", "930,000"],
+    "correctAnswer": "900,000",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest hundred thousand"
+},
+{
+    "text": "Round 1,005,432 to the nearest hundred thousand.",
+    "choices": ["1,000,000", "1,010,000", "1,100,000", "1,050,000"],
+    "correctAnswer": "1,000,000",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest hundred thousand"
+},
+{
+    "text": "Round 555,123 to the nearest hundred thousand.",
+    "choices": ["500,000", "600,000", "550,000", "560,000"],
+    "correctAnswer": "500,000",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest hundred thousand"
+},
+{
+    "text": "Round 432,876 to the nearest hundred thousand.",
+    "choices": ["400,000", "450,000", "430,000", "420,000"],
+    "correctAnswer": "400,000",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest hundred thousand"
+},
+{
+    "text": "Round 745,981 to the nearest hundred thousand.",
+    "choices": ["700,000", "750,000", "740,000", "800,000"],
+    "correctAnswer": "750,000",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest hundred thousand"
+},
+{
+    "text": "Round 987,654 to the nearest hundred thousand.",
+    "choices": ["900,000", "1,000,000", "980,000", "990,000"],
+    "correctAnswer": "1,000,000",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest hundred thousand"
+},
+{
+    "text": "A store sold 234 items last week. Round this number to the nearest ten.",
+    "choices": ["230", "240", "300", "200"],
+    "correctAnswer": "230",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest ten, hundred, or thousand"
+},
+{
+    "text": "A school library has 1,472 books. Round this number to the nearest hundred.",
+    "choices": ["1400", "1470", "1500", "1300"],
+    "correctAnswer": "1500",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest ten, hundred, or thousand"
+},
+{
+    "text": "The distance between two towns is 7,346 kilometers. Round this number to the nearest thousand.",
+    "choices": ["8,000", "7,300", "7,400", "7,000"],
+    "correctAnswer": "7,000",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest ten, hundred, or thousand"
+},
+{
+    "text": "A company produced 865 toys in a day. Round this number to the nearest hundred.",
+    "choices": ["800", "900", "870", "860"],
+    "correctAnswer": "900",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest ten, hundred, or thousand"
+},
+{
+    "text": "The attendance at a concert was 5,429 people. Round this number to the nearest ten.",
+    "choices": ["5420", "5400", "5430", "5500"],
+    "correctAnswer": "5430",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest ten, hundred, or thousand"
+},
+{
+    "text": "A factory produced 19,257 units in a month. Round this number to the nearest thousand.",
+    "choices": ["19000", "19300", "19100", "19200"],
+    "correctAnswer": "19200",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest ten, hundred, or thousand"
+},
+{
+    "text": "A car dealership sold 1,137 cars in a year. Round this number to the nearest hundred.",
+    "choices": ["1100", "1130", "1200", "1140"],
+    "correctAnswer": "1200",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest ten, hundred, or thousand"
+},
+{
+    "text": "The population of a small town is 23,867 people. Round this number to the nearest ten.",
+    "choices": ["23860", "23870", "23800", "24000"],
+    "correctAnswer": "23870",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest ten, hundred, or thousand"
+},
+{
+    "text": "A bakery made 482 cakes last month. Round this number to the nearest ten.",
+    "choices": ["480", "490", "500", "470"],
+    "correctAnswer": "480",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest ten, hundred, or thousand"
+},
+{
+    "text": "A stadium has a seating capacity of 12,749 seats. Round this number to the nearest thousand.",
+    "choices": ["12,700", "13,000", "12,800", "12,000"],
+    "correctAnswer": "13,000",
+    "score": 1,
+    "assessmentTitle": "Round numbers to the nearest ten, hundred, or thousand"
+},
+{
+    "text": "What is the place value of the digit 7 in the number 745,392?",
+    "choices": ["Ten thousand", "Hundred thousand", "Thousand", "Ten"],
+    "correctAnswer": "Hundred thousand",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 6-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What is the value of the digit 6 in the number 863,451?",
+    "choices": ["600", "60,000", "6,000", "600,000"],
+    "correctAnswer": "600,000",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 6-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What digit is in the hundreds place in the number 905,763?",
+    "choices": ["5", "7", "6", "9"],
+    "correctAnswer": "6",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 6-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What is the place value of the digit 3 in the number 532,184?",
+    "choices": ["Hundreds", "Ten thousands", "Thousands", "Tens"],
+    "correctAnswer": "Thousands",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 6-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What is the value of the digit 2 in the number 962,485?",
+    "choices": ["200", "20,000", "200,000", "2,000"],
+    "correctAnswer": "2,000",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 6-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What is the digit in the ten-thousands place in the number 782,654?",
+    "choices": ["7", "8", "6", "5"],
+    "correctAnswer": "8",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 6-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What is the place value of the digit 5 in the number 564,391?",
+    "choices": ["Ten", "Ten thousand", "Hundred thousand", "Thousands"],
+    "correctAnswer": "Thousands",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 6-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What digit is in the ten-thousands place in the number 912,478?",
+    "choices": ["9", "1", "2", "7"],
+    "correctAnswer": "1",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 6-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What is the value of the digit 1 in the number 1,234,567?",
+    "choices": ["1", "10", "1,000", "100,000"],
+    "correctAnswer": "100,000",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 6-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What is the digit in the hundreds place in the number 723,461?",
+    "choices": ["7", "6", "4", "3"],
+    "correctAnswer": "4",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 6-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "In the number 4826, what is the place value of the digit 8?",
+    "choices": ["Thousands", "Hundreds", "Tens", "Ones"],
+    "correctAnswer": "Hundreds",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 4-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What is the value of the digit 3 in the number 3125?",
+    "choices": ["3000", "300", "30", "3"],
+    "correctAnswer": "3000",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 4-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "In the number 9741, what is the digit in the tens place?",
+    "choices": ["9", "7", "4", "1"],
+    "correctAnswer": "4",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 4-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What is the place value of the digit 9 in the number 2109?",
+    "choices": ["Thousands", "Hundreds", "Tens", "Ones"],
+    "correctAnswer": "Ones",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 4-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "In the number 6842, what is the value of the digit in the hundreds place?",
+    "choices": ["800", "80", "40", "842"],
+    "correctAnswer": "800",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 4-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What is the digit in the tens place in the number 1726?",
+    "choices": ["1", "7", "2", "6"],
+    "correctAnswer": "2",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 4-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "In the number 1652 what is the value of the digit 6?",
+    "choices": ["6000", "600", "60", "6"],
+    "correctAnswer": "600",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 4-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What is the place value of the digit 4 in the number 4936?",
+    "choices": ["Thousands", "Hundreds", "Tens", "Ones"],
+    "correctAnswer": "Thousands",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 4-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "In the number 8763, what is the digit in the ones place?",
+    "choices": ["8", "7", "6", "3"],
+    "correctAnswer": "3",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 4-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What is the value of 7 in the number 5172?",
+    "choices": ["7000", "700", "70", "7"],
+    "correctAnswer": "70",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 4-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What is the place value of the digit 5 in the number 356?",
+    "choices": ["Hundreds", "Tens", "Ones", "Thousands"],
+    "correctAnswer": "Tens",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 3-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What is the place value of the digit 7 in the number 472?",
+    "choices": ["Ones", "Tens", "Hundreds", "Thousands"],
+    "correctAnswer": "Hundreds",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 3-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "In the number 189, what is the place value of the digit 9?",
+    "choices": ["Hundreds", "Tens", "Thousands", "Ones"],
+    "correctAnswer": "Ones",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 3-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What is the value of the digit 6 in the number 463?",
+    "choices": ["600", "60", "6", "63"],
+    "correctAnswer": "60",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 3-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What is the value of the digit 4 in the number 841?",
+    "choices": ["4", "40", "401", "400"],
+    "correctAnswer": "400",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 3-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "In the number 729, what is the value of the digit 2?",
+    "choices": ["2", "20", "200", "29"],
+    "correctAnswer": "20",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 3-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "In the number 587, what is the digit in the hundreds place?",
+    "choices": ["5", "8", "7", "6"],
+    "correctAnswer": "5",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 3-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What digit is in the units place of the number 312?",
+    "choices": ["3", "1", "2", "0"],
+    "correctAnswer": "2",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 3-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What digit is in the tens place of the number 946?",
+    "choices": ["4", "6", "9", "5"],
+    "correctAnswer": "4",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 3-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "In the number 834, what is the place value of the digit 3?",
+    "choices": ["Hundreds", "Tens", "Ones", "Thousands"],
+    "correctAnswer": "Tens",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 3-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What is the place value of the digit 4 in the number 43?",
+    "choices": ["Ones", "Tens", "Hundreds", "Thousands"],
+    "correctAnswer": "Tens",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 2-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "In the number 59, what is the place value of the digit 9?",
+    "choices": ["Ones", "Tens", "Hundreds", "Thousands"],
+    "correctAnswer": "Ones",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 2-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Which digit is in the tens place in the number 68?",
+    "choices": ["8", "5", "6", "4"],
+    "correctAnswer": "6",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 2-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "In the number 24, what is the place value of the digit 4?",
+    "choices": ["Ones", "Tens", "Hundreds", "Thousands"],
+    "correctAnswer": "Ones",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 2-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Which digit is in the ones place in the number 34?",
+    "choices": ["1", "2", "3", "4"],
+    "correctAnswer": "4",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 2-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "In the number 71, what is the place value of the digit 1?",
+    "choices": ["Ones", "Tens", "Hundreds", "Thousands"],
+    "correctAnswer": "Ones",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 2-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "In the number 53, what is the place value of the digit 5?",
+    "choices": ["Ones", "Tens", "Hundreds", "Thousands"],
+    "correctAnswer": "Tens",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 2-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "A number has 2 in the tens place and 2 in the ones place. What is the number?",
+    "choices": ["12", "22", "32", "42"],
+    "correctAnswer": "22",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 2-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "A number has 6 in the ones place and 1 in the tens place. What is the number?",
+    "choices": ["61", "16", "76", "17"],
+    "correctAnswer": "16",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 2-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "A number has 4 in the tens place and 5 in the ones place. What is the number?",
+    "choices": ["45", "54", "95", "94"],
+    "correctAnswer": "45",
+    "score": 1,
+    "assessmentTitle": "Determine the place value of a digit in a 2-digit number, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What is the decomposition of 45 into tens and ones?",
+    "choices": ["5 tens and 4 ones", "4 tens and 5 ones", "40 tens and 5 ones", "50 tens and 4 ones"],
+    "correctAnswer": "4 tens and 5 ones",
+    "score": 1,
+    "assessmentTitle": "Decompose any 2-digit number into tens and ones, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "How can you decompose the number 73 into tens and ones?",
+    "choices": ["70 tens and 3 ones", "30 tens and 7 ones", "7 tens and 3 ones", "3 tens and 7 ones"],
+    "correctAnswer": "7 tens and 3 ones",
+    "score": 1,
+    "assessmentTitle": "Decompose any 2-digit number into tens and ones, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "The number 86 can be broken into which of the following?",
+    "choices": ["80 and 6", "8 tens and 6 ones", "Both A and B", "None of the above"],
+    "correctAnswer": "Both A and B",
+    "score": 1,
+    "assessmentTitle": "Decompose any 2-digit number into tens and ones, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Which of the following represents the decomposition of 23?",
+    "choices": ["20 and 3", "2 tens and 3 ones", "Both A and B", "None of the above"],
+    "correctAnswer": "Both A and B",
+    "score": 1,
+    "assessmentTitle": "Decompose any 2-digit number into tens and ones, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "How can you decompose the number 52 into tens and ones?",
+    "choices": ["20 tens and 5 ones", "5 tens and 2 ones", "2 tens and 5 ones", "50 tens and 2 ones"],
+    "correctAnswer": "5 tens and 2 ones",
+    "score": 1,
+    "assessmentTitle": "Decompose any 2-digit number into tens and ones, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Decompose the number 91. Which is correct?",
+    "choices": ["90 and 1", "9 tens and 1 one", "Both A and B", "900 and 10"],
+    "correctAnswer": "Both A and B",
+    "score": 1,
+    "assessmentTitle": "Decompose any 2-digit number into tens and ones, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Which number is composed of 8 tens and 2 ones?",
+    "choices": ["82", "28", "83", "820"],
+    "correctAnswer": "82",
+    "score": 1,
+    "assessmentTitle": "Decompose any 2-digit number into tens and ones, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Which number is composed of 3 tens and 7 ones?",
+    "choices": ["73", "77", "33", "37"],
+    "correctAnswer": "37",
+    "score": 1,
+    "assessmentTitle": "Decompose any 2-digit number into tens and ones, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Which number is composed of 4 ones and 6 tens?",
+    "choices": ["46", "64", "45", "66"],
+    "correctAnswer": "64",
+    "score": 1,
+    "assessmentTitle": "Decompose any 2-digit number into tens and ones, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Which number is composed of 3 ones and 3 tens?",
+    "choices": ["13", "23", "33", "43"],
+    "correctAnswer": "33",
+    "score": 1,
+    "assessmentTitle": "Decompose any 2-digit number into tens and ones, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Which of the following is NOT a way to make 6?",
+    "choices": ["3 and 3", "4 and 2", "6 and 0", "5 and 0"],
+    "correctAnswer": "5 and 0",
+    "score": 1,
+    "assessmentTitle": "Compose and decompose numbers up to 10 using concrete materials, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "If you have four blocks, which combination shows 4?",
+    "choices": ["2 and 1", "3 and 2", "2 and 2", "1 and 2"],
+    "correctAnswer": "2 and 2",
+    "score": 1,
+    "assessmentTitle": "Compose and decompose numbers up to 10 using concrete materials, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Which of the following is a way to make 7?",
+    "choices": ["3 and 2", "4 and 3", "5 and 1", "6 and 2"],
+    "correctAnswer": "4 and 3",
+    "score": 1,
+    "assessmentTitle": "Compose and decompose numbers up to 10 using concrete materials, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Which of these combinations does NOT make 8?",
+    "choices": ["6 and 3", "4 and 4", "5 and 3", "7 and 1"],
+    "correctAnswer": "6 and 3",
+    "score": 1,
+    "assessmentTitle": "Compose and decompose numbers up to 10 using concrete materials, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Which of the following is a way to make 5?",
+    "choices": ["2 and 4", "2 and 3", "4 and 0", "6 and 0"],
+    "correctAnswer": "2 and 3",
+    "score": 1,
+    "assessmentTitle": "Compose and decompose numbers up to 10 using concrete materials, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "How can you make the number 10?",
+    "choices": ["2 and 8", "3 and 7", "Both A and B", "None of the above"],
+    "correctAnswer": "Both A and B",
+    "score": 1,
+    "assessmentTitle": "Compose and decompose numbers up to 10 using concrete materials, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Which of the following is a way to make 9?",
+    "choices": ["3 and 6", "7 and 1", "4 and 6", "5 and 3"],
+    "correctAnswer": "3 and 6",
+    "score": 1,
+    "assessmentTitle": "Compose and decompose numbers up to 10 using concrete materials, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "How can you make the number 4?",
+    "choices": ["2 and 2", "3 and 0", "Both A and B", "None of the above"],
+    "correctAnswer": "2 and 2",
+    "score": 1,
+    "assessmentTitle": "Compose and decompose numbers up to 10 using concrete materials, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "How can you make the number 3?",
+    "choices": ["1 and 2", "3 and 0", "Both A and B", "None of the above"],
+    "correctAnswer": "Both A and B",
+    "score": 1,
+    "assessmentTitle": "Compose and decompose numbers up to 10 using concrete materials, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "How can you make the number 5?",
+    "choices": ["1 and 2", "3 and 0", "Both A and B", "None of the above"],
+    "correctAnswer": "None of the above",
+    "score": 1,
+    "assessmentTitle": "Compose and decompose numbers up to 10 using concrete materials, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "What is the sum of 1/4 + 2/3?",
+    "choices": ["3/7", "9/12", "11/12", "5/8"],
+    "correctAnswer": "11/12",
+    "score": 1,
+    "assessmentTitle": "Add and subtract dissimilar fractions using models, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Subtract: 5/6 - 1/4",
+    "choices": ["1/3", "7/12", "2/5", "1/2"],
+    "correctAnswer": "7/12",
+    "score": 1,
+    "assessmentTitle": "Add and subtract dissimilar fractions using models, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Add the mixed numbers: 2 1/3 + 3 1/2",
+    "choices": ["5 4/5", "5 5/6", "5 2/3", "5 5/6"],
+    "correctAnswer": "5 5/6",
+    "score": 1,
+    "assessmentTitle": "Add and subtract dissimilar fractions using models, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Subtract the mixed numbers: 7 3/5 - 2 1/4",
+    "choices": ["5 7/20", "5 3/10", "5 7/10", "4 1/2"],
+    "correctAnswer": "5 7/20",
+    "score": 1,
+    "assessmentTitle": "Add and subtract dissimilar fractions using models, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Add a mixed number and a proper fraction: 3 3/5 + 1/2",
+    "choices": ["4 1/5", "4 1/10", "4 3/10", "3 4/5"],
+    "correctAnswer": "4 1/10",
+    "score": 1,
+    "assessmentTitle": "Add and subtract dissimilar fractions using models, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Subtract a mixed number and a proper fraction: 6 2/3 - 3/4",
+    "choices": ["5 5/10", "5 5/12", "5 1/3", "6 1/2"],
+    "correctAnswer": "5 11/12",
+    "score": 1,
+    "assessmentTitle": "Add and subtract dissimilar fractions using models, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Add a whole number and a proper fraction: 8 + 3/5",
+    "choices": ["8 2/5", "9 1/5", "8 3/5", "7 4/5"],
+    "correctAnswer": "8 3/5",
+    "score": 1,
+    "assessmentTitle": "Add and subtract dissimilar fractions using models, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Subtract a whole number and a proper fraction: 10 - 4/9",
+    "choices": ["9 5/9", "9 4/9", "10 4/9", "9 3/4"],
+    "correctAnswer": "9 5/9",
+    "score": 1,
+    "assessmentTitle": "Add and subtract dissimilar fractions using models, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Add a whole number and a mixed number: 5 + 2 2/7",
+    "choices": ["7 1/7", "7 2/7", "6 3/7", "6 5/7"],
+    "correctAnswer": "7 2/7",
+    "score": 1,
+    "assessmentTitle": "Add and subtract dissimilar fractions using models, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Subtract a whole number and a mixed number: 9 - 4 3/8",
+    "choices": ["5 1/2", "4 5/8", "4 3/8", "4 5/8"],
+    "correctAnswer": "4 5/8",
+    "score": 1,
+    "assessmentTitle": "Add and subtract dissimilar fractions using models, its value, and the digit of a number, given its place value"
+},
+{
+    "text": "Which of the following is true for the fraction: 3/4 ? 5/8 ?",
+    "choices": ["3/4 > 5/8", "3/4 = 5/8", "3/4 < 5/8", "None of the above"],
+    "correctAnswer": "3/4 > 5/8",
+    "score": 2,
+    "assessmentTitle": "Compare dissimilar fractions using the symbols =, >, and <"
+},
+{
+    "text": "Which of the following is true for the fraction: 7/9 ? 4/5 ?",
+    "choices": ["7/9 > 4/5", "7/9 = 4/5", "7/9 < 4/5", "None of the above"],
+    "correctAnswer": "7/9 < 4/5",
+    "score": 2,
+    "assessmentTitle": "Compare dissimilar fractions using the symbols =, >, and <"
+},
+{
+    "text": "Which of the following is true for the fraction: 5/12 ? 2/5 ?",
+    "choices": ["5/12 > 2/5", "5/12 = 2/5", "5/12 < 2/5", "None of the above"],
+    "correctAnswer": "5/12 > 2/5",
+    "score": 2,
+    "assessmentTitle": "Compare dissimilar fractions using the symbols =, >, and <"
+},
+{
+    "text": "Which of the following is true for the fraction: 2/5 ? 3/4 ?",
+    "choices": ["2/5 > 3/4", "2/5 = 3/4", "2/5 < 3/4", "None of the above"],
+    "correctAnswer": "2/5 < 3/4",
+    "score": 2,
+    "assessmentTitle": "Compare dissimilar fractions using the symbols =, >, and <"
+},
+{
+    "text": "Which of the following is true for the fraction: 2/5 ? 4/6 ?",
+    "choices": ["2/5 > 4/6", "2/5 = 4/6", "2/5 < 4/6", "None of the above"],
+    "correctAnswer": "2/5 < 4/6",
+    "score": 2,
+    "assessmentTitle": "Compare dissimilar fractions using the symbols =, >, and <"
+},
+{
+    "text": "Which fraction is greater: 1/2 or 1/4?",
+    "choices": ["1/2", "1/4", "Both are equal", "Cannot be determined"],
+    "correctAnswer": "1/2",
+    "score": 2,
+    "assessmentTitle": "Compare 1/2 & 1/4 fractions"
+},
+{
+    "text": "If Alice eats 1/4 of a cake and Bella eats 1/2 of a cake, who eats more cake?",
+    "choices": ["Alice", "Bella", "Both are equal", "Cannot be determined"],
+    "correctAnswer": "Bella",
+    "score": 2,
+    "assessmentTitle": "Compare 1/2 & 1/4 fractions"
+},
+{
+    "text": "Which fraction is equivalent to 0.5?",
+    "choices": ["1/2", "1/4", "Both answers are correct", "None of the above"],
+    "correctAnswer": "1/2",
+    "score": 2,
+    "assessmentTitle": "Compare 1/2 & 1/4 fractions"
+},
+{
+    "text": "Which fraction is equivalent to 0.25?",
+    "choices": ["1/2", "1/4", "Both answers are correct", "None of the above"],
+    "correctAnswer": "1/4",
+    "score": 2,
+    "assessmentTitle": "Compare 1/2 & 1/4 fractions"
+},
+{
+    "text": "How many 1/4s are in 1/2?",
+    "choices": ["4", "3", "2", "1"],
+    "correctAnswer": "2",
+    "score": 2,
+    "assessmentTitle": "Compare 1/2 & 1/4 fractions"
+},
+{
+    "text": "What is 0.7 as a fraction?",
+    "choices": ["7/10", "7/100", "70/100", "1/7"],
+    "correctAnswer": "7/10",
+    "score": 1,
+    "assessmentTitle": "Convert decimal numbers to fractions, and fractions with denominators 10 or 100 to decimals"
+},
+{
+    "text": "Convert 3.25 to a fraction.",
+    "choices": ["3 25/10", "3 25/100", "3 5/10", "3 50/100"],
+    "correctAnswer": "3 25/100",
+    "score": 1,
+    "assessmentTitle": "Convert decimal numbers to fractions, and fractions with denominators 10 or 100 to decimals"
+},
+{
+    "text": "What is 45/100 as a decimal?",
+    "choices": ["0.045", "4.5", "0.405", "0.45"],
+    "correctAnswer": "0.45",
+    "score": 1,
+    "assessmentTitle": "Convert decimal numbers to fractions, and fractions with denominators 10 or 100 to decimals"
+},
+{
+    "text": "Convert 0.09 to a fraction.",
+    "choices": ["9/100", "9/10", "90/100", "1/9"],
+    "correctAnswer": "9/100",
+    "score": 1,
+    "assessmentTitle": "Convert decimal numbers to fractions, and fractions with denominators 10 or 100 to decimals"
+},
+{
+    "text": "What is 8/10 as a decimal?",
+    "choices": ["0.08", "8.0", "0.8", "0.880"],
+    "correctAnswer": "0.8",
+    "score": 1,
+    "assessmentTitle": "Convert decimal numbers to fractions, and fractions with denominators 10 or 100 to decimals"
+},
+{
+    "text": "Convert 0.56 to a fraction.",
+    "choices": ["56/10", "56/100", "5/6", "50/60"],
+    "correctAnswer": "56/100",
+    "score": 1,
+    "assessmentTitle": "Convert decimal numbers to fractions, and fractions with denominators 10 or 100 to decimals"
+},
+{
+    "text": "What is 3/100 as a decimal?",
+    "choices": ["0.3", "0.03", "3.00", "0.003"],
+    "correctAnswer": "0.03",
+    "score": 1,
+    "assessmentTitle": "Convert decimal numbers to fractions, and fractions with denominators 10 or 100 to decimals"
+},
+{
+    "text": "Convert 0.4 to a fraction.",
+    "choices": ["4/100", "1/4", "40/100", "4/10"],
+    "correctAnswer": "4/10",
+    "score": 1,
+    "assessmentTitle": "Convert decimal numbers to fractions, and fractions with denominators 10 or 100 to decimals"
+},
+{
+    "text": "What is 75/100 as a decimal?",
+    "choices": ["0.75", "7.5", "0.075", "0.7500"],
+    "correctAnswer": "0.75",
+    "score": 1,
+    "assessmentTitle": "Convert decimal numbers to fractions, and fractions with denominators 10 or 100 to decimals"
+},
+{
+    "text": "Convert 0.12 to a fraction.",
+    "choices": ["12/10", "1/2", "12/100", "120/100"],
+    "correctAnswer": "12/100",
+    "score": 1,
+    "assessmentTitle": "Convert decimal numbers to fractions, and fractions with denominators 10 or 100 to decimals"
+},
+{
+    "text": "If you combine 1/2 and 1/2, what is the total?",
+    "choices": ["2/2", "1", "Both answers are correct", "None of the above"],
+    "correctAnswer": "Both answers are correct",
+    "score": 2,
+    "assessmentTitle": "Count 1/2 & 1/4 fractions"
+},
+{
+    "text": "If you combine 1/4 and 1/4, what is the total?",
+    "choices": ["2/4", "1/2", "1/4", "Both A and B"],
+    "correctAnswer": "Both A and B",
+    "score": 2,
+    "assessmentTitle": "Count 1/2 & 1/4 fractions"
+},
+{
+    "text": "How many 1/4s make a whole?",
+    "choices": ["4", "3", "2", "1"],
+    "correctAnswer": "4",
+    "score": 2,
+    "assessmentTitle": "Count 1/2 & 1/4 fractions"
+},
+{
+    "text": "If Kate has 1/2 of a cake and she eats 1/4, how much is left?",
+    "choices": ["1/2", "1/4", "1", "0"],
+    "correctAnswer": "1/4",
+    "score": 2,
+    "assessmentTitle": "Count 1/2 & 1/4 fractions"
+},
+{
+    "text": "What is 1/2 + 1/2?",
+    "choices": ["4", "3", "2", "1"],
+    "correctAnswer": "1",
+    "score": 2,
+    "assessmentTitle": "Count 1/2 & 1/4 fractions"
+},
+{
+    "text": "Which fraction is equivalent to 3/4?",
+    "choices": ["6/8", "5/6", "9/10", "2/5"],
+    "correctAnswer": "6/8",
+    "score": 2,
+    "assessmentTitle": "Determine equivalent fractions"
+},
+{
+    "text": "What is an equivalent fraction for 5/6?",
+    "choices": ["10/13", "15/20", "10/12", "10/30"],
+    "correctAnswer": "10/12",
+    "score": 2,
+    "assessmentTitle": "Determine equivalent fractions"
+},
+{
+    "text": "Which fraction is NOT equivalent to 2/5?",
+    "choices": ["4/10", "6/15", "5/12", "8/20"],
+    "correctAnswer": "5/12",
+    "score": 2,
+    "assessmentTitle": "Determine equivalent fractions"
+},
+{
+    "text": "Which of the following fractions is equivalent to 7/9?",
+    "choices": ["9/16", "10/15", "21/25", "14/18"],
+    "correctAnswer": "14/18",
+    "score": 2,
+    "assessmentTitle": "Determine equivalent fractions"
+},
+{
+    "text": "What is an equivalent fraction for 4/7?",
+    "choices": ["6/9", "8/14", "10/16", "9/12"],
+    "correctAnswer": "8/14",
+    "score": 2,
+    "assessmentTitle": "Determine equivalent fractions"
+},
+{
+    "text": "What is the place value of the digit 7 in the number 4.76?",
+    "choices": ["Tenths", "Hundredths", "Ones", "Thousandths"],
+    "correctAnswer": "Tenths",
+    "score": 1,
+    "assessmentTitle": "Determine the Place Value of Decimals"
+},
+{
+    "text": "In the number 12.85, what is the value of the digit 5?",
+    "choices": ["5", "0.5", "0.05", "50"],
+    "correctAnswer": "0.05",
+    "score": 1,
+    "assessmentTitle": "Determine the Place Value of Decimals"
+},
+{
+    "text": "Which digit is in the hundredths place in the number 9.34?",
+    "choices": ["9", "3", "4", "0"],
+    "correctAnswer": "4",
+    "score": 1,
+    "assessmentTitle": "Determine the Place Value of Decimals"
+},
+{
+    "text": "In the number 56.09, what is the place value of the digit 9?",
+    "choices": ["Tenths", "Hundredths", "Ones", "Thousandths"],
+    "correctAnswer": "Hundredths",
+    "score": 1,
+    "assessmentTitle": "Determine the Place Value of Decimals"
+},
+{
+    "text": "What is the value of the digit 3 in the number 7.38?",
+    "choices": ["3", "30", "0.03", "0.3"],
+    "correctAnswer": "0.3",
+    "score": 1,
+    "assessmentTitle": "Determine the Place Value of Decimals"
+},
+{
+    "text": "In the number 4.92, which digit is in the tenths place?",
+    "choices": ["4", "9", "2", "0"],
+    "correctAnswer": "9",
+    "score": 1,
+    "assessmentTitle": "Determine the Place Value of Decimals"
+},
+{
+    "text": "What is the place value of the digit 8 in the number 23.87?",
+    "choices": ["Tenths", "Ones", "Hundredths", "Tens"],
+    "correctAnswer": "Tenths",
+    "score": 1,
+    "assessmentTitle": "Determine the Place Value of Decimals"
+},
+{
+    "text": "What is the value of the digit 6 in the number 15.06?",
+    "choices": ["6", "0.6", "0.06", "60"],
+    "correctAnswer": "0.06",
+    "score": 1,
+    "assessmentTitle": "Determine the Place Value of Decimals"
+},
+{
+    "text": "In the number 42.73, which digit is in the hundredths place?",
+    "choices": ["2", "7", "4", "3"],
+    "correctAnswer": "3",
+    "score": 1,
+    "assessmentTitle": "Determine the Place Value of Decimals"
+},
+{
+    "text": "What is the value of the digit 2 in the number 98.25?",
+    "choices": ["2", "0.2", "0.02", "20"],
+    "correctAnswer": "0.2",
+    "score": 1,
+    "assessmentTitle": "Determine the Place Value of Decimals"
+},
+{
+    "text": "Order the fractions from smallest to largest: 1/4, 2/3, 3/8",
+    "choices": ["1/4, 3/8, 2/3", "2/3, 3/8, 1/4", "3/8, 1/4, 2/3", "1/4, 2/3, 3/8"],
+    "correctAnswer": "1/4, 3/8, 2/3",
+    "score": 1,
+    "assessmentTitle": "Order dissimilar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Which of the following lists is ordered from largest to smallest? 3/5, 1/2, 5/8",
+    "choices": ["5/8, 3/5, 1/2", "3/5, 5/8, 1/2", "1/2, 3/5, 5/8", "3/5, 1/2, 5/8"],
+    "correctAnswer": "3/5, 5/8, 1/2",
+    "score": 1,
+    "assessmentTitle": "Order dissimilar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Arrange the fractions in descending order: 7/12, 1/3, 3/4",
+    "choices": ["3/4, 1/3, 7/12", "1/3, 7/12, 3/4", "3/4, 7/12, 1/3", "7/12, 3/4, 1/3"],
+    "correctAnswer": "3/4, 7/12, 1/3",
+    "score": 1,
+    "assessmentTitle": "Order dissimilar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Order from smallest to largest: 5/6, 2/7, 3/4",
+    "choices": ["5/6, 3/4, 2/7", "2/7, 3/4, 5/6", "3/4, 5/6, 2/7", "2/7, 5/6, 3/4"],
+    "correctAnswer": "2/7, 3/4, 5/6",
+    "score": 1,
+    "assessmentTitle": "Order dissimilar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Which fraction is the smallest? 4/9, 2/5, 1/2",
+    "choices": ["1/2", "4/9", "2/5", "None of the above"],
+    "correctAnswer": "2/5",
+    "score": 1,
+    "assessmentTitle": "Order dissimilar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Which fraction is the greatest? 5/9, 2/3, 7/12",
+    "choices": ["2/3", "5/9", "7/12", "None of the above"],
+    "correctAnswer": "2/3",
+    "score": 1,
+    "assessmentTitle": "Order dissimilar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Arrange from largest to smallest: 1/6, 1/2, 3/5",
+    "choices": ["1/2, 3/5, 1/6", "3/5, 1/6, 1/2", "1/6, 1/2, 3/5", "3/5, 1/2, 1/6"],
+    "correctAnswer": "3/5, 1/2, 1/6",
+    "score": 1,
+    "assessmentTitle": "Order dissimilar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Order from smallest to largest: 1/8, 3/10, 2/9",
+    "choices": ["2/9, 1/8, 3/10", "1/8, 2/9, 3/10", "3/10, 2/9, 1/8", "1/8, 3/10, 2/9"],
+    "correctAnswer": "1/8, 2/9, 3/10",
+    "score": 1,
+    "assessmentTitle": "Order dissimilar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Arrange the fractions in ascending order: 7/10, 3/8, 5/12",
+    "choices": ["5/12, 3/8, 7/10", "3/8, 5/12, 7/10", "7/10, 3/8, 5/12", "3/8, 7/10, 5/12"],
+    "correctAnswer": "5/12, 3/8, 7/10",
+    "score": 1,
+    "assessmentTitle": "Order dissimilar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Which of these is the correct order from largest to smallest? 5/11, 2/3, 4/9",
+    "choices": ["4/9, 2/3, 5/11", "5/11, 4/9, 2/3", "2/3, 5/11, 4/9", "2/3, 4/9, 5/11"],
+    "correctAnswer": "2/3, 5/11, 4/9",
+    "score": 1,
+    "assessmentTitle": "Order dissimilar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Arrange the fractions 3/8, 5/8, and 1/8 from smallest to largest.",
+    "choices": ["1/8, 3/8, 5/8", "5/8, 3/8, 1/8", "3/8, 5/8, 1/8", "1/8, 5/8, 3/8"],
+    "correctAnswer": "1/8, 3/8, 5/8",
+    "score": 1,
+    "assessmentTitle": "Order similar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Which list shows the fractions 2/9, 5/9, and 4/9 in descending order?",
+    "choices": ["2/9, 4/9, 5/9", "5/9, 2/9, 4/9", "4/9, 2/9, 5/9", "5/9, 4/9, 2/9"],
+    "correctAnswer": "5/9, 4/9, 2/9",
+    "score": 1,
+    "assessmentTitle": "Order similar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Arrange 7/12, 2/12, and 10/12 from smallest to largest.",
+    "choices": ["7/12, 7/12, 2/12", "7/12, 2/12, 10/12", "2/12, 7/12, 10/12", "2/12, 10/12, 7/12"],
+    "correctAnswer": "2/12, 7/12, 10/12",
+    "score": 1,
+    "assessmentTitle": "Order similar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Which set of fractions is in ascending order?",
+    "choices": ["5/7, 2/7, 3/7", "1/6, 3/6, 5/6", "4/8, 6/8, 2/8", "3/5, 5/5, 1/5"],
+    "correctAnswer": "1/6, 3/6, 5/6",
+    "score": 1,
+    "assessmentTitle": "Order similar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Arrange 6/11, 3/11, and 9/11 in descending order.",
+    "choices": ["9/11, 6/11, 3/11", "6/11, 9/11, 3/11", "3/11, 6/11, 9/11", "9/11, 3/11, 6/11"],
+    "correctAnswer": "9/11, 6/11, 3/11",
+    "score": 1,
+    "assessmentTitle": "Order similar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Which of the following is the correct order from largest to smallest?",
+    "choices": ["1/8, 4/8, 3/8", "6/10, 5/10, 2/10", "3/7, 5/7, 2/7", "2/9, 4/9, 6/9"],
+    "correctAnswer": "6/10, 5/10, 2/10",
+    "score": 1,
+    "assessmentTitle": "Order similar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Arrange 4/13, 1/13, and 7/13 from smallest to largest.",
+    "choices": ["1/13, 4/13, 7/13", "4/13, 7/13, 1/13", "7/13, 4/13, 1/13", "1/13, 7/13, 4/13"],
+    "correctAnswer": "1/13, 4/13, 7/13",
+    "score": 1,
+    "assessmentTitle": "Order similar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "What is the correct descending order for 5/6, 1/6, and 3/6?",
+    "choices": ["1/6, 3/6, 5/6", "1/6, 5/6, 3/6", "5/6, 3/6, 1/6", "3/6, 5/6, 1/6"],
+    "correctAnswer": "5/6, 3/6, 1/6",
+    "score": 1,
+    "assessmentTitle": "Order similar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Which of these fractions is the smallest: 7/15, 11/15, or 5/15?",
+    "choices": ["7/15", "11/15", "5/15", "15/15"],
+    "correctAnswer": "5/15",
+    "score": 1,
+    "assessmentTitle": "Order similar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Arrange 8/14, 3/14, and 6/14 in ascending order.",
+    "choices": ["3/14, 6/14, 8/14", "8/14, 6/14, 3/14", "6/14, 3/14, 8/14", "6/14, 8/14, 3/14"],
+    "correctAnswer": "3/14, 6/14, 8/14",
+    "score": 1,
+    "assessmentTitle": "Order similar fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Which list orders the fractions 1/2, 1/4, 1/8 from smallest to largest?",
+    "choices": ["1/4, 1/8, 1/2", "1/2, 1/4, 1/8", "1/8, 1/4, 1/2", "1/8, 1/2, 1/4"],
+    "correctAnswer": "1/8, 1/4, 1/2",
+    "score": 2,
+    "assessmentTitle": "Order unit fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Order the fractions: 1/5, 1/7, 1/3 from largest to smallest.",
+    "choices": ["1/7, 1/5, 1/3", "1/3, 1/5, 1/7", "1/3, 1/7, 1/5", "1/5, 1/3, 1/7"],
+    "correctAnswer": "1/3, 1/5, 1/7",
+    "score": 2,
+    "assessmentTitle": "Order unit fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Arrange 1/12, 1/4, 1/6, 1/8 from smallest to largest",
+    "choices": ["1/4, 1/12, 1/6, 1/8", "1/8, 1/12, 1/6, 1/4", "1/12, 1/8, 1/6, 1/4", "1/4, 1/6, 1/8, 1/12"],
+    "correctAnswer": "1/12, 1/8, 1/6, 1/4",
+    "score": 2,
+    "assessmentTitle": "Order unit fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Which fraction list is ordered from smallest to largest?",
+    "choices": ["1/5, 1/3, 1/2", "1/6, 1/8, 1/4", "Both are correct", "None of the above"],
+    "correctAnswer": "1/5, 1/3, 1/2",
+    "score": 2,
+    "assessmentTitle": "Order unit fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "Which fraction list is ordered from largest to smallest?",
+    "choices": ["1/2, 1/4, 1/6", "1/3, 1/5, 1/7", "Both are correct", "None of the above"],
+    "correctAnswer": "Both are correct",
+    "score": 2,
+    "assessmentTitle": "Order unit fractions from smallest to largest, and vice versa"
+},
+{
+    "text": "How is 4.75 written in words?",
+    "choices": ["Four and seventy-five hundredths", "Four point seventy-five", "Four and seven-five tenths", "Four seventy-five"],
+    "correctAnswer": "Four and seventy-five hundredths",
+    "score": 1,
+    "assessmentTitle": "Read and write decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "What is the decimal form of 'nine and twenty-eight hundredths'?",
+    "choices": ["9.208", "9.82", "9.28", "9.028"],
+    "correctAnswer": "9.28",
+    "score": 1,
+    "assessmentTitle": "Read and write decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "Which number is equivalent to 6.09?",
+    "choices": ["Six and nine tenths", "Six and ninety hundredths", "Six and nine hundredths", "Sixty and nine"],
+    "correctAnswer": "Six and nine hundredths",
+    "score": 1,
+    "assessmentTitle": "Read and write decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "How is 13.42 written in words?",
+    "choices": ["Thirteen and four hundred twenty", "Thirteen and forty-two hundredths", "Thirteen point forty-two", "Thirteen and two-fifths"],
+    "correctAnswer": "Thirteen and forty-two hundredths",
+    "score": 1,
+    "assessmentTitle": "Read and write decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "What is the decimal form of 'seven and three hundredths'?",
+    "choices": ["7.3", "7.003", "7.30", "7.03"],
+    "correctAnswer": "7.03",
+    "score": 1,
+    "assessmentTitle": "Read and write decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "Which decimal represents 'five and sixty-five hundredths'?",
+    "choices": ["5.06", "5.65", "5.056", "5.605"],
+    "correctAnswer": "5.65",
+    "score": 1,
+    "assessmentTitle": "Read and write decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "How is 0.89 written in words?",
+    "choices": ["Eighty-nine tenths", "Eighty-nine ones", "Eighty-nine hundredths", "Eighty-nine"],
+    "correctAnswer": "Eighty-nine hundredths",
+    "score": 1,
+    "assessmentTitle": "Read and write decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "What is the decimal form of 'fourteen and seven hundredths'?",
+    "choices": ["14.7", "14.07", "14.70", "14.007"],
+    "correctAnswer": "14.07",
+    "score": 1,
+    "assessmentTitle": "Read and write decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "How is 25.30 written in words?",
+    "choices": ["Twenty-five and thirty hundredths", "Twenty-five and three tenths", "Twenty-five point three", "Twenty-five and three hundredths"],
+    "correctAnswer": "Twenty-five and thirty hundredths",
+    "score": 1,
+    "assessmentTitle": "Read and write decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "Which decimal represents 'nineteen and nine hundredths'?",
+    "choices": ["19.90", "19.9", "19.09", "19.009"],
+    "correctAnswer": "19.09",
+    "score": 1,
+    "assessmentTitle": "Read and write decimal numbers with decimal parts to hundredths"
+},
+{
+    "text": "Which of the following fractions is equivalent to 2/4?",
+    "choices": ["1/3", "1/4", "1/2", "None of the above"],
+    "correctAnswer": "1/2",
+    "score": 2,
+    "assessmentTitle": "Read and write similar fractions in fraction notation"
+},
+{
+    "text": "Which of the following fractions is similar to 3/6?",
+    "choices": ["1/2", "2/4", "Both A and B", "None of the above"],
+    "correctAnswer": "Both A and B",
+    "score": 2,
+    "assessmentTitle": "Read and write similar fractions in fraction notation"
+},
+{
+    "text": "What is the simplest form of 5/10?",
+    "choices": ["2/4", "3/6", "4/8", "None of the above"],
+    "correctAnswer": "None of the above",
+    "score": 2,
+    "assessmentTitle": "Read and write similar fractions in fraction notation"
+},
+{
+    "text": "Which of these fractions is NOT similar to 1/3?",
+    "choices": ["3/9", "4/8", "4/12", "Cannot be determined"],
+    "correctAnswer": "4/8",
+    "score": 2,
+    "assessmentTitle": "Read and write similar fractions in fraction notation"
+},
+{
+    "text": "Write 4/8 in simplest form.",
+    "choices": ["2/4", "1/2", "1/4", "1/3"],
+    "correctAnswer": "1/2",
+    "score": 2,
+    "assessmentTitle": "Read and write similar fractions in fraction notation"
+},
+{
+    "text": "Which of the following is the correct fraction notation for 'one-half'?",
+    "choices": ["1/4", "1/3", "1/2", "2/3"],
+    "correctAnswer": "1/2",
+    "score": 1,
+    "assessmentTitle": "Read and write unit fractions in fraction notation"
+},
+{
+    "text": "How would you write 'one-fifth' in fraction notation?",
+    "choices": ["1/2", "1/5", "1/3", "1/4"],
+    "correctAnswer": "1/5",
+    "score": 1,
+    "assessmentTitle": "Read and write unit fractions in fraction notation"
+},
+{
+    "text": "What is 'one-third' in fraction notation?",
+    "choices": ["1/2", "1/5", "1/3", "1/4"],
+    "correctAnswer": "1/3",
+    "score": 1,
+    "assessmentTitle": "Read and write unit fractions in fraction notation"
+},
+{
+    "text": "Which fraction represents 'one-fourth'?",
+    "choices": ["1/2", "1/5", "1/3", "1/4"],
+    "correctAnswer": "1/4",
+    "score": 1,
+    "assessmentTitle": "Read and write unit fractions in fraction notation"
+},
+{
+    "text": "How would you write 'one-eighth' in fraction notation?",
+    "choices": ["1/5", "1/6", "1/4", "1/8"],
+    "correctAnswer": "1/8",
+    "score": 1,
+    "assessmentTitle": "Read and write unit fractions in fraction notation"
+},
+{
+    "text": "What is 'one-sixth' in fraction notation?",
+    "choices": ["1/5", "1/6", "1/4", "1/8"],
+    "correctAnswer": "1/6",
+    "score": 1,
+    "assessmentTitle": "Read and write unit fractions in fraction notation"
+},
+{
+    "text": "What fraction corresponds to 'one-fifth'?",
+    "choices": ["1/5", "1/6", "1/4", "1/8"],
+    "correctAnswer": "1/5",
+    "score": 1,
+    "assessmentTitle": "Read and write unit fractions in fraction notation"
+},
+{
+    "text": "Which of the following is a unit fraction?",
+    "choices": ["2/3", "1/3", "3/4", "5/6"],
+    "correctAnswer": "1/3",
+    "score": 1,
+    "assessmentTitle": "Read and write unit fractions in fraction notation"
+},
+{
+    "text": "Which of the following is a unit fraction?",
+    "choices": ["1/8", "1/2", "Both A and B", "None of the above"],
+    "correctAnswer": "Both A and B",
+    "score": 1,
+    "assessmentTitle": "Read and write unit fractions in fraction notation"
+},
+{
+    "text": "Which of the following is NOT a unit fraction?",
+    "choices": ["1/4", "1/5", "Both A and B", "None of the above"],
+    "correctAnswer": "None of the above",
+    "score": 1,
+    "assessmentTitle": "Read and write unit fractions in fraction notation"
+},
+{
+    "text": "What is the simplest form of 12/16?",
+    "choices": ["6/8", "3/4", "4/6", "2/3"],
+    "correctAnswer": "3/4",
+    "score": 2,
+    "assessmentTitle": "Reduce fractions to simplest form"
+},
+{
+    "text": "Reduce 18/27 to its simplest form.",
+    "choices": ["6/9", "9/12", "2/3", "4/5"],
+    "correctAnswer": "2/3",
+    "score": 2,
+    "assessmentTitle": "Reduce fractions to simplest form"
+},
+{
+    "text": "What is the simplest form of 24/36?",
+    "choices": ["4/6", "3/5", "6/9", "2/3"],
+    "correctAnswer": "2/3",
+    "score": 2,
+    "assessmentTitle": "Reduce fractions to simplest form"
+},
+{
+    "text": "Reduce 45/60 to its simplest form.",
+    "choices": ["3/4", "5/6", "3/5", "2/3"],
+    "correctAnswer": "3/5",
+    "score": 2,
+    "assessmentTitle": "Reduce fractions to simplest form"
+},
+{
+    "text": "What is the simplest form of 50/100?",
+    "choices": ["1/2", "2/4", "5/10", "2/3"],
+    "correctAnswer": "1/2",
+    "score": 2,
+    "assessmentTitle": "Reduce fractions to simplest form"
+},
+{
+    "text": "A number line is divided into 8 equal parts. If the point is located at 4/8, which fraction is equivalent?",
+    "choices": ["2/3", "1/2", "3/4", "None of the above"],
+    "correctAnswer": "1/2",
+    "score": 2,
+    "assessmentTitle": "Represent and identify similar fractions with denominators 2, 3, 4, 5, 6, and 8 using groups of objects, fraction charts, fraction tiles, and the number line"
+},
+{
+    "text": "On a fraction chart, 6/8 is shaded. What is the similar fraction in simplest form?",
+    "choices": ["3/4", "4/6", "2/3", "None of the above"],
+    "correctAnswer": "3/4",
+    "score": 2,
+    "assessmentTitle": "Represent and identify similar fractions with denominators 2, 3, 4, 5, 6, and 8 using groups of objects, fraction charts, fraction tiles, and the number line"
+},
+{
+    "text": "If 16 tiles are grouped into 4 equal groups, what fraction represents 1 group?",
+    "choices": ["4/12", "1/4", "3/4", "None of the above"],
+    "correctAnswer": "1/4",
+    "score": 2,
+    "assessmentTitle": "Represent and identify similar fractions with denominators 2, 3, 4, 5, 6, and 8 using groups of objects, fraction charts, fraction tiles, and the number line"
+},
+{
+    "text": "If 4 out of 12 pizza slices were eaten, what fraction in simplest form represents the eaten slices?",
+    "choices": ["1/3", "4/12", "2/3", "None of the above"],
+    "correctAnswer": "1/3",
+    "score": 2,
+    "assessmentTitle": "Represent and identify similar fractions with denominators 2, 3, 4, 5, 6, and 8 using groups of objects, fraction charts, fraction tiles, and the number line"
+},
+{
+    "text": "If 4 out of 12 pizza slices were eaten, what fraction in simplest form represents the remaining slices?",
+    "choices": ["1/3", "4/12", "2/3", "None of the above"],
+    "correctAnswer": "2/3",
+    "score": 2,
+    "assessmentTitle": "Represent and identify similar fractions with denominators 2, 3, 4, 5, 6, and 8 using groups of objects, fraction charts, fraction tiles, and the number line"
+},
+{
+    "text": "Which of the following is a unit fraction?",
+    "choices": ["1/4", "2/3", "3/5", "3/4"],
+    "correctAnswer": "1/4",
+    "score": 1,
+    "assessmentTitle": "Represent and identify unit fractions with denominators 2, 3, 4, 5, 6, and 8"
+},
+{
+    "text": "What is the denominator of 1/5?",
+    "choices": ["1", "5", "4", "6"],
+    "correctAnswer": "5",
+    "score": 1,
+    "assessmentTitle": "Represent and identify unit fractions with denominators 2, 3, 4, 5, 6, and 8"
+},
+{
+    "text": "What is the numerator of 2/3?",
+    "choices": ["3", "1", "2", "5"],
+    "correctAnswer": "2",
+    "score": 1,
+    "assessmentTitle": "Represent and identify unit fractions with denominators 2, 3, 4, 5, 6, and 8"
+},
+{
+    "text": "Which part represents 1 part out of 3 equal parts?",
+    "choices": ["1/3", "2/3", "1/4", "3/4"],
+    "correctAnswer": "1/3",
+    "score": 1,
+    "assessmentTitle": "Represent and identify unit fractions with denominators 2, 3, 4, 5, 6, and 8"
+},
+{
+    "text": "If a whole is divided into 8 equal parts, what is the unit fraction for one part?",
+    "choices": ["1/4", "1/6", "3/8", "1/8"],
+    "correctAnswer": "1/8",
+    "score": 1,
+    "assessmentTitle": "Represent and identify unit fractions with denominators 2, 3, 4, 5, 6, and 8"
+},
+{
+    "text": "Which of the following is NOT a unit fraction?",
+    "choices": ["1/3", "3/4", "1/5", "1/4"],
+    "correctAnswer": "3/4",
+    "score": 1,
+    "assessmentTitle": "Represent and identify unit fractions with denominators 2, 3, 4, 5, 6, and 8"
+},
+{
+    "text": "What does the fraction 1/2 represent?",
+    "choices": ["One part out of three equal parts", "One part out of four equal parts", "Two parts out of two equal parts", "One part out of two equal parts"],
+    "correctAnswer": "One part out of two equal parts",
+    "score": 1,
+    "assessmentTitle": "Represent and identify unit fractions with denominators 2, 3, 4, 5, 6, and 8"
+},
+{
+    "text": "A cake is cut into five slices. Which unit fraction represents one slice?",
+    "choices": ["1/5", "2/5", "1/3", "1/4"],
+    "correctAnswer": "1/5",
+    "score": 1,
+    "assessmentTitle": "Represent and identify unit fractions with denominators 2, 3, 4, 5, 6, and 8"
+},
+{
+    "text": "If you divide a pizza into six slices, what is the fraction for one part?",
+    "choices": ["5/6", "1/4", "1/6", "2/3"],
+    "correctAnswer": "1/6",
+    "score": 1,
+    "assessmentTitle": "Represent and identify unit fractions with denominators 2, 3, 4, 5, 6, and 8"
+},
+{
+    "text": "What does the fraction 1/8 represent?",
+    "choices": ["One part out of six equal parts", "One part out of eight equal parts", "One part out of five equal parts", "One part out of four equal parts"],
+    "correctAnswer": "One part out of eight equal parts",
+    "score": 1,
+    "assessmentTitle": "Represent and identify unit fractions with denominators 2, 3, 4, 5, 6, and 8"
+},
+{
+    "text": "Round 5.78 to the nearest whole number.",
+    "choices": ["5", "6", "5.7", "5.8"],
+    "correctAnswer": "6",
+    "score": 1,
+    "assessmentTitle": "Round decimal numbers to the nearest whole number and to the nearest tenth (Grade 4, QTR 4)"
+},
+{
+    "text": "Round 9.34 to the nearest tenth.",
+    "choices": ["9.3", "9.4", "9.0", "9.5"],
+    "correctAnswer": "9.3",
+    "score": 1,
+    "assessmentTitle": "Round decimal numbers to the nearest whole number and to the nearest tenth (Grade 4, QTR 4)"
+},
+{
+    "text": "Round 12.65 to the nearest whole number.",
+    "choices": ["12", "12.7", "12.6", "13"],
+    "correctAnswer": "13",
+    "score": 1,
+    "assessmentTitle": "Round decimal numbers to the nearest whole number and to the nearest tenth (Grade 4, QTR 4)"
+},
+{
+    "text": "Round 4.92 to the nearest tenth.",
+    "choices": ["5.0", "4.8", "4.9", "4.93"],
+    "correctAnswer": "4.9",
+    "score": 1,
+    "assessmentTitle": "Round decimal numbers to the nearest whole number and to the nearest tenth (Grade 4, QTR 4)"
+},
+{
+    "text": "Round 17.49 to the nearest whole number.",
+    "choices": ["17", "18", "17.5", "17.4"],
+    "correctAnswer": "17",
+    "score": 1,
+    "assessmentTitle": "Round decimal numbers to the nearest whole number and to the nearest tenth (Grade 4, QTR 4)"
+},
+{
+    "text": "Round 8.25 to the nearest tenth.",
+    "choices": ["8.2", "8.3", "8.0", "8.5"],
+    "correctAnswer": "8.3",
+    "score": 1,
+    "assessmentTitle": "Round decimal numbers to the nearest whole number and to the nearest tenth (Grade 4, QTR 4)"
+},
+{
+    "text": "Round 6.87 to the nearest whole number.",
+    "choices": ["6", "6.8", "7", "6.9"],
+    "correctAnswer": "7",
+    "score": 1,
+    "assessmentTitle": "Round decimal numbers to the nearest whole number and to the nearest tenth (Grade 4, QTR 4)"
+},
+{
+    "text": "Round 14.53 to the nearest tenth.",
+    "choices": ["14.5", "14.6", "15.0", "14.4"],
+    "correctAnswer": "14.5",
+    "score": 1,
+    "assessmentTitle": "Round decimal numbers to the nearest whole number and to the nearest tenth (Grade 4, QTR 4)"
+},
+{
+    "text": "Round 3.49 to the nearest whole number.",
+    "choices": ["2", "4", "3.5", "3"],
+    "correctAnswer": "3",
+    "score": 1,
+    "assessmentTitle": "Round decimal numbers to the nearest whole number and to the nearest tenth (Grade 4, QTR 4)"
+},
+{
+    "text": "Round 14.53 to the nearest tenth.",
+    "choices": ["14.5", "14.6", "15.0", "14.4"],
+    "correctAnswer": "14.5",
+    "score": 1,
+    "assessmentTitle": "Round decimal numbers to the nearest whole number and to the nearest tenth (Grade 4, QTR 4)"
+}
+]

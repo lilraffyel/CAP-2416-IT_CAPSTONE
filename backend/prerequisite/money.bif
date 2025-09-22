@@ -1,0 +1,65 @@
+network Money_BN {}
+
+variable Money {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Read_Write_10k_Centavos {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Value_Combo_1k {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Compare_Denom_1k {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Value_Bills_Coins_100 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Compare_Denom_100 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Value_Peso_100 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+probability ( Value_Peso_100 ) {
+    table 0.85, 0.15; 
+}
+
+probability ( Compare_Denom_100 | Value_Peso_100 ) {
+    ( 0 ) 0.3, 0.7;
+    ( 1 ) 0.7, 0.3;
+}
+
+probability ( Value_Bills_Coins_100 | Value_Peso_100 ) {
+    ( 0 ) 0.25, 0.75;
+    ( 1 ) 0.8, 0.2;
+}
+
+probability ( Compare_Denom_1k | Compare_Denom_100 ) {
+    ( 0 ) 0.35, 0.65;
+    ( 1 ) 0.7, 0.3;
+}
+
+probability ( Value_Combo_1k | Value_Bills_Coins_100 ) {
+    ( 0 ) 0.4, 0.6;
+    ( 1 ) 0.75, 0.25;
+}
+
+probability ( Read_Write_10k_Centavos | Compare_Denom_1k, Value_Combo_1k ) {
+    ( 0, 0 ) 0.35, 0.65;
+    ( 0, 1 ) 0.5, 0.5;
+    ( 1, 0 ) 0.6, 0.4;
+    ( 1, 1 ) 0.8, 0.2;
+}
+
+probability ( Money | Read_Write_10k_Centavos ) {
+    ( 0 ) 0.3, 0.7;
+    ( 1 ) 0.6, 0.4;
+}

@@ -1,0 +1,371 @@
+network Operations_BN {}
+
+variable Operations {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Divide_Numbers_Regrouping {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Divide_Numbers_Remainder {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Missing_Number_Multiplication_Division {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Divide_Numbers_Multiplication_Tables {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Illustrate_Division_Number_Line {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Multiply_Two_Numbers_Regrouping {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Multiply_Numbers_Regrouping {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Multiply_Numbers_6_9_Multiplication_Tables {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Apply_Properties_Multiplication {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Multiply_Numbers_2_10_Multiplication_Tables {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Add_Subtract_Numbers_One_Million {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Estimate_Sum_Difference_5_6_Digit_Numbers {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Addition_Subtraction_3_4_Numbers {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Estimate_Sum_4_Digit_Numbers {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Add_Numbers_Ten_Thousand {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Solve_Problems_Addition_One_Thousand {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Add_Numbers_One_Thousand_Regrouping {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Add_Numbers_One_Thousand_Expanded_Form {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Apply_Properties_Addition_One_Thousand {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Addition_2_1_Digit_Number_Line {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Subtract_Numbers_Ten_Thousand {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Estimate_Difference_4_Digits {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Subtract_Numbers_1000 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Solve_Problems_Subtraction_100 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Subtraction_100_Regrouping {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Subtraction_2_1_Digit_Number_Line {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Addition_Subtraction_Equivalent_Expression {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Addition_Subtraction_Missing_Number_Sentences {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Add_Numbers_100_Concrete_Models {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Add_Numbers_Addends_Tens_Ones {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Solve_Problems_Addition_100 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Solve_Problems_Addition_20 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Apply_Properties_Addition_20 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Add_Numbers_20_Concrete_Models {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Subtract_Numbers_100_Concrete_Models {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Subtract_Numbers_Minuends_Tens_Ones {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Solve_Problems_Subtraction_20 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Subtract_Numbers_20_Concrete_Models {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+probability ( Subtract_Numbers_20_Concrete_Models ) {
+    table 0.75, 0.25;
+}
+
+probability ( Solve_Problems_Subtraction_20 ) {
+    table 0.75, 0.25;
+}
+
+probability ( Subtract_Numbers_Minuends_Tens_Ones | Subtract_Numbers_20_Concrete_Models, Solve_Problems_Subtraction_20 ) {
+    ( 0, 0 ) 0.2, 0.8;
+    ( 0, 1 ) 0.5, 0.5;
+    ( 1, 0 ) 0.5, 0.5;
+    ( 1, 1 ) 0.85, 0.15;
+}
+
+
+probability ( Subtract_Numbers_100_Concrete_Models | Subtract_Numbers_Minuends_Tens_Ones ) {
+    ( 0 ) 0.3, 0.7;
+    ( 1 ) 0.8, 0.2;
+}
+
+probability ( Solve_Problems_Addition_20 ) {
+    table 0.8, 0.2;
+}
+
+probability ( Apply_Properties_Addition_20 ) {
+    table 0.7, 0.3;
+}
+
+probability ( Add_Numbers_20_Concrete_Models ) {
+    table 0.75, 0.25;
+}
+
+probability ( Solve_Problems_Addition_100 | Solve_Problems_Addition_20 ) {
+    ( 0 ) 0.4, 0.6;
+    ( 1 ) 0.85, 0.15;
+}
+
+probability ( Add_Numbers_Addends_Tens_Ones | Solve_Problems_Addition_100, Apply_Properties_Addition_20, Add_Numbers_20_Concrete_Models ) {
+    ( 0, 0, 0 ) 0.2, 0.8;
+    ( 0, 0, 1 ) 0.5, 0.5;
+    ( 0, 1, 0 ) 0.5, 0.5;
+    ( 0, 1, 1 ) 0.6, 0.4;
+    ( 1, 0, 0 ) 0.6, 0.4;
+    ( 1, 0, 1 ) 0.7, 0.3;
+    ( 1, 1, 0 ) 0.7, 0.3;
+    ( 1, 1, 1 ) 0.9, 0.1;
+}
+
+probability ( Add_Numbers_100_Concrete_Models | Add_Numbers_Addends_Tens_Ones ) {
+    ( 0 ) 0.3, 0.7;
+    ( 1 ) 0.8, 0.2;
+}
+
+probability ( Addition_Subtraction_Missing_Number_Sentences | Add_Numbers_100_Concrete_Models, Subtract_Numbers_100_Concrete_Models ) {
+    ( 0, 0 ) 0.3, 0.7;
+    ( 0, 1 ) 0.6, 0.4;
+    ( 1, 0 ) 0.6, 0.4;
+    ( 1, 1 ) 0.85, 0.15;
+}
+
+probability ( Addition_Subtraction_Equivalent_Expression | Addition_Subtraction_Missing_Number_Sentences ) {
+    ( 0 ) 0.3, 0.7;
+    ( 1 ) 0.8, 0.2;
+}
+
+probability ( Subtraction_2_1_Digit_Number_Line | Addition_Subtraction_Equivalent_Expression ) {
+    ( 0 ) 0.3, 0.7;
+    ( 1 ) 0.8, 0.2;
+}
+
+probability ( Subtraction_100_Regrouping | Subtraction_2_1_Digit_Number_Line ) {
+    ( 0 ) 0.35, 0.65;
+    ( 1 ) 0.75, 0.25;
+}
+
+probability ( Solve_Problems_Subtraction_100 | Subtraction_100_Regrouping ) {
+    ( 0 ) 0.4, 0.6;
+    ( 1 ) 0.8, 0.2;
+}
+
+probability ( Subtract_Numbers_1000 | Solve_Problems_Subtraction_100 ) {
+    ( 0 ) 0.35, 0.65;
+    ( 1 ) 0.8, 0.2;
+}
+
+probability ( Estimate_Difference_4_Digits | Subtract_Numbers_1000 ) {
+    ( 0 ) 0.3, 0.7;
+    ( 1 ) 0.75, 0.25;
+}
+
+probability ( Subtract_Numbers_Ten_Thousand | Estimate_Difference_4_Digits ) {
+    ( 0 ) 0.3, 0.7;
+    ( 1 ) 0.7, 0.3;
+}
+
+
+probability ( Addition_2_1_Digit_Number_Line | Addition_Subtraction_Equivalent_Expression ) {
+    ( 0 ) 0.3, 0.7;
+    ( 1 ) 0.8, 0.2;
+}
+
+probability ( Apply_Properties_Addition_One_Thousand | Addition_2_1_Digit_Number_Line ) {
+    ( 0 ) 0.35, 0.65;
+    ( 1 ) 0.75, 0.25;
+}
+
+probability ( Add_Numbers_One_Thousand_Expanded_Form | Apply_Properties_Addition_One_Thousand ) {
+    ( 0 ) 0.4, 0.6;
+    ( 1 ) 0.8, 0.2;
+}
+
+probability ( Add_Numbers_One_Thousand_Regrouping | Add_Numbers_One_Thousand_Expanded_Form ) {
+    ( 0 ) 0.4, 0.6;
+    ( 1 ) 0.8, 0.2;
+}
+
+probability ( Solve_Problems_Addition_One_Thousand | Add_Numbers_One_Thousand_Regrouping ) {
+    ( 0 ) 0.4, 0.6;
+    ( 1 ) 0.8, 0.2;
+}
+
+probability ( Estimate_Sum_4_Digit_Numbers | Solve_Problems_Addition_One_Thousand ) {
+    ( 0 ) 0.35, 0.65;
+    ( 1 ) 0.75, 0.25;
+}
+
+probability ( Add_Numbers_Ten_Thousand | Estimate_Sum_4_Digit_Numbers ) {
+    ( 0 ) 0.35, 0.65;
+    ( 1 ) 0.7, 0.3;
+}
+
+
+probability ( Addition_Subtraction_3_4_Numbers | Add_Numbers_Ten_Thousand, Subtract_Numbers_Ten_Thousand ) {
+    ( 0, 0 ) 0.2, 0.8;
+    ( 0, 1 ) 0.5, 0.5;
+    ( 1, 0 ) 0.5, 0.5;
+    ( 1, 1 ) 0.85, 0.15;
+}
+
+probability ( Estimate_Sum_Difference_5_6_Digit_Numbers | Addition_Subtraction_3_4_Numbers ) {
+    ( 0 ) 0.3, 0.7;
+    ( 1 ) 0.7, 0.3;
+}
+
+probability ( Add_Subtract_Numbers_One_Million | Estimate_Sum_Difference_5_6_Digit_Numbers ) {
+    ( 0 ) 0.3, 0.7;
+    ( 1 ) 0.7, 0.3;
+}
+
+
+probability ( Multiply_Numbers_2_10_Multiplication_Tables | Add_Subtract_Numbers_One_Million ) {
+    ( 0 ) 0.4, 0.6;
+    ( 1 ) 0.8, 0.2;
+}
+
+probability ( Apply_Properties_Multiplication | Multiply_Numbers_2_10_Multiplication_Tables ) {
+    ( 0 ) 0.35, 0.65;
+    ( 1 ) 0.75, 0.25;
+}
+
+probability ( Multiply_Numbers_6_9_Multiplication_Tables | Apply_Properties_Multiplication ) {
+    ( 0 ) 0.4, 0.6;
+    ( 1 ) 0.8, 0.2;
+}
+
+probability ( Multiply_Numbers_Regrouping | Multiply_Numbers_6_9_Multiplication_Tables ) {
+    ( 0 ) 0.35, 0.65;
+    ( 1 ) 0.75, 0.25;
+}
+
+probability ( Multiply_Two_Numbers_Regrouping | Multiply_Numbers_Regrouping ) {
+    ( 0 ) 0.35, 0.65;
+    ( 1 ) 0.75, 0.25;
+}
+
+probability ( Illustrate_Division_Number_Line | Multiply_Two_Numbers_Regrouping ) {
+    ( 0 ) 0.35, 0.65;
+    ( 1 ) 0.75, 0.25;
+}
+
+probability ( Divide_Numbers_Multiplication_Tables | Illustrate_Division_Number_Line ) {
+    ( 0 ) 0.4, 0.6;
+    ( 1 ) 0.8, 0.2;
+}
+
+probability ( Missing_Number_Multiplication_Division | Divide_Numbers_Multiplication_Tables ) {
+    ( 0 ) 0.35, 0.65;
+    ( 1 ) 0.75, 0.25;
+}
+
+probability ( Divide_Numbers_Remainder | Missing_Number_Multiplication_Division ) {
+    ( 0 ) 0.35, 0.65;
+    ( 1 ) 0.7, 0.3;
+}
+
+probability ( Divide_Numbers_Regrouping | Divide_Numbers_Remainder ) {
+    ( 0 ) 0.35, 0.65;
+    ( 1 ) 0.7, 0.3;
+}
+
+probability ( Operations | Divide_Numbers_Regrouping, Multiply_Two_Numbers_Regrouping, Add_Subtract_Numbers_One_Million ) {
+    ( 0, 0, 0 ) 0.2, 0.8;
+    ( 0, 0, 1 ) 0.5, 0.5;
+    ( 0, 1, 0 ) 0.5, 0.5;
+    ( 0, 1, 1 ) 0.5, 0.5;
+    ( 1, 0, 0 ) 0.7, 0.3;
+    ( 1, 0, 1 ) 0.7, 0.3;
+    ( 1, 1, 0 ) 0.7, 0.3;
+    ( 1, 1, 1 ) 0.9, 0.1;
+}
+
+

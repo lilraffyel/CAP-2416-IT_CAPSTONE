@@ -1,0 +1,121 @@
+network Counting_BN {}
+
+variable Counting_Numeracy {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Read_Write_1000000 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Read_Write_100000 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Read_Write_10000 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Read_Write_1000 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Read_Write_100 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Recognize_Represent_1000 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Recognize_Represent_100 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Count_Repeated_Addition {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Count_By_Steps_1000 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Count_Up_1000 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Count_By_Steps_100 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Count_Up_100 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+probability ( Read_Write_100 ) {
+    table 0.7, 0.3;  
+}
+
+probability ( Read_Write_1000 | Read_Write_100 ) {
+    (0) 0.25, 0.75;  
+    (1) 0.75, 0.25;  
+}
+
+probability ( Read_Write_10000 | Read_Write_1000 ) {
+    (0) 0.3, 0.7;
+    (1) 0.7, 0.3;
+}
+
+probability ( Read_Write_100000 | Read_Write_10000 ) {
+    (0) 0.4, 0.6;
+    (1) 0.85, 0.15;
+}
+
+probability ( Read_Write_1000000 | Read_Write_100000 ) {
+    (0) 0.4, 0.6;
+    (1) 0.8, 0.2;
+}
+
+probability ( Recognize_Represent_100 ) {
+    table 0.8, 0.2;  
+}
+
+probability ( Count_Up_100 ) {
+    table 0.85, 0.15;  
+}
+
+probability ( Recognize_Represent_1000 | Recognize_Represent_100 ) {
+    (0) 0.25, 0.75;
+    (1) 0.75, 0.25;
+}
+
+probability ( Count_By_Steps_100 | Recognize_Represent_100, Count_Up_100 ) {
+    (0, 0) 0.1, 0.9;  
+    (0, 1) 0.4, 0.6;
+    (1, 0) 0.3, 0.7;
+    (1, 1) 0.8, 0.2;
+}
+
+probability ( Count_Up_1000 | Count_By_Steps_100 ) {
+    (0) 0.2, 0.8;
+    (1) 0.8, 0.2;
+}
+
+probability ( Count_By_Steps_1000 | Recognize_Represent_1000, Count_Up_1000 ) {
+    (0, 0) 0.1, 0.9;  
+    (0, 1) 0.3, 0.7;
+    (1, 0) 0.4, 0.6;
+    (1, 1) 0.8, 0.2;
+}
+
+probability ( Count_Repeated_Addition | Count_By_Steps_1000 ) {
+    (0) 0.2, 0.8;
+    (1) 0.7, 0.3;
+}
+
+probability ( Counting_Numeracy | Read_Write_1000000, Count_Repeated_Addition ) {
+    (0, 0) 0.2, 0.8;  
+    (0, 1) 0.5, 0.5;
+    (1, 0) 0.6, 0.4;
+    (1, 1) 0.8, 0.2;
+}
