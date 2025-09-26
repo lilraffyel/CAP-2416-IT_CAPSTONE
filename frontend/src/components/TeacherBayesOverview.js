@@ -34,7 +34,7 @@ const simplifiedStructureImages = {
 
 function TeacherBayesOverview() {
   const [selectedBif, setSelectedBif] = useState('estimate');
-  const [mode, setMode] = useState('advanced'); // Add mode state
+  const [mode, setMode] = useState('simplified'); // Add mode state
 
   const handleBifChange = (event) => {
     setSelectedBif(event.target.value);
@@ -773,20 +773,20 @@ return (
       <label>
         <input
           type="radio"
-          value="advanced"
-          checked={mode === 'advanced'}
-          onChange={handleModeChange}
-        />
-        Advanced
-      </label>
-      <label style={{ marginLeft: '1rem' }}>
-        <input
-          type="radio"
           value="simplified"
           checked={mode === 'simplified'}
           onChange={handleModeChange}
         />
         Simplified
+      </label>
+      <label style={{ marginLeft: '1rem' }}>
+        <input
+          type="radio"
+          value="advanced"
+          checked={mode === 'advanced'}
+          onChange={handleModeChange}
+        />
+        Advanced
       </label>
     </div>
 
@@ -814,7 +814,9 @@ return (
         mode === 'simplified'
           ? selectedBif === 'ordering'
             ? { maxWidth: "600px", width: "100%", height: "auto", display: "block", margin: "0 auto" }
-            : { maxWidth: "1000px", width: "100%", height: "auto", display: "block", margin: "0 auto" }
+            : selectedBif === 'comparing'
+              ? { maxWidth: "1300px", width: "100%", height: "auto", display: "block", margin: "0 auto" }
+              : { maxWidth: "1000px", width: "100%", height: "auto", display: "block", margin: "0 auto" }
           : { maxWidth: "100%", height: "auto" }
       }
     />
