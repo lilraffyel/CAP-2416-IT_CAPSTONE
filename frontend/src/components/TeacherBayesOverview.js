@@ -6,6 +6,14 @@ import moneyStructure from '../components/money_structure.png';
 import placeStructure from '../components/place_structure.png';
 import countingStructure from '../components/counting_structure.png';
 
+// Import simplified images
+import estimateSimplified from '../components/estimate_simplified.png';
+import orderingSimplified from '../components/ordering_simplified.png';
+import comparingSimplified from '../components/comparing_simplified.png';
+import moneySimplified from '../components/money_simplified.png';
+import placeSimplified from '../components/place_simplified.png';
+import countingSimplified from '../components/counting_simplified.png';
+
 const structureImages = {
   estimate: estimateStructure,
   ordering: orderingStructure,
@@ -15,16 +23,30 @@ const structureImages = {
   counting: countingStructure,
 };
 
+const simplifiedStructureImages = {
+  estimate: estimateSimplified,
+  ordering: orderingSimplified,
+  comparing: comparingSimplified,
+  money: moneySimplified,
+  place_value: placeSimplified,
+  counting: countingSimplified,
+};
+
 function TeacherBayesOverview() {
   const [selectedBif, setSelectedBif] = useState('estimate');
-  // const [cpds, setCpds] = useState([]);
-
+  const [mode, setMode] = useState('advanced'); // Add mode state
 
   const handleBifChange = (event) => {
     setSelectedBif(event.target.value);
   };
 
-  const structureImage = structureImages[selectedBif];
+  const handleModeChange = (event) => {
+    setMode(event.target.value);
+  };
+
+  const structureImage = mode === 'simplified'
+    ? simplifiedStructureImages[selectedBif]
+    : structureImages[selectedBif];
 
   const hardcodedTableEstimate = (
     <div style={{ marginTop: '1rem' }}>
@@ -737,46 +759,83 @@ function TeacherBayesOverview() {
   );
 
 
-  return (
-    <div>
-      <h2>Bayesian Network Overview</h2>
-      <p>Visualize or review the Bayesian Network structure that powers the tutoring system.</p>
+ 
 
-      {/* BIF Selection Dropdown */}
-      <div>
-        <label htmlFor="bif-select">Select BIF:</label>
-        <select id="bif-select" value={selectedBif} onChange={handleBifChange}>
-          <option value="estimate">Estimate</option>
-          <option value="ordering">Ordering</option>
-          <option value="comparing">Comparing</option>
-          <option value="money">Money</option>
-          <option value="place_value">Place-Value</option>
-          <option value="counting">Counting</option>
-        </select>
-      </div>
+// ...existing code...
 
-      {/* Structure Image Display */}
-      <div style={{ marginTop: "1rem" }}>
-        <h3>Structure</h3>
-        {structureImage ? (
-          <img src={structureImage} alt={`${selectedBif} structure`} style={{ maxWidth: "100%" }} />
-        ) : (
-          <p>No structure image available.</p>
-        )}
-      </div>
+return (
+  <div>
+    <h2>Bayesian Network Overview</h2>
+    <p>Visualize or review the Bayesian Network structure that powers the tutoring system.</p>
 
-      {/* Hardcoded Tables for Each BIF */}
-      {selectedBif === "estimate" && hardcodedTableEstimate}
-      {selectedBif === "ordering" && hardcodedTableOrdering}
-      {selectedBif === "comparing" && hardcodedTableComparing}
-      {selectedBif === "money" && hardcodedTableMoney}
-      {selectedBif === "place_value" && hardcodedTablePlaceValue}
-      {selectedBif === "counting" && hardcodedTableCounting}
-
-      
-      
+    {/* Mode Selection */}
+    <div style={{ marginBottom: '1rem' }}>
+      <label>
+        <input
+          type="radio"
+          value="advanced"
+          checked={mode === 'advanced'}
+          onChange={handleModeChange}
+        />
+        Advanced
+      </label>
+      <label style={{ marginLeft: '1rem' }}>
+        <input
+          type="radio"
+          value="simplified"
+          checked={mode === 'simplified'}
+          onChange={handleModeChange}
+        />
+        Simplified
+      </label>
     </div>
-  );
+
+    {/* BIF Selection Dropdown */}
+    <div>
+      <label htmlFor="bif-select">Select BIF:</label>
+      <select id="bif-select" value={selectedBif} onChange={handleBifChange}>
+        <option value="estimate">Estimate</option>
+        <option value="ordering">Ordering</option>
+        <option value="comparing">Comparing</option>
+        <option value="money">Money</option>
+        <option value="place_value">Place-Value</option>
+        <option value="counting">Counting</option>
+      </select>
+    </div>
+
+    {/* Structure Image Display */}
+    <div style={{ marginTop: "1rem" }}>
+  <h3>Structure</h3>
+  {structureImage ? (
+    <img
+      src={structureImage}
+      alt={`${selectedBif} structure`}
+      style={
+        mode === 'simplified'
+          ? selectedBif === 'ordering'
+            ? { maxWidth: "600px", width: "100%", height: "auto", display: "block", margin: "0 auto" }
+            : { maxWidth: "1000px", width: "100%", height: "auto", display: "block", margin: "0 auto" }
+          : { maxWidth: "100%", height: "auto" }
+      }
+    />
+  ) : (
+    <p>No structure image available.</p>
+  )}
+</div>
+
+    {/* Table Display */}
+    {mode === 'advanced' && (
+      <>
+        {selectedBif === "estimate" && hardcodedTableEstimate}
+        {selectedBif === "ordering" && hardcodedTableOrdering}
+        {selectedBif === "comparing" && hardcodedTableComparing}
+        {selectedBif === "money" && hardcodedTableMoney}
+        {selectedBif === "place_value" && hardcodedTablePlaceValue}
+        {selectedBif === "counting" && hardcodedTableCounting}
+      </>
+    )}
+  </div>
+);
 }
 
 export default TeacherBayesOverview;
