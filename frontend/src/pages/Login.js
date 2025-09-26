@@ -19,7 +19,7 @@ function Login() {
     const response = await axios.post(
       'http://localhost:5000/login',
       { id, password },
-      { withCredentials: true }  // IMPORTANT for cookies/session
+      { withCredentials: true }  
     );
 
     if (response.data.status === 'success') {

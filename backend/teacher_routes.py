@@ -19,6 +19,34 @@ def get_students():
     conn.close()
     return jsonify(students)
 
+'''
+@teacher_routes.route('/students', methods=['GET'])
+def get_students():
+    tutor_id = request.args.get('tutor_id')  # get tutor_id from query param
+    print("Received tutor_id:", tutor_id)
+
+    if not tutor_id:
+        return jsonify({'error': 'Missing tutor_id'}), 400
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # Join tutor_assignments with users to get only students assigned to that tutor_id
+    cursor.execute("""
+        SELECT u.id, u.name
+        FROM users u
+        INNER JOIN tutor_assignments ta ON u.id = ta.student_id
+        WHERE ta.tutor_id = ? AND u.role = 'Student'
+    """, (tutor_id,))
+
+    students = [dict(row) for row in cursor.fetchall()]
+
+    conn.close()
+    return jsonify(students)
+'''
+
+
+
 @teacher_routes.route('/help-requests', methods=['GET'])
 def get_help_requests():
     conn = get_db()
@@ -58,45 +86,26 @@ def get_competencies():
 
 # ─── Assignment API ─────────────────────────────────────────────────────
 
-@teacher_routes.route('/assignments', methods=['GET'])
-def get_assignments():
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT a.student_id, c.title AS competency
-        FROM assignments a
-        JOIN competencies c ON a.competency_id = c.id
-    """)
-    rows = cursor.fetchall()
-    assignments = {}
-    for row in rows:
-        stu_id = row['student_id']
-        comp = row['competency']
-        assignments.setdefault(stu_id, []).append(comp)
-    conn.close()
-    return jsonify(assignments)
-
 @teacher_routes.route('/assign', methods=['POST'])
 def assign_competency():
     data = request.get_json()
     student_id = data.get('studentId')
     competency_id = data.get('competencyId')
+    tutor_id = data.get('tutorId')  # <-- now sent from frontend
 
-    if not student_id or not competency_id:
-        return jsonify({'error': 'Missing studentId or competencyId'}), 400
+    if not tutor_id:
+        return jsonify({'error': 'Tutor ID is required'}), 400
 
-    try:
-        conn = get_db()
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO assignments (student_id, competency_id)
-            VALUES (?, ?)
-        """, (student_id, competency_id))
-        conn.commit()
-        return jsonify({'message': 'Assignment successful'})
-    except Exception as e:
-        print('Error assigning competency:', e)
-        return jsonify({'error': str(e)}), 500
+    conn = get_db()
+    conn.execute(
+        'INSERT INTO assignments (student_id, competency_id, tutor_id) VALUES (?, ?, ?)',
+        (student_id, competency_id, tutor_id)
+    )
+    conn.commit()
+    conn.close()
+
+    return jsonify({'message': 'Assignment saved'})
+
 
 # ─── Assessment Viewing ─────────────────────────────────────────────────
 
@@ -200,7 +209,6 @@ def submit_assessment():
     })
 
 
-
 @teacher_routes.route('/latest-results', methods=['GET'])
 def get_latest_results():
     conn = get_db()
@@ -232,7 +240,6 @@ def get_latest_results():
     results = cursor.fetchall()
     conn.close()
     return jsonify([dict(row) for row in results])
-
 
 
 @teacher_routes.route('/comment', methods=['POST'])

@@ -54,16 +54,19 @@ def init_db():
     """)
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS help_requests (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        student_id TEXT NOT NULL,
-        domain_id INTEGER NOT NULL,
-        requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        status TEXT DEFAULT 'Pending',
-        FOREIGN KEY (student_id) REFERENCES users(id),
-        FOREIGN KEY (domain_id) REFERENCES content_domains(id)
-    )
-    """)
+CREATE TABLE IF NOT EXISTS help_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id TEXT NOT NULL,
+    domain_id INTEGER NOT NULL,
+    requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status TEXT DEFAULT 'Pending',
+    tutor_id TEXT,  -- ✅ new
+    FOREIGN KEY (student_id) REFERENCES users(id),
+    FOREIGN KEY (domain_id) REFERENCES content_domains(id),
+    FOREIGN KEY (tutor_id) REFERENCES users(id) -- tutors are also users
+)
+""")
+
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS competencies (
@@ -80,6 +83,7 @@ def init_db():
     CREATE TABLE IF NOT EXISTS assignments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     student_id TEXT NOT NULL,
+    tutor_id TEXT NOT NULL,             
     competency_id TEXT NOT NULL,
     assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES users(id),
@@ -109,6 +113,21 @@ def init_db():
         ('Money and Operations',),
         ('Numbers',)
     ])
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS tutor_assignments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id TEXT NOT NULL,
+    tutor_id TEXT NOT NULL,
+    domain_id INTEGER,
+    help_request_id INTEGER NOT NULL,
+    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES users(id),
+    FOREIGN KEY (tutor_id) REFERENCES users(id),
+    FOREIGN KEY (id) REFERENCES content_domains(id)
+)
+""")
+
 
     # Competencies
     cursor.executescript("""
@@ -219,6 +238,9 @@ def init_db():
             ?
         )
     """, ("student1", assessment_id, "Good job! Keep it up."))
+
+  
+
 
     conn.commit()
     conn.close()
