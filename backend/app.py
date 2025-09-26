@@ -5,10 +5,12 @@ from pgmpy.factors.discrete import TabularCPD
 from pgmpy.inference import VariableElimination
 import shutil
 import os
-from auth_routes import auth_bp 
+from auth_routes import auth_bp
 from student_routes import student_bp 
 from teacher_routes import teacher_routes
 from user_routes import user_routes
+from admin_routes import admin_routes
+
 
 # Import the prerequisite blueprint
 from prerequisite.prerequisite_api import prereq_bp
@@ -192,12 +194,16 @@ def update_bayesian_network(competency, score, total_questions):
         print(f"[ERROR] Failed to update Bayesian Network: {e}")
 
 # Register blueprints
-app.register_blueprint(auth_bp)
+app.register_blueprint(auth_bp) 
 app.register_blueprint(student_bp, url_prefix='/api/students')
 app.register_blueprint(teacher_routes, url_prefix='/api/teacher')
 app.register_blueprint(user_routes, url_prefix='/api/users')
 app.register_blueprint(prereq_bp, url_prefix='/api')  # Register the prerequisite blueprint
+app.register_blueprint(admin_routes, url_prefix='/api/admin')
+
+
 
 #Run the Flask App
 if __name__ == "__main__":
+    print(app.url_map)
     app.run(debug=True, port=5000)

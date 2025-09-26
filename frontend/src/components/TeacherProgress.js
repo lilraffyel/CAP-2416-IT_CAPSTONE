@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
@@ -7,15 +8,28 @@ function TeacherProgress() {
   const [competencies, setCompetencies] = useState([]);
   const [helpRequests, setHelpRequests] = useState([]);
   const [assignments, setAssignments] = useState({});
+  const [tutorId, setTutorId] = useState(null);
 
   const [domainSelections, setDomainSelections] = useState({});
   const [competencySelections, setCompetencySelections] = useState({});
   const [dummyRefresh, setDummyRefresh] = useState(0);
 
   useEffect(() => {
+
+    axios.get('http://localhost:5000/api/me')
+    .then(res => {
+      setTutorId(res.data.tutorId);
+    })
+    .catch(console.error);
+
     // Fetch students
-    axios.get('http://localhost:5000/api/teacher/students')
+    /*axios.get('http://localhost:5000/api/teacher/students')
       .then(res => setStudents(res.data))
+      .catch(console.error);
+       */
+
+       axios.get(`http://localhost:5000/api/teacher/students?tutor_id=${tutorId}`)
+       .then(res => setStudents(res.data))
       .catch(console.error);
 
     // Fetch domains
@@ -64,7 +78,7 @@ function TeacherProgress() {
 
     axios.post('http://localhost:5000/api/teacher/assign', {
       studentId: stuId,
-      competencyId: chosenComp
+      competencyId: chosenComp,
     })
       .then(() => {
         alert(`Assigned competency to student ID ${stuId}.`);
@@ -158,3 +172,4 @@ function TeacherProgress() {
 }
 
 export default TeacherProgress;
+

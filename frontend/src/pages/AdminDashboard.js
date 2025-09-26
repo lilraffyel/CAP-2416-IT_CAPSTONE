@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+/*import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Adjust these paths if your components are elsewhere
@@ -29,8 +29,8 @@ function AdminDashboard() {
   };
 
   return (
-    <div className="admin-dashboard" style={{ display: "flex", minHeight: "100vh" }}>
-      {/* Sidebar */}
+    <div className="admin-dashboard" style={{ display: "flex", minHeight: "100vh" }}> 
+    // Sidebar
       <div
         className="sidebar"
         style={{
@@ -86,10 +86,58 @@ function AdminDashboard() {
         </ul>
       </div>
 
-      {/* Main Content */}
+  // Main Content
       <div className="content" style={{ flex: 1, padding: "2rem" }}>
         {renderContent()}
       </div>
+    </div>
+  );
+}
+
+export default AdminDashboard; */
+
+
+// src/pages/AdminDashboard.js
+import React, { useState } from "react";
+import { Link, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+
+import UserManagement from "../components/UserManagement";
+import AssessmentManagement from "../components/AssessmentManagement";
+import BayesianNetworkManagement from "../components/BayesianNetworkManagement";
+import AssignTutors from "../components/AssignTutors";
+
+function AdminDashboard() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    navigate("/"); // Redirect to login
+  };
+
+  return (
+    <div className="dashboard-container">
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <h3>Admin Menu</h3>
+        <ul>
+          <li><Link to="/admin/users">User Management</Link></li>
+          <li><Link to="/admin/assessments">Assessments</Link></li>
+          <li><Link to="/admin/bayesian">Bayesian Network</Link></li>
+          <li><Link to="/admin/assign-tutors">Assign Tutors</Link></li>
+          <li onClick={handleLogout}>Logout</li>
+        </ul>
+      </aside>
+
+      {/* Main Content */}
+      <main className="dashboard-content">
+        <Routes>
+          <Route path="/" element={<Navigate to="/admin/users" replace />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="assessments" element={<AssessmentManagement />} />
+          <Route path="bayesian" element={<BayesianNetworkManagement />} />
+          <Route path="assign-tutors" element={<AssignTutors />} />
+          <Route path="*" element={<Navigate to="/admin/users" replace />} />
+        </Routes>
+      </main>
     </div>
   );
 }
