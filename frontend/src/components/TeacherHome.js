@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 
 function TeacherHome() {
   const [students, setStudents] = useState([]);
@@ -10,63 +9,21 @@ function TeacherHome() {
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [commentDraft, setCommentDraft] = useState('');
 
-
-  const [userInfo, setUserInfo] = useState(null);
-  const [loadError, setLoadError] = useState(null);
-
-  axios
-      .get('http://localhost:5000/api/me', { withCredentials: true })
-      .then((res) => setUserInfo(res.data))
-      .catch((err) => {
-        console.error(err);
-        setUserInfo({});
-      });
-
-      
-
-  
-  // Fetch students when we know the user role
-
+  // Fetch students on mount
   useEffect(() => {
-     if (userInfo === null) return;
+    fetch('http://localhost:5000/api/teacher/students')
+      .then(res => res.json())
+      .then(data => setStudents(data))
+      .catch(console.error);
+  }, []);
 
-    const fetchStudents = async () => {
-      try {
-        let url = 'http://localhost:5000/api/teacher/students';
-        if (userInfo.role === 'Tutor' && userInfo.tutorId) {
-          url += `?tutor_id=${userInfo.tutorId}`;
-        }
-        const res = await axios.get(url, { withCredentials: true });
-        setStudents(res.data);
-      } catch (error) {
-        console.error(error);
-        setLoadError('Failed to load students');
-      }
-    };
-
-    fetchStudents();
-  }, [userInfo]);
-
-  // Fetch all assessments (latest results) scoped by tutor when applicable
+  // Fetch all assessments (latest results)
   useEffect(() => {
-    if (userInfo === null) return;
-
-    const fetchResults = async () => {
-      try {
-        let url = 'http://localhost:5000/api/teacher/latest-results';
-        if (userInfo.role === 'Tutor' && userInfo.tutorId) {
-          url += `?tutor_id=${userInfo.tutorId}`;
-        }
-        const res = await axios.get(url, { withCredentials: true });
-        setAllAssessments(res.data);
-      } catch (error) {
-        console.error(error);
-        setLoadError('Failed to load assessment results');
-      }
-    };
-
-    fetchResults();
-  }, [userInfo]);
+    fetch('http://localhost:5000/api/teacher/latest-results')
+      .then(res => res.json())
+      .then(data => setAllAssessments(data))
+      .catch(console.error);
+  }, []);
 
   const handleStudentClick = (studentId) => {
     setSelectedStudent(prev => (prev === studentId ? null : studentId));
@@ -244,9 +201,6 @@ function TeacherHome() {
   return (
     <div className="content-box" style={containerStyle}>
       <h2 style={{ textAlign: 'center', color: '#fff' }}>Student Competencies</h2>
-      {loadError && (
-        <p style={{ color: '#ff7675' }}>{loadError}</p>
-      )}
       {students.map((student) => (
         <div key={student.id}>
           <button
