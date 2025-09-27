@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify
 import sqlite3
 
 teacher_routes = Blueprint('teacher_routes', __name__)
@@ -12,35 +12,9 @@ def get_db():
 
 @teacher_routes.route('/students', methods=['GET'])
 def get_students():
-    tutor_id = request.args.get('tutor_id')
-
-    # If the request comes from a logged-in tutor and no explicit tutor_id was provided,
-    # use the tutor ID stored in the session to scope the student list.
-    if not tutor_id and session.get('role') == 'Tutor':
-        tutor_id = session.get('tutor_id')
-
-
-
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT id, name FROM users WHERE role = 'Student'")
-
-    if tutor_id:
-        cursor.execute(
-            """
-            SELECT DISTINCT u.id, u.name
-            FROM users u
-            INNER JOIN tutor_assignments ta ON u.id = ta.student_id
-            WHERE ta.tutor_id = ? AND u.role = 'Student'
-            ORDER BY u.name
-            """,
-            (tutor_id,)
-        )
-    else:
-        cursor.execute(
-            "SELECT id, name FROM users WHERE role = 'Student' ORDER BY name"
-        )
-
     students = [dict(row) for row in cursor.fetchall()]
     conn.close()
     return jsonify(students)
@@ -118,10 +92,6 @@ def assign_competency():
     student_id = data.get('studentId')
     competency_id = data.get('competencyId')
     tutor_id = data.get('tutorId')  # <-- now sent from frontend
-
-    if not tutor_id and session.get('role') == 'Tutor':
-        tutor_id = session.get('tutor_id')
-
 
     if not tutor_id:
         return jsonify({'error': 'Tutor ID is required'}), 400
@@ -241,15 +211,10 @@ def submit_assessment():
 
 @teacher_routes.route('/latest-results', methods=['GET'])
 def get_latest_results():
-    tutor_id = request.args.get('tutor_id')
-    if not tutor_id and session.get('role') == 'Tutor':
-        tutor_id = session.get('tutor_id')
-
-
     conn = get_db()
     cursor = conn.cursor()
 
-    base_query = """
+    cursor.execute("""
         SELECT sr.id as result_id,
                sr.student_id,
                sr.assessment_id,
@@ -269,23 +234,8 @@ def get_latest_results():
             SELECT MAX(attempt_number) FROM student_results
             WHERE student_id = sr.student_id AND assessment_id = sr.assessment_id
         )
-        """
-
-    params = []
-    if tutor_id:
-        base_query += """
-            AND EXISTS (
-                SELECT 1
-                FROM tutor_assignments ta
-                WHERE ta.student_id = sr.student_id AND ta.tutor_id = ?
-            )
-        """
-        params.append(tutor_id)
-
-    base_query += " ORDER BY sr.student_id, sr.attempt_number DESC"
-
-    cursor.execute(base_query, params)
-    
+        ORDER BY sr.student_id, sr.attempt_number DESC
+    """)
 
     results = cursor.fetchall()
     conn.close()
