@@ -36,6 +36,8 @@ function TutorQuery() {
   // eslint-disable-next-line no-unused-vars
   const [sortField, setSortField] = useState("");
   const [filterText, setFilterText] = useState("");
+  //State for Auto Query Results
+  const [autoQueryResults, setAutoQueryResults] = useState([]);
 
   // Load BIF files on mount
   useEffect(() => {
@@ -53,19 +55,22 @@ function TutorQuery() {
   }, []);
 
   // Fetch student results when a student is selected
-  useEffect(() => {
-    if (!selectedStudent) {
-      setStudentResults([]);
-      return;
-    }
-    axios
-      .get(`http://localhost:5000/api/students/results/${selectedStudent}`, { withCredentials: true })
-      .then((res) => setStudentResults(res.data))
-      .catch((err) => {
-        console.error(err);
-        setResultsError("Failed to load results.");
-      });
-  }, [selectedStudent]);
+ useEffect(() => {
+  if (!selectedStudent) {
+    setStudentResults([]);
+    return;
+  }
+  axios
+    .get(`http://localhost:5000/api/teacher/results/${selectedStudent}`, { withCredentials: true })
+    .then((res) => {
+      setStudentResults(res.data);
+      console.log("studentResults", res.data); // <--- Add this line here
+    })
+    .catch((err) => {
+      console.error(err);
+      setResultsError("Failed to load results.");
+    });
+}, [selectedStudent]);
 
   // ================== STUDENT LOGIC ====================
   const handleToggleStudentDropdown = () => {
@@ -148,6 +153,19 @@ function TutorQuery() {
     setStudentResults(sorted);
   };
 
+  // Handler for Auto Query Results
+  const handleAutoQuery = async (studentId, assessmentId) => {
+  try {
+    const res = await axios.get(
+      `http://localhost:5000/api/teacher/auto-query-result/${studentId}/${assessmentId}`,
+      { withCredentials: true }
+    );
+    setAutoQueryResults(res.data);
+  } catch (err) {
+    setAutoQueryResults({ error: "Failed to fetch automatic query result." });
+  }
+};
+
   const filteredResults = studentResults.filter((r) => {
     if (!filterText) return true;
     return r.examName && r.examName.toLowerCase().includes(filterText.toLowerCase());
@@ -190,43 +208,96 @@ function TutorQuery() {
 
     {/* Student Results Table */}
     {selectedStudent && (
-      <div className="section" style={{ marginBottom: "2rem" }}>
-        <h3 style={{ margin: "0.5rem 0" }}>Results for {selectedStudent}</h3>
-        <div style={{ marginBottom: "0.5rem" }}>
-          <button className="btn btn-secondary" onClick={() => handleSort("date")}>Sort by Date</button>
-          <button className="btn btn-secondary" onClick={() => handleSort("score")} style={{ marginLeft: "0.5rem" }}>
-            Sort by Score
-          </button>
-          <input
-            className="form-control"
-            style={{ marginLeft: "1rem", width: 200, display: "inline-block" }}
-            type="text"
-            value={filterText}
-            onChange={(e) => setFilterText(e.target.value)}
-            placeholder="Filter by Exam Name"
-          />
-        </div>
-        {resultsError && <div style={{ color: "red" }}>{resultsError}</div>}
-        <table className="results-table" style={{ width: "100%", borderCollapse: "collapse", marginTop: "1rem", background: "#181818" }}>
-          <thead>
-            <tr style={{ borderBottom: "1px solid #444" }}>
-              <th style={{ textAlign: "left", padding: "8px" }}>Date</th>
-              <th style={{ textAlign: "left", padding: "8px" }}>Exam Name</th>
-              <th style={{ textAlign: "left", padding: "8px" }}>Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredResults.map((r, idx) => (
-              <tr key={idx} style={{ borderBottom: "1px solid #333" }}>
-                <td style={{ padding: "8px" }}>{new Date(r.date).toLocaleDateString()}</td>
-                <td style={{ padding: "8px" }}>{r.examName}</td>
-                <td style={{ padding: "8px" }}>{r.score}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+  <div className="section" style={{ marginBottom: "2rem" }}>
+    <h3 style={{ margin: "0.5rem 0" }}>Results for {selectedStudent}</h3>
+    <div style={{ marginBottom: "0.5rem" }}>
+      <button className="btn btn-secondary" onClick={() => handleSort("date")}>Sort by Date</button>
+      <button className="btn btn-secondary" onClick={() => handleSort("score")} style={{ marginLeft: "0.5rem" }}>
+        Sort by Score
+      </button>
+      <input
+        className="form-control"
+        style={{ marginLeft: "1rem", width: 200, display: "inline-block" }}
+        type="text"
+        value={filterText}
+        onChange={(e) => setFilterText(e.target.value)}
+        placeholder="Filter by Exam Name"
+      />
+    </div>
+    {resultsError && <div style={{ color: "red" }}>{resultsError}</div>}
+    <table className="results-table" style={{ width: "100%", borderCollapse: "collapse", marginTop: "1rem", background: "#181818" }}>
+      <thead>
+        <tr style={{ borderBottom: "1px solid #444" }}>
+          <th style={{ textAlign: "left", padding: "8px" }}>Date</th>
+          <th style={{ textAlign: "left", padding: "8px" }}>Exam Name</th>
+          <th style={{ textAlign: "left", padding: "8px" }}>Score</th>
+          <th style={{ textAlign: "left", padding: "8px" }}>Auto Query</th>
+        </tr>
+      </thead>
+      <tbody>
+        {filteredResults.map((r, idx) => (
+  <tr key={idx} style={{ borderBottom: "1px solid #333" }}>
+    <td style={{ padding: "8px" }}>{new Date(r.date).toLocaleDateString()}</td>
+    <td style={{ padding: "8px" }}>{r.examName}</td>
+    <td style={{ padding: "8px" }}>{r.score}</td>
+    <td style={{ padding: "8px" }}>
+      {r.result_id && (
+        <button
+  className="btn btn-info"
+  onClick={() => handleAutoQuery(r.student_id, r.assessment_id)}
+>
+  Auto Query
+</button>
+      )}
+    </td>
+  </tr>
+))}
+      </tbody>
+    </table>
+  </div>
+)}
+
+    {/* Auto Query Button and Results */}
+    {selectedStudent && (
+  <div className="section" style={{ marginBottom: "2rem" }}>
+    <h3>Automatic Query</h3>
+    {autoQueryResults && autoQueryResults.competency ? (
+  <div>
+    <div>
+      <b>Competency:</b> {autoQueryResults.competency}
+    </div>
+    <div>
+      <b>Score:</b> {autoQueryResults.score} / {autoQueryResults.total}
+    </div>
+    <div>
+      <b>Mastery Probability:</b> {formatPercent(autoQueryResults.mastery_probability)}
+    </div>
+    {autoQueryResults.next_focus && (
+      <div>
+        <b>Next Focus:</b> {autoQueryResults.next_focus}
       </div>
     )}
+    {autoQueryResults.mastery_probabilities && (
+      <div>
+        <b>Mastery Probabilities:</b>
+        <ul style={{ paddingLeft: 16 }}>
+          {Object.entries(autoQueryResults.mastery_probabilities).map(([k, v]) => (
+            <li key={k}>
+              {k}: <b>{formatPercent(v)}</b>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+    {autoQueryResults.error && <span style={{ color: "red" }}>Error: {autoQueryResults.error}</span>}
+  </div>
+) : autoQueryResults && autoQueryResults.error ? (
+  <div style={{ color: "red" }}>{autoQueryResults.error}</div>
+) : (
+  <div>No automatic query result yet.</div>
+)}
+  </div>
+)}
 
     {/* BIF file selection */}
     <div className="section">

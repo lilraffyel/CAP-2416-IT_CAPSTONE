@@ -481,3 +481,117 @@ def save_questions(title):
     conn.commit()
     conn.close()
     return jsonify({'message': 'Assessment updated successfully'})
+@teacher_routes.route('/auto-query-result/<student_id>/<int:assessment_id>', methods=['GET'])
+def auto_query_result(student_id, assessment_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT sr.score, sr.total, c.id AS competency_node, a.bif_file
+        FROM student_results sr
+        JOIN assessments a ON sr.assessment_id = a.id
+        JOIN competencies c ON c.title = a.title
+        WHERE sr.student_id = ? AND sr.assessment_id = ?
+        ORDER BY sr.attempt_number DESC
+        LIMIT 1
+    """, (student_id, assessment_id))
+    row = cursor.fetchone()
+    conn.close()
+    if not row:
+        return jsonify({'error': 'Result not found'}), 404
+
+    competency_node = row['competency_node']
+    score = row['score']
+    total = row['total']
+    bif_file = row['bif_file'] or "network.bif"
+
+    # Use the loaded model from prerequisite_api.py
+    model_data = LOADED_MODELS.get(bif_file)
+    if not model_data:
+        return jsonify({'error': f"BIF file '{bif_file}' not loaded"}), 404
+
+    model = model_data["model"]
+    infer = model_data["infer"]
+
+    # Use the same logic as assess_competencies
+    try:
+        score_val = float(score)
+        if score_val < 7:
+            # Use determine_next_focus from prerequisite_api.py
+            from prerequisite.prerequisite_api import determine_next_focus
+            outcome = determine_next_focus(model, infer, competency_node)
+            result = {
+                "competency": competency_node,
+                "score": score,
+                "total": total,
+                "next_focus": outcome.get("next_focus"),
+                "mastery_probabilities": outcome.get("mastery_probabilities"),
+            }
+        else:
+            result = {
+                "competency": competency_node,
+                "score": score,
+                "total": total,
+                "next_focus": None,
+                "mastery_probabilities": None,
+            }
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@teacher_routes.route('/results/<student_id>', methods=['GET'])
+def get_teacher_student_results(student_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT sr.id as result_id,
+               sr.submitted_at AS date,
+               a.title AS examName,
+               sr.score,
+               sr.student_id,
+               sr.assessment_id
+        FROM student_results sr
+        JOIN assessments a ON sr.assessment_id = a.id
+        WHERE sr.student_id = ?
+        ORDER BY sr.submitted_at DESC
+    """, (student_id,))
+    results = cursor.fetchall()
+    conn.close()
+    return jsonify([dict(row) for row in results])
+
+@teacher_routes.route('/query-result/<int:result_id>', methods=['GET'])
+def query_result(result_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT c.title AS competency, sr.score, sr.total
+        FROM student_results sr
+        JOIN assessments a ON sr.assessment_id = a.id
+        LEFT JOIN competencies c ON c.title = a.title
+        WHERE sr.id = ?
+    """, (result_id,))
+    row = cursor.fetchone()
+    conn.close()
+    if not row:
+        return jsonify({'error': 'Result not found'}), 404
+
+    competency = row['competency']
+    score = row['score']
+    total = row['total']
+    mastery_prob = score / total if total else 0
+
+    try:
+        result = inference.query(variables=[competency], show_progress=False)
+        prob = result.values.item() if result.values.shape == () else result.values[1]
+        return jsonify({
+            'competency': competency,
+            'score': score,
+            'total': total,
+            'mastery_probability': prob
+        })
+    
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+    
