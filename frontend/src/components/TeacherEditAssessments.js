@@ -16,9 +16,11 @@ function TeacherEditAssessments() {
 const [bifFiles, setBifFiles] = useState([]);
 const [selectedDomain, setSelectedDomain] = useState("");
 const [selectedBifFile, setSelectedBifFile] = useState("");
-const editQuestionOptions = (qId, newOptions, newCorrect) => {
+const editQuestionAll = (qId, newText, newOptions, newCorrect) => {
   setQuestions(questions.map(q =>
-    q.id === qId ? { ...q, options: newOptions, correct: newCorrect } : q
+    q.id === qId
+      ? { ...q, text: newText, options: newOptions, correct: newCorrect }
+      : q
   ));
 };
 
@@ -316,7 +318,7 @@ useEffect(() => {
                     onTogglePin={() => togglePin(q.id)}
                     onAddComment={(cmt) => addComment(q.id, cmt)}
                     onEditText={(txt) => editQuestionText(q.id, txt)}
-                    onEditOptions={(opts, correct) => editQuestionOptions(q.id, opts, correct)}// <-- add this line
+                    onEditAll={(text, opts, correct) => editQuestionAll(q.id, text, opts, correct)}
                     onDelete={() => deleteQuestion(q.id)}
                   />
                 ))}
@@ -331,29 +333,10 @@ useEffect(() => {
 }
 
 // Sub-component to render each question row with edit and delete options
-function QuestionRow({ question, onTogglePin, onAddComment, onEditText, onEditOptions, onDelete }) {
-  const [editText, setEditText] = useState(question.text);
-  const [showEdit, setShowEdit] = useState(false);
-  const [commentText, setCommentText] = useState("");
-  const [editOptions, setEditOptions] = useState(question.options ? [...question.options] : ["", "", "", ""]);
-  const [editCorrect, setEditCorrect] = useState(question.correct || "");
+function QuestionRow({ question, onTogglePin, onAddComment, onEditAll, onDelete }) {
+  // ...existing state...
 
-  // Keep correct answer in sync with options
-  useEffect(() => {
-    if (!editOptions.includes(editCorrect)) {
-      setEditCorrect(editOptions[0] || "");
-    }
-  }, [editOptions]);
-
-  // When entering edit mode, sync local state with props
-  useEffect(() => {
-    if (showEdit) {
-      setEditText(question.text);
-      setEditOptions(question.options ? [...question.options] : ["", "", "", ""]);
-      setEditCorrect(question.correct || (question.options && question.options[0]) || "");
-    }
-    // eslint-disable-next-line
-  }, [showEdit]);
+  // ...existing useEffects...
 
   return (
     <tr style={{ borderBottom: '1px solid #333' }}>
@@ -444,8 +427,7 @@ function QuestionRow({ question, onTogglePin, onAddComment, onEditText, onEditOp
           <div style={{ marginTop: 4 }}>
             <button
               onClick={() => {
-                onEditText(editText);
-                onEditOptions(editOptions, editCorrect);
+                onEditAll(editText, editOptions, editCorrect);
                 setShowEdit(false);
               }}
               style={{ marginRight: 4 }}
