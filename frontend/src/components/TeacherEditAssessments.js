@@ -12,11 +12,36 @@ function TeacherEditAssessments() {
   const [newAssessmentTitle, setNewAssessmentTitle] = useState("");
   const [assessmentsByDomain, setAssessmentsByDomain] = useState({});
   const [domains, setDomains] = useState([]);
+  const [contentDomains, setContentDomains] = useState([]);
+const [bifFiles, setBifFiles] = useState([]);
+const [selectedDomain, setSelectedDomain] = useState("");
+const [selectedBifFile, setSelectedBifFile] = useState("");
+const editQuestionOptions = (qId, newOptions, newCorrect) => {
+  setQuestions(questions.map(q =>
+    q.id === qId ? { ...q, options: newOptions, correct: newCorrect } : q
+  ));
+};
 
   // Load all assessments on mount
   useEffect(() => {
     fetchAssessments();
   }, []);
+
+  // Fetch domains and bif files on mount
+useEffect(() => {
+  axios.get("http://localhost:5000/api/teacher/domains", { withCredentials: true })
+    .then(res => setContentDomains(res.data))
+    .catch(() => setContentDomains([]));
+  // Hardcode or fetch BIF files from backend
+  setBifFiles([
+    "estimate.bif",
+    "place-value.bif",
+    "counting.bif",
+    "ordering.bif",
+    "comparing.bif",
+    // ...add more as needed
+  ]);
+}, []);
 
   const fetchAssessments = () => {
   axios.get("http://localhost:5000/api/teacher/assessments", { withCredentials: true })
@@ -47,18 +72,23 @@ function TeacherEditAssessments() {
 
   // Add a new assessment
   const addAssessment = () => {
-    if (!newAssessmentTitle.trim()) return;
-    if (assessments.includes(newAssessmentTitle)) {
-      alert("Assessment already exists.");
-      return;
-    }
-    axios.post("http://localhost:5000/api/teacher/assessments", { title: newAssessmentTitle }, { withCredentials: true })
-      .then(() => {
-        setNewAssessmentTitle("");
-        fetchAssessments();
-      })
-      .catch(() => alert("Failed to add assessment."));
-  };
+  if (!newAssessmentTitle.trim() || !selectedDomain) {
+    alert("Please enter a title and select a content domain.");
+    return;
+  }
+  axios.post("http://localhost:5000/api/teacher/assessments", {
+    title: newAssessmentTitle,
+    content_domain_id: selectedDomain,
+    bif_file: selectedBifFile
+  }, { withCredentials: true })
+    .then(() => {
+      setNewAssessmentTitle("");
+      setSelectedDomain("");
+      setSelectedBifFile("");
+      fetchAssessments();
+    })
+    .catch(() => alert("Failed to add assessment."));
+};
 
   // Delete an assessment
   const deleteAssessment = (title) => {
@@ -115,19 +145,25 @@ function TeacherEditAssessments() {
 
   // Save changes to questions for the selected assessment (persist to backend)
   const saveChanges = () => {
-    if (!selectedAssessment) return;
-    axios.post(
-      `http://localhost:5000/api/teacher/assessment/${encodeURIComponent(selectedAssessment)}`,
-      { questions },
-      { withCredentials: true }
-    )
-      .then(() => {
-        alert("Assessment questions saved to database!");
-      })
-      .catch(() => {
-        alert("Failed to save changes.");
-      });
-  };
+  if (!selectedAssessment) return;
+  // Ensure all questions have a valid 'correct' value
+  const cleanedQuestions = questions.map(q => {
+    let correct = q.correct || (q.options && q.options[0]) || "";
+    return { ...q, correct };
+  });
+  console.log(cleanedQuestions);
+  axios.post(
+    `http://localhost:5000/api/teacher/assessment/${encodeURIComponent(selectedAssessment)}`,
+    { questions: cleanedQuestions },
+    { withCredentials: true }
+  )
+    .then(() => {
+      alert("Assessment questions saved to database!");
+    })
+    .catch(() => {
+      alert("Failed to save changes.");
+    });
+};
 
   return (
     <div className="content-box">
@@ -138,66 +174,124 @@ function TeacherEditAssessments() {
 
       {/* Add New Assessment */}
       <div style={{ marginBottom: '1rem' }}>
-        <strong>Add New Assessment:</strong>{" "}
-        <input
-          type="text"
-          value={newAssessmentTitle}
-          onChange={e => setNewAssessmentTitle(e.target.value)}
-          placeholder="Assessment Title"
-        />
-        <button onClick={addAssessment} style={{ marginLeft: '0.5rem' }}>
-          Add Assessment
-        </button>
-      </div>
+  <strong>Add New Assessment:</strong>{" "}
+  <input
+    type="text"
+    value={newAssessmentTitle}
+    onChange={e => setNewAssessmentTitle(e.target.value)}
+    placeholder="Assessment Title"
+  />
+  <select
+    value={selectedDomain}
+    onChange={e => setSelectedDomain(e.target.value)}
+    style={{ marginLeft: '0.5rem' }}
+  >
+    <option value="">Select Domain</option>
+    {contentDomains.map(domain => (
+      <option key={domain.id} value={domain.id}>{domain.name}</option>
+    ))}
+  </select>
+  <select
+    value={selectedBifFile}
+    onChange={e => setSelectedBifFile(e.target.value)}
+    style={{ marginLeft: '0.5rem' }}
+  >
+    <option value="">Select BIF File</option>
+    {bifFiles.map(bif => (
+      <option key={bif} value={bif}>{bif}</option>
+    ))}
+  </select>
+  <button onClick={addAssessment} style={{ marginLeft: '0.5rem' }}>
+    Add Assessment
+  </button>
+</div>
 
       {/* Assessment List */}
       <div style={{ marginBottom: '1rem' }}>
   <strong>Assessments by Content Domain:</strong>
   {domains.length === 0 ? (
-    <div>No assessments found.</div>
-  ) : (
-    domains.map(domain => (
-      <div key={domain} style={{ marginBottom: '1rem' }}>
-        <div style={{ fontWeight: 'bold', marginTop: '0.5rem' }}>{domain}</div>
-        {(assessmentsByDomain[domain] || []).map(assName => (
-          <span key={assName} style={{ marginRight: '1rem' }}>
-            <button
-              style={{
-                background: selectedAssessment === assName ? '#2980b9' : '#3498db',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '4px',
-                padding: '0.3rem 0.8rem',
-                marginRight: '0.3rem'
-              }}
-              onClick={() => handleAssessmentSelect(assName)}
-            >
-              {assName}
-            </button>
-            <button
-              onClick={() => deleteAssessment(assName)}
-              style={{
-                background: 'red',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                padding: '0.3rem 0.5rem'
-              }}
-              title="Delete assessment"
-            >
-              &times;
-            </button>
-          </span>
-        ))}
-      </div>
-    ))
-  )}
+  <div>No assessments found.</div>
+) : (
+  domains.map(domain => (
+    <div key={domain} style={{ marginBottom: '1rem' }}>
+      <div style={{ fontWeight: 'bold', marginTop: '0.5rem' }}>{domain}</div>
+      {(assessmentsByDomain[domain] || []).map(assObj => (
+        <span key={assObj.title} style={{ marginRight: '1rem' }}>
+          <button
+            style={{
+              background: selectedAssessment === assObj.title ? '#2980b9' : '#3498db',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '4px',
+              padding: '0.3rem 0.8rem',
+              marginRight: '0.3rem'
+            }}
+            onClick={() => handleAssessmentSelect(assObj.title)}
+          >
+            {assObj.title}
+          </button>
+          <button
+            onClick={() => deleteAssessment(assObj.title)}
+            style={{
+              background: 'red',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              padding: '0.3rem 0.5rem'
+            }}
+            title="Delete assessment"
+          >
+            &times;
+          </button>
+        </span>
+      ))}
+    </div>
+  ))
+)}
 </div>
 
       {/* Questions Table */}
       {selectedAssessment && (
-        <div style={{ marginTop: '1rem' }}>
-          <h3>Editing Assessment: {selectedAssessment}</h3>
+  <div style={{ marginTop: '1rem' }}>
+    <h3>Editing Assessment: {selectedAssessment}</h3>
+    <div style={{ marginBottom: '1rem' }}>
+      <label>
+        Content Domain:{" "}
+        <select
+          value={selectedDomain}
+          onChange={e => setSelectedDomain(e.target.value)}
+        >
+          <option value="">Select Domain</option>
+          {contentDomains.map(domain => (
+            <option key={domain.id} value={domain.id}>{domain.name}</option>
+          ))}
+        </select>
+      </label>
+      <label style={{ marginLeft: '1rem' }}>
+        BIF File:{" "}
+        <select
+          value={selectedBifFile}
+          onChange={e => setSelectedBifFile(e.target.value)}
+        >
+          <option value="">Select BIF File</option>
+          {bifFiles.map(bif => (
+            <option key={bif} value={bif}>{bif}</option>
+          ))}
+        </select>
+      </label>
+      <button
+        onClick={() => {
+          axios.patch(
+            `http://localhost:5000/api/teacher/assessment/${encodeURIComponent(selectedAssessment)}`,
+            { content_domain_id: selectedDomain, bif_file: selectedBifFile },
+            { withCredentials: true }
+          ).then(() => alert("Assessment updated!"));
+        }}
+        style={{ marginLeft: '1rem' }}
+      >
+        Save Assessment Meta
+      </button>
+    </div>
           <button onClick={addQuestion} style={{ marginBottom: '1rem' }}>Add Question</button>
           {loadingQuestions ? (
             <div>Loading questions...</div>
@@ -222,6 +316,7 @@ function TeacherEditAssessments() {
                     onTogglePin={() => togglePin(q.id)}
                     onAddComment={(cmt) => addComment(q.id, cmt)}
                     onEditText={(txt) => editQuestionText(q.id, txt)}
+                    onEditOptions={(opts, correct) => editQuestionOptions(q.id, opts, correct)}// <-- add this line
                     onDelete={() => deleteQuestion(q.id)}
                   />
                 ))}
@@ -236,29 +331,40 @@ function TeacherEditAssessments() {
 }
 
 // Sub-component to render each question row with edit and delete options
-function QuestionRow({ question, onTogglePin, onAddComment, onEditText, onDelete }) {
+function QuestionRow({ question, onTogglePin, onAddComment, onEditText, onEditOptions, onDelete }) {
   const [editText, setEditText] = useState(question.text);
   const [showEdit, setShowEdit] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [editOptions, setEditOptions] = useState(question.options ? [...question.options] : ["", "", "", ""]);
   const [editCorrect, setEditCorrect] = useState(question.correct || "");
 
+  // Keep correct answer in sync with options
+  useEffect(() => {
+    if (!editOptions.includes(editCorrect)) {
+      setEditCorrect(editOptions[0] || "");
+    }
+  }, [editOptions]);
+
+  // When entering edit mode, sync local state with props
+  useEffect(() => {
+    if (showEdit) {
+      setEditText(question.text);
+      setEditOptions(question.options ? [...question.options] : ["", "", "", ""]);
+      setEditCorrect(question.correct || (question.options && question.options[0]) || "");
+    }
+    // eslint-disable-next-line
+  }, [showEdit]);
+
   return (
     <tr style={{ borderBottom: '1px solid #333' }}>
       <td style={{ padding: '8px' }}>{question.id}</td>
       <td style={{ padding: '8px' }}>
         {showEdit ? (
-          <div>
-            <input
-              style={{ width: '80%', marginBottom: '4px' }}
-              value={editText}
-              onChange={(e) => setEditText(e.target.value)}
-            />
-            <div>
-              <button onClick={() => { onEditText(editText); setShowEdit(false); }}>Save</button>
-              <button onClick={() => setShowEdit(false)}>Cancel</button>
-            </div>
-          </div>
+          <input
+            style={{ width: '80%', marginBottom: '4px' }}
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+          />
         ) : (
           <>
             {question.text}
@@ -281,14 +387,6 @@ function QuestionRow({ question, onTogglePin, onAddComment, onEditText, onDelete
                 }}
               />
             ))}
-            <button
-              onClick={() => {
-                onEditText(editText);
-                question.options = [...editOptions];
-                setShowEdit(false);
-              }}
-              style={{ marginTop: 4 }}
-            >Save Options</button>
           </div>
         ) : (
           <ul style={{ margin: 0, paddingLeft: 16 }}>
@@ -298,11 +396,15 @@ function QuestionRow({ question, onTogglePin, onAddComment, onEditText, onDelete
       </td>
       <td style={{ padding: '8px' }}>
         {showEdit ? (
-          <input
+          <select
             value={editCorrect}
             onChange={e => setEditCorrect(e.target.value)}
             style={{ width: '90%' }}
-          />
+          >
+            {editOptions.map((opt, i) => (
+              <option key={i} value={opt}>{opt}</option>
+            ))}
+          </select>
         ) : (
           question.correct
         )}
@@ -338,9 +440,23 @@ function QuestionRow({ question, onTogglePin, onAddComment, onEditText, onDelete
       </td>
       <td style={{ padding: '8px' }}>
         <button onClick={onDelete} style={{ background: 'red', color: 'white' }}>Delete</button>
+        {showEdit && (
+          <div style={{ marginTop: 4 }}>
+            <button
+              onClick={() => {
+                onEditText(editText);
+                onEditOptions(editOptions, editCorrect);
+                setShowEdit(false);
+              }}
+              style={{ marginRight: 4 }}
+            >
+              Save
+            </button>
+            <button onClick={() => setShowEdit(false)}>Cancel</button>
+          </div>
+        )}
       </td>
     </tr>
   );
 }
-
 export default TeacherEditAssessments;

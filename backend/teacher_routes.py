@@ -373,18 +373,22 @@ def delete_result(result_id):
 def get_all_assessments():
     conn = get_db()
     cursor = conn.cursor()
-    # Adjust table/column names as needed!
     cursor.execute("""
-        SELECT a.title, cd.name AS domain
+        SELECT a.title, a.bif_file, cd.name AS domain, a.content_domain_id
         FROM assessments a
-        LEFT JOIN competencies c ON a.title = c.title
-        LEFT JOIN content_domains cd ON c.content_domain_id = cd.id
+        LEFT JOIN content_domains cd ON a.content_domain_id = cd.id
     """)
     rows = cursor.fetchall()
     result = {}
     for row in rows:
         domain = row['domain'] or "Uncategorized"
-        result.setdefault(domain, []).append(row['title'])
+        if domain not in result:
+            result[domain] = []
+        result[domain].append({
+            "title": row['title'],
+            "bif_file": row['bif_file'],
+            "content_domain_id": row['content_domain_id']
+        })
     conn.close()
     return jsonify(result)
 
@@ -392,14 +396,34 @@ def get_all_assessments():
 def add_assessment():
     data = request.get_json()
     title = data.get("title")
-    if not title:
-        return jsonify({'error': 'Missing title'}), 400
+    content_domain_id = data.get("content_domain_id")
+    bif_file = data.get("bif_file")
+    if not title or not content_domain_id:
+        return jsonify({'error': 'Missing title or content_domain_id'}), 400
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO assessments (title) VALUES (?)", (title,))
+    cursor.execute(
+        "INSERT INTO assessments (title, content_domain_id, bif_file) VALUES (?, ?, ?)",
+        (title, content_domain_id, bif_file)
+    )
     conn.commit()
     conn.close()
     return jsonify({"message": "Assessment added."})
+
+@teacher_routes.route('/assessment/<title>', methods=['PATCH'])
+def update_assessment(title):
+    data = request.get_json()
+    content_domain_id = data.get("content_domain_id")
+    bif_file = data.get("bif_file")
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE assessments SET content_domain_id = ?, bif_file = ? WHERE title = ?",
+        (content_domain_id, bif_file, title)
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Assessment updated."})
 
 @teacher_routes.route('/assessment/<title>', methods=['DELETE'])
 def delete_assessment(title):
@@ -445,6 +469,7 @@ def get_questions(title):
         q['options'] = [c['choice_text'] for c in cursor.fetchall()]
         q['pinned'] = False
         q['comments'] = []
+        q['correct'] = q.pop('correct_answer', '')
     conn.close()
     return jsonify(questions)
 
@@ -471,16 +496,26 @@ def save_questions(title):
     cursor.execute("DELETE FROM questions WHERE assessment_id = ?", (assessment_id,))
     # Re-insert all updated questions
     for q in questions:
-        cursor.execute("""
-            INSERT INTO questions (text, correct_answer, score, assessment_id)
-            VALUES (?, ?, ?, ?)
-        """, (q['text'], q['correct'], q.get('score', 1), assessment_id))
-        new_qid = cursor.lastrowid
-        for opt in q.get('options', []):
-            cursor.execute("INSERT INTO choices (question_id, choice_text) VALUES (?, ?)", (new_qid, opt))
+        try:
+            print("Saving question:", q)  # Add this line for debugging
+            # Fallback: use q.get('correct') or first option if missing
+            correct = q.get('correct') or (q.get('options') or [""])[0]
+            cursor.execute("""
+                INSERT INTO questions (text, correct_answer, score, assessment_id)
+                VALUES (?, ?, ?, ?)
+            """, (q['text'], correct, q.get('score', 1), assessment_id))
+            new_qid = cursor.lastrowid
+            for opt in q.get('options', []):
+                cursor.execute("INSERT INTO choices (question_id, choice_text) VALUES (?, ?)", (new_qid, opt))
+        except Exception as e:
+            conn.rollback()
+            conn.close()
+            print("Error saving question:", q, e)
+            return jsonify({'error': f'Failed to save question: {str(e)}', 'question': q}), 500
     conn.commit()
     conn.close()
     return jsonify({'message': 'Assessment updated successfully'})
+
 @teacher_routes.route('/auto-query-result/<student_id>/<int:assessment_id>', methods=['GET'])
 def auto_query_result(student_id, assessment_id):
     conn = get_db()
