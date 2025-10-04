@@ -343,10 +343,10 @@ function QuestionRow({ question, onTogglePin, onAddComment, onEditAll, onDelete 
 
   // Keep correct answer in sync with options
   useEffect(() => {
-    if (!editOptions.includes(editCorrect)) {
-      setEditCorrect(editOptions[0] || "");
-    }
-  }, [editOptions]);
+  if (!editOptions.includes(editCorrect)) {
+    setEditCorrect(editOptions[0] || "");
+  }
+}, [editOptions, editCorrect]);
 
   // When entering edit mode, sync local state with props
   useEffect(() => {
