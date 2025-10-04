@@ -16,6 +16,7 @@ function TeacherEditAssessments() {
 const [bifFiles, setBifFiles] = useState([]);
 const [selectedDomain, setSelectedDomain] = useState("");
 const [selectedBifFile, setSelectedBifFile] = useState("");
+// Replace both editQuestionText and editQuestionOptions with:
 const editQuestionAll = (qId, newText, newOptions, newCorrect) => {
   setQuestions(questions.map(q =>
     q.id === qId
@@ -318,7 +319,7 @@ useEffect(() => {
                     onTogglePin={() => togglePin(q.id)}
                     onAddComment={(cmt) => addComment(q.id, cmt)}
                     onEditText={(txt) => editQuestionText(q.id, txt)}
-                    onEditAll={(text, opts, correct) => editQuestionAll(q.id, text, opts, correct)}
+                    onEditAll={(text, opts, correct) => editQuestionAll(q.id, text, opts, correct)}// <-- add this line
                     onDelete={() => deleteQuestion(q.id)}
                   />
                 ))}
@@ -334,9 +335,28 @@ useEffect(() => {
 
 // Sub-component to render each question row with edit and delete options
 function QuestionRow({ question, onTogglePin, onAddComment, onEditAll, onDelete }) {
-  // ...existing state...
+  const [editText, setEditText] = useState(question.text);
+  const [showEdit, setShowEdit] = useState(false);
+  const [commentText, setCommentText] = useState("");
+  const [editOptions, setEditOptions] = useState(question.options ? [...question.options] : ["", "", "", ""]);
+  const [editCorrect, setEditCorrect] = useState(question.correct || "");
 
-  // ...existing useEffects...
+  // Keep correct answer in sync with options
+  useEffect(() => {
+    if (!editOptions.includes(editCorrect)) {
+      setEditCorrect(editOptions[0] || "");
+    }
+  }, [editOptions]);
+
+  // When entering edit mode, sync local state with props
+  useEffect(() => {
+    if (showEdit) {
+      setEditText(question.text);
+      setEditOptions(question.options ? [...question.options] : ["", "", "", ""]);
+      setEditCorrect(question.correct || (question.options && question.options[0]) || "");
+    }
+    // eslint-disable-next-line
+  }, [showEdit]);
 
   return (
     <tr style={{ borderBottom: '1px solid #333' }}>
