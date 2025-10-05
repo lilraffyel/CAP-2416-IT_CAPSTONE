@@ -189,6 +189,7 @@ function TutorQuery() {
   return (
   <div className="content-box">
     <h2 className="section-title">Tutor Query</h2>
+    <h3>Automatic Query</h3>
 
     {/* Student selection */}
     <div style={{ marginBottom: "1.5rem" }}>
@@ -269,7 +270,7 @@ function TutorQuery() {
     {/* Auto Query Button and Results */}
     {selectedStudent && (
   <div className="section" style={{ marginBottom: "2rem" }}>
-    <h3>Automatic Query</h3>
+    
     {autoQueryResults && autoQueryResults.competency ? (
   <div>
     <div>
@@ -307,7 +308,7 @@ function TutorQuery() {
 )}
   </div>
 )}
-
+<h3 style={{ marginTop: "2rem" }}>Manual Query</h3>
     {/* BIF file selection */}
     <div className="section">
       <h3>BIF Files</h3>
@@ -364,6 +365,8 @@ function TutorQuery() {
         </div>
       </div>
     )}
+
+  
 
     {/* Add tested competency and score */}
     <div className="section" style={{ marginTop: "1rem" }}>
