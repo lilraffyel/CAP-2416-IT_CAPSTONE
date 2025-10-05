@@ -23,6 +23,7 @@ function StudentDashboard() {
       <aside className="sidebar">
         <h3>Student Menu</h3>
         <ul>
+          <li><Link to="/student/home">Home</Link></li> {/* <-- Add this line */}
           <li><Link to="/student/help">Request Tutoring</Link></li>
           <li><Link to="/student/assessments">Take Assessments</Link></li>
           <li><Link to="/student/results">View Results</Link></li>
