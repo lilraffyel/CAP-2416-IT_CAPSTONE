@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
@@ -15,43 +14,34 @@ function TeacherProgress() {
   const [dummyRefresh, setDummyRefresh] = useState(0);
 
   useEffect(() => {
-
-    axios.get('http://localhost:5000/api/me')
-    .then(res => {
-      setTutorId(res.data.tutorId);
-    })
-    .catch(console.error);
-
-    // Fetch students
-    /*axios.get('http://localhost:5000/api/teacher/students')
-      .then(res => setStudents(res.data))
-      .catch(console.error);
-       */
-
-       axios.get(`http://localhost:5000/api/teacher/students?tutor_id=${tutorId}`)
-       .then(res => setStudents(res.data))
+    axios.get('http://localhost:5000/api/me', { withCredentials: true })
+      .then(res => setTutorId(res.data.tutorId))
       .catch(console.error);
 
-    // Fetch domains
     axios.get('http://localhost:5000/api/teacher/domains')
       .then(res => setDomains(res.data))
       .catch(console.error);
 
-    // Fetch competencies
     axios.get('http://localhost:5000/api/teacher/competencies')
       .then(res => setCompetencies(res.data))
       .catch(console.error);
 
-    // Fetch help requests
     axios.get('http://localhost:5000/api/teacher/help-requests')
       .then(res => setHelpRequests(res.data))
       .catch(console.error);
 
-    // Fetch assignments
     axios.get('http://localhost:5000/api/teacher/assignments')
       .then(res => setAssignments(res.data))
       .catch(console.error);
   }, [dummyRefresh]);
+
+  useEffect(() => {
+    if (tutorId) {
+      axios.get(`http://localhost:5000/api/teacher/students?tutor_id=${tutorId}`)
+        .then(res => setStudents(res.data))
+        .catch(console.error);
+    }
+  }, [tutorId, dummyRefresh]);
 
   const getHelpRequestsForStudent = (stuId) => {
     return helpRequests
@@ -79,12 +69,27 @@ function TeacherProgress() {
     axios.post('http://localhost:5000/api/teacher/assign', {
       studentId: stuId,
       competencyId: chosenComp,
+      tutorId: tutorId,
     })
       .then(() => {
         alert(`Assigned competency to student ID ${stuId}.`);
-        setDummyRefresh(prev => prev + 1); // Refresh data
+        setDummyRefresh(prev => prev + 1);
       })
       .catch(() => alert('Failed to assign competency.'));
+  };
+
+  // NEW: Remove/unassign a competency from a student
+  const handleUnassign = (stuId, compId) => {
+    axios.post('http://localhost:5000/api/teacher/unassign', {
+      studentId: stuId,
+      competencyId: compId,
+      tutorId: tutorId,
+    })
+      .then(() => {
+        alert(`Unassigned competency from student ID ${stuId}.`);
+        setDummyRefresh(prev => prev + 1);
+      })
+      .catch(() => alert('Failed to unassign competency.'));
   };
 
   return (
@@ -126,9 +131,28 @@ function TeacherProgress() {
                     {requests.length ? requests.join(', ') : 'None'}
                   </td>
                   <td style={{ padding: '8px' }}>
-                    {assigned.length ? assigned.join(', ') : 'None'}
+                    {assigned.length ? assigned.map(compId => {
+                      // Find the competency label for display
+                      const compObj = competencies.find(c => c.id === compId);
+                      return (
+                        <span key={compId} style={{ display: 'inline-block', marginRight: 8 }}>
+                          {compObj ? compObj.label : compId}
+                          <button
+                            style={{
+                              marginLeft: 4,
+                              background: 'none',
+                              border: 'none',
+                              color: 'red',
+                              cursor: 'pointer',
+                              fontWeight: 'bold'
+                            }}
+                            title="Remove"
+                            onClick={() => handleUnassign(stu.id, compId)}
+                          >✕</button>
+                        </span>
+                      );
+                    }) : 'None'}
                   </td>
-
                   <td style={{ padding: '8px' }}>
                     <select
                       value={currentDomain}
@@ -142,7 +166,6 @@ function TeacherProgress() {
                       ))}
                     </select>
                   </td>
-
                   <td style={{ padding: '8px' }}>
                     <select
                       value={currentComp}
@@ -157,7 +180,6 @@ function TeacherProgress() {
                       ))}
                     </select>
                   </td>
-
                   <td style={{ padding: '8px' }}>
                     <button onClick={() => handleAssign(stu.id)}>Assign</button>
                   </td>
@@ -172,4 +194,3 @@ function TeacherProgress() {
 }
 
 export default TeacherProgress;
-

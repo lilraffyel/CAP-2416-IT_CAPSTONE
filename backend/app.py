@@ -194,7 +194,7 @@ def update_bayesian_network(competency, score, total_questions):
         print(f"[ERROR] Failed to update Bayesian Network: {e}")
 
 # Register blueprints
-app.register_blueprint(auth_bp) 
+app.register_blueprint(auth_bp, url_prefix='/api')
 app.register_blueprint(student_bp, url_prefix='/api/students')
 app.register_blueprint(teacher_routes, url_prefix='/api/teacher')
 app.register_blueprint(user_routes, url_prefix='/api/users')

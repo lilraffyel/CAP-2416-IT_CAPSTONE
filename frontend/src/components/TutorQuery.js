@@ -38,7 +38,7 @@ function TutorQuery() {
   const [filterText, setFilterText] = useState("");
   //State for Auto Query Results
   const [autoQueryResults, setAutoQueryResults] = useState([]);
-
+  const [tutorId, setTutorId] = useState(null);
   // Load BIF files on mount
   useEffect(() => {
     async function fetchBifList() {
@@ -48,11 +48,20 @@ function TutorQuery() {
     fetchBifList();
   }, []);
 
-  // Fetch students (mock or real)
+  // Fetch tutorId on mount
   useEffect(() => {
-    // Replace with real fetch if available
-    setStudents(["student1", "student2", "student3"]);
+    axios.get('http://localhost:5000/api/me', { withCredentials: true })
+      .then(res => setTutorId(res.data.tutorId))
+      .catch(console.error);
   }, []);
+
+  // Fetch students assigned to this tutor
+  useEffect(() => {
+    if (!tutorId) return;
+    axios.get(`http://localhost:5000/api/teacher/students?tutor_id=${tutorId}`)
+      .then(res => setStudents(res.data)) // keep full objects
+      .catch(console.error);
+  }, [tutorId]);
 
   // Fetch student results when a student is selected
  useEffect(() => {
@@ -193,15 +202,15 @@ function TutorQuery() {
       {showStudentDropdown && (
         <ul className="dropdown-list" style={{ background: "#222", color: "#fff", listStyle: "none", padding: 0, borderRadius: 4, boxShadow: "0 2px 8px #0008" }}>
           {students.map((s) => (
-            <li
-              key={s}
-              className="dropdown-item"
-              style={{ cursor: "pointer", padding: "0.5rem", borderBottom: "1px solid #333" }}
-              onClick={() => handleSelectStudent(s)}
-            >
-              {s}
-            </li>
-          ))}
+  <li
+    key={s.id}
+    className="dropdown-item"
+    style={{ cursor: "pointer", padding: "0.5rem", borderBottom: "1px solid #333" }}
+    onClick={() => handleSelectStudent(s.id)}
+  >
+    {s.name}
+  </li>
+))}
         </ul>
       )}
     </div>

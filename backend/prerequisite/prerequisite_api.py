@@ -116,13 +116,17 @@ def determine_next_focus(model, infer, failed_competency):
             state_names = model.get_cpds(failed_competency).state_names.get(failed_competency, None)
             print(f"State names for {failed_competency}:", state_names)
             if state_names:
-                # Use the first state as "not mastered" (keep as string)
+                # Use the first state as "not mastered"
                 not_mastered = state_names[0]
+                # Ensure evidence type matches state name type
+                state_type = type(not_mastered)
+                evidence_value = state_type(not_mastered)
             else:
-                not_mastered = '0'  # fallback as string
+                # fallback as string
+                evidence_value = '0'
 
-            print(f"Inferring {pre} with evidence {failed_competency}={not_mastered} (type: {type(not_mastered)})")
-            result = infer.query(variables=[pre], evidence={failed_competency: not_mastered})
+            print(f"Inferring {pre} with evidence {failed_competency}={evidence_value} (type: {type(evidence_value)})")
+            result = infer.query(variables=[pre], evidence={failed_competency: evidence_value})
             prob_dict[pre] = result.values[1]
         except Exception as e:
             print(f"Error inferring for {pre}: {e}")

@@ -179,58 +179,43 @@ def assign_tutor():
     return jsonify({'message': 'Tutor assigned successfully!'})
 
 '''
+@admin_routes.route('/students', methods=['GET'])
+def get_students():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, name FROM users WHERE role = 'Student'")
+    students = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(students)
 
 @admin_routes.route('/assign-tutor', methods=['POST'])
 def assign_tutor():
     data = request.json
-    help_request_id = data.get('help_request_id')
-    tutor_id = data.get('tutor_id')
+    print('Received data:', data)  # Add this line
+    student_id = data.get('studentId')
+    tutor_id = data.get('tutorId')
 
-    if not help_request_id or not tutor_id:
-        return jsonify({'error': 'help_request_id and tutor_id are required'}), 400
+    if not student_id or not tutor_id:
+        return jsonify({'error': 'studentId and tutorId are required'}), 400
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # 🔹 1. Check if help_request exists and status
-    cursor.execute("SELECT student_id, domain_id, status FROM help_requests WHERE id = ?", (help_request_id,))
-    row = cursor.fetchone()
-
-    if not row:
-        conn.close()
-        return jsonify({'error': 'Help request not found'}), 404
-
-    student_id = row['student_id']
-    domain_id = row['domain_id']
-    status = row['status']
-
-    if status == "Assigned":
-        conn.close()
-        return jsonify({'error': 'This help request is already assigned.'}), 400
-
-    # 🔹 2. Insert into tutor_assignments
+    # Prevent duplicate assignments
     cursor.execute("""
-        INSERT INTO tutor_assignments (tutor_id, student_id, help_request_id, domain_id)
-        VALUES (?, ?, ?, ?)
-    """, (tutor_id, student_id, help_request_id, domain_id))
+        SELECT 1 FROM tutor_assignments WHERE student_id = ? AND tutor_id = ?
+    """, (student_id, tutor_id))
+    if cursor.fetchone():
+        conn.close()
+        return jsonify({'error': 'This tutor is already assigned to this student.'}), 400
 
-    # 🔹 3. Update help_requests table (status + optional tutor_id)
     cursor.execute("""
-        UPDATE help_requests
-        SET status = 'Assigned'
-        WHERE id = ?
-    """, (help_request_id,))
-
-    # (optional: if you want to store tutor_id directly in help_requests)
-    # cursor.execute("""
-    #     UPDATE help_requests
-    #     SET status = 'Assigned', tutor_id = ?
-    #     WHERE id = ?
-    # """, (tutor_id, help_request_id))
+        INSERT INTO tutor_assignments (student_id, tutor_id)
+        VALUES (?, ?)
+    """, (student_id, tutor_id))
 
     conn.commit()
     conn.close()
-
     return jsonify({'message': 'Tutor assigned successfully!'})
 
 
@@ -240,21 +225,52 @@ def get_tutor_assignments():
     cursor = conn.cursor()
     cursor.execute("""
         SELECT ta.id,
-               ta.help_request_id,
-               hr.student_id,
-               u.name as student_name,
-               hr.domain_id,
-               cd.name as domain_name,
+               ta.student_id,
+               s.name as student_name,
                ta.tutor_id,
                t.name as tutor_name,
+               ta.help_request_id,
+               ta.domain_id,
                ta.assigned_at
         FROM tutor_assignments ta
-        JOIN help_requests hr ON ta.help_request_id = hr.id
-        JOIN users u ON hr.student_id = u.id
-        JOIN content_domains cd ON hr.domain_id = cd.id
+        JOIN users s ON ta.student_id = s.id
         JOIN users t ON ta.tutor_id = t.id
+        LEFT JOIN help_requests hr ON ta.help_request_id = hr.id
+        LEFT JOIN content_domains cd ON hr.domain_id = cd.id
         ORDER BY ta.assigned_at DESC
     """)
     assignments = [dict(row) for row in cursor.fetchall()]
     conn.close()
     return jsonify(assignments)
+
+@admin_routes.route('/unassign-tutor', methods=['POST'])
+def unassign_tutor():
+    data = request.json
+    student_id = data.get('studentId')
+    tutor_id = data.get('tutorId')
+    if not student_id or not tutor_id:
+        return jsonify({'error': 'studentId and tutorId are required'}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "DELETE FROM tutor_assignments WHERE student_id = ? AND tutor_id = ?",
+        (student_id, tutor_id)
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({'message': 'Tutor unassigned successfully!'})
+
+@admin_routes.route('/remove-help-request', methods=['POST'])
+def remove_help_request():
+    data = request.json
+    help_request_id = data.get('helpRequestId')
+    if not help_request_id:
+        return jsonify({'error': 'helpRequestId is required'}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM help_requests WHERE id = ?", (help_request_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'message': 'Help request removed successfully!'})

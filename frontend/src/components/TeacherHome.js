@@ -8,14 +8,24 @@ function TeacherHome() {
   const [allAssessments, setAllAssessments] = useState([]);
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [commentDraft, setCommentDraft] = useState('');
+  const [tutorId, setTutorId] = useState(null);
 
-  // Fetch students on mount
+  // Fetch tutorId on mount
   useEffect(() => {
-    fetch('http://localhost:5000/api/teacher/students')
+    fetch('http://localhost:5000/api/me', { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => setTutorId(data.tutorId))
+      .catch(console.error);
+  }, []);
+
+  // Fetch students assigned to this tutor
+  useEffect(() => {
+    if (!tutorId) return;
+    fetch(`http://localhost:5000/api/teacher/students?tutor_id=${tutorId}`)
       .then(res => res.json())
       .then(data => setStudents(data))
       .catch(console.error);
-  }, []);
+  }, [tutorId]);
 
   // Fetch all assessments (latest results)
   useEffect(() => {

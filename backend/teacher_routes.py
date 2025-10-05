@@ -1,4 +1,7 @@
 from flask import Blueprint, request, jsonify
+from pgmpy.readwrite.BIF import BIFReader
+from pgmpy.inference import VariableElimination
+from prerequisite.prerequisite_api import LOADED_MODELS
 import sqlite3
 
 teacher_routes = Blueprint('teacher_routes', __name__)
@@ -12,9 +15,19 @@ def get_db():
 
 @teacher_routes.route('/students', methods=['GET'])
 def get_students():
+    tutor_id = request.args.get('tutor_id')
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, name FROM users WHERE role = 'Student'")
+    if tutor_id:
+        # Only students assigned to this tutor, no duplicates
+        cursor.execute("""
+            SELECT DISTINCT u.id, u.name
+            FROM users u
+            INNER JOIN tutor_assignments ta ON u.id = ta.student_id
+            WHERE ta.tutor_id = ? AND u.role = 'Student'
+        """, (tutor_id,))
+    else:
+        cursor.execute("SELECT id, name FROM users WHERE role = 'Student'")
     students = [dict(row) for row in cursor.fetchall()]
     conn.close()
     return jsonify(students)
@@ -85,6 +98,21 @@ def get_competencies():
     return jsonify(competencies)
 
 # ─── Assignment API ─────────────────────────────────────────────────────
+@teacher_routes.route('/assignments', methods=['GET'])
+def get_assignments():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT a.student_id, a.competency_id
+        FROM assignments a
+    """)
+    rows = cursor.fetchall()
+    assignments = {}
+    for row in rows:
+        assignments.setdefault(row['student_id'], []).append(row['competency_id'])
+    conn.close()
+    return jsonify(assignments)
+
 
 @teacher_routes.route('/assign', methods=['POST'])
 def assign_competency():
@@ -628,5 +656,24 @@ def query_result(result_id):
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-    
+
+@teacher_routes.route('/unassign', methods=['POST'])
+def unassign_competency():
+    data = request.get_json()
+    student_id = data.get('studentId')
+    competency_id = data.get('competencyId')
+    tutor_id = data.get('tutorId')
+
+    if not student_id or not competency_id or not tutor_id:
+        return jsonify({'error': 'Missing data'}), 400
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute(
+        'DELETE FROM assignments WHERE student_id = ? AND competency_id = ? AND tutor_id = ?',
+        (student_id, competency_id, tutor_id)
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({'message': 'Assignment removed'})    
     
