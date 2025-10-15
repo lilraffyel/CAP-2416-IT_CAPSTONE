@@ -166,6 +166,8 @@ def get_assessment_by_title(title):
         SELECT id, text, correct_answer, score
         FROM questions
         WHERE assessment_id = ?
+        ORDER BY RANDOM()   
+        LIMIT 10       
     """, (assessment_id,))
     questions = [dict(row) for row in cursor.fetchall()]
 
