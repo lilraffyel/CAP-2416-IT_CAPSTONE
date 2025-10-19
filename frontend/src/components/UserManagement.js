@@ -10,6 +10,9 @@ function UserManagement() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [studentButtonDisabled, setStudentButtonDisabled] = useState(false);
+  const [tutorButtonDisabled, setTutorButtonDisabled] = useState(false);
+ 
   // Tutor states
   const [tutors, setTutors] = useState([]);
   const [newTutor, setNewTutor] = useState({ name: "", password: "" });
@@ -47,13 +50,17 @@ function UserManagement() {
       role: "Student",
     };
 
+    setStudentButtonDisabled(true);
+
     axios.post("http://localhost:5000/api/users/add-student", payload, { withCredentials: true })
       .then(() => {
         setStudents([...students, { id: payload.id, name: payload.name }]);
         setNewStudent({ name: "", password: "" });
+        setTimeout(() => setStudentButtonDisabled(false), 10000);
       })
       .catch(err => {
         alert(err.response?.data?.error || "Failed to add student");
+         setStudentButtonDisabled(false);
       });
   };
 
@@ -69,13 +76,19 @@ function UserManagement() {
       password: newTutor.password,
       role: "Tutor",
     };
+
+    setTutorButtonDisabled(true);
+
     axios.post("http://localhost:5000/api/users/add-tutor", payload, { withCredentials: true })
       .then(() => {
         setTutors([...tutors, { id: payload.id, name: payload.name }]);
         setNewTutor({ name: "", password: "" });
+         setTimeout(() => setTutorButtonDisabled(false), 10000);
       })
+      
       .catch(err => {
         alert(err.response?.data?.error || "Failed to add tutor");
+        setTutorButtonDisabled(false);
       });
   };
 
@@ -182,7 +195,9 @@ function UserManagement() {
           value={newStudent.password}
           onChange={(e) => setNewStudent({ ...newStudent, password: e.target.value })}
         />
-        <button onClick={handleAddStudent}>Add Student</button>
+        <button onClick={handleAddStudent} disabled={studentButtonDisabled}>
+        {studentButtonDisabled ? "Please wait..." : "Add Student"}
+        </button>
       </div>
 
       {/* Add Tutor Section */}
@@ -199,8 +214,10 @@ function UserManagement() {
           placeholder="Password"
           value={newTutor.password}
           onChange={(e) => setNewTutor({ ...newTutor, password: e.target.value })}
-        />
-        <button onClick={handleAddTutor}>Add Tutor</button>
+        />      
+<button onClick={handleAddTutor} disabled={tutorButtonDisabled}>
+  {tutorButtonDisabled ? "Please wait..." : "Add Tutor"}
+</button>
       </div>
 
       {/* Tutor List */}
