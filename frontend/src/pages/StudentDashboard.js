@@ -1,19 +1,37 @@
 // src/pages/StudentDashboard.js
-import React from 'react';
-import { Link, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
-
+import React, { useState } from 'react';
+import { Link, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import StudentHome from '../components/student/StudentHome';
 import StudentHelpRequest from '../components/student/StudentHelpRequest';
-// import StudentAssessmentList from '../components/StudentAssessmentList'; // ✅ NEW
-import StudentAssessments from '../components/student/StudentAssessments';               // ✅ NEW
+import StudentAssessments from '../components/student/StudentAssessments';
 import StudentResults from '../components/student/StudentResults';
-// import StudentProfile from '../components/StudentProfile';
-// import NotificationPopups from '../components/NotificationPopups';
+
+// A custom Link component that checks for navigation blocks
+const SafeLink = ({ to, isBlocked, children }) => {
+  const navigate = useNavigate();
+
+  const handleClick = (e) => {
+    if (isBlocked) {
+      e.preventDefault();
+      if (window.confirm("Are you sure you want to leave? Your progress will be lost.")) {
+        navigate(to);
+      }
+    }
+  };
+
+  return <Link to={to} onClick={handleClick}>{children}</Link>;
+};
+
 
 function StudentDashboard() {
   const navigate = useNavigate();
+  const [isNavBlocked, setNavBlocked] = useState(false);
 
   const handleLogout = () => {
+    if (isNavBlocked && !window.confirm("Are you sure you want to leave? Your progress will be lost.")) {
+      return;
+    }
+    // Clear user session/token if any
     navigate('/');
   };
 
@@ -23,12 +41,11 @@ function StudentDashboard() {
       <aside className="sidebar">
         <h3>Student Menu</h3>
         <ul>
-          <li><Link to="/student/home">Home</Link></li> {/* <-- Add this line */}
-          <li><Link to="/student/help">Request Tutoring</Link></li>
-          <li><Link to="/student/assessments">Take Assessments</Link></li>
-          <li><Link to="/student/results">View Results</Link></li>
-          {/* <li><Link to="/student/profile">Show Profile</Link></li> */}
-          <li onClick={handleLogout}>Logout</li>
+          <li><SafeLink to="/student/home" isBlocked={isNavBlocked}>Home</SafeLink></li>
+          <li><SafeLink to="/student/help" isBlocked={isNavBlocked}>Request Tutoring</SafeLink></li>
+          <li><SafeLink to="/student/assessments" isBlocked={isNavBlocked}>Take Assessments</SafeLink></li>
+          <li><SafeLink to="/student/results" isBlocked={isNavBlocked}>View Results</SafeLink></li>
+          <li onClick={handleLogout} style={{ cursor: 'pointer' }}>Logout</li>
         </ul>
       </aside>
 
@@ -41,18 +58,13 @@ function StudentDashboard() {
           {/* Define available routes */}
           <Route path="home" element={<StudentHome />} />
           <Route path="help" element={<StudentHelpRequest />} />
-          {/* <Route path="assessments" element={<StudentAssessmentList />} />  */}
-          <Route path="assessments" element={<StudentAssessments />} /> {/* ✅ Replaces old */}
+          <Route path="assessments" element={<StudentAssessments setNavBlocked={setNavBlocked} />} /> {/* Pass setter down */}
           <Route path="results" element={<StudentResults />} />
-          {/* <Route path="profile" element={<StudentProfile />} /> */}
 
           {/* Redirect unknown paths to Home */}
           <Route path="*" element={<Navigate to="/student/home" replace />} />
         </Routes>
       </main>
-
-      {/* Notification Popups (Persistent across the dashboard) */}
-      {/* <NotificationPopups /> */}
     </div>
   );
 }

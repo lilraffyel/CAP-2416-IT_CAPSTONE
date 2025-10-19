@@ -39,6 +39,7 @@ function TutorQuery() {
   //State for Auto Query Results
   const [autoQueryResults, setAutoQueryResults] = useState([]);
   const [tutorId, setTutorId] = useState(null);
+  
   // Load BIF files on mount
   useEffect(() => {
     async function fetchBifList() {
@@ -100,6 +101,8 @@ function TutorQuery() {
     setTested([]);
     setAssessmentResults([]);
   };
+  
+  
 
   // Load competencies for the selected BIF
   const handleLoadCompetencies = async () => {
@@ -268,44 +271,40 @@ function TutorQuery() {
 )}
 
     {/* Auto Query Button and Results */}
-    {selectedStudent && (
+{selectedStudent && (
   <div className="section" style={{ marginBottom: "2rem" }}>
-    
     {autoQueryResults && autoQueryResults.competency ? (
-  <div>
-    <div>
-      <b>Competency:</b> {autoQueryResults.competency}
-    </div>
-    <div>
-      <b>Score:</b> {autoQueryResults.score} / {autoQueryResults.total}
-    </div>
-    <div>
-      <b>Mastery Probability:</b> {formatPercent(autoQueryResults.mastery_probability)}
-    </div>
-    {autoQueryResults.next_focus && (
       <div>
-        <b>Next Focus:</b> {autoQueryResults.next_focus}
+        <div>
+          <b>Competency:</b> {autoQueryResults.competency}
+        </div>
+        <div>
+          <b>Score:</b> {autoQueryResults.score} / {autoQueryResults.total}
+        </div>
+        {autoQueryResults.mastery_probabilities && (
+          <div>
+            <b>Mastery Probabilities:</b>
+            <ul style={{ paddingLeft: 16 }}>
+              {Object.entries(autoQueryResults.mastery_probabilities).map(([k, v]) => (
+                <li key={k}>
+                  {k}: <b>{formatPercent(v)}</b>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {autoQueryResults.next_focus && (
+          <div>
+            <b>Next Focus:</b> {autoQueryResults.next_focus}
+          </div>
+        )}
+        {autoQueryResults.error && <span style={{ color: "red" }}>Error: {autoQueryResults.error}</span>}
       </div>
+    ) : autoQueryResults && autoQueryResults.error ? (
+      <div style={{ color: "red" }}>{autoQueryResults.error}</div>
+    ) : (
+      <div>No automatic query result yet.</div>
     )}
-    {autoQueryResults.mastery_probabilities && (
-      <div>
-        <b>Mastery Probabilities:</b>
-        <ul style={{ paddingLeft: 16 }}>
-          {Object.entries(autoQueryResults.mastery_probabilities).map(([k, v]) => (
-            <li key={k}>
-              {k}: <b>{formatPercent(v)}</b>
-            </li>
-          ))}
-        </ul>
-      </div>
-    )}
-    {autoQueryResults.error && <span style={{ color: "red" }}>Error: {autoQueryResults.error}</span>}
-  </div>
-) : autoQueryResults && autoQueryResults.error ? (
-  <div style={{ color: "red" }}>{autoQueryResults.error}</div>
-) : (
-  <div>No automatic query result yet.</div>
-)}
   </div>
 )}
 <h3 style={{ marginTop: "2rem" }}>Manual Query</h3>
@@ -368,26 +367,34 @@ function TutorQuery() {
 
   
 
-    {/* Add tested competency and score */}
-    <div className="section" style={{ marginTop: "1rem" }}>
-      <input
-        className="form-control"
-        type="text"
-        placeholder="Competency"
-        value={compInput}
-        onChange={(e) => setCompInput(e.target.value)}
-        style={{ width: 200, marginRight: 8 }}
-      />
-      <input
-        className="form-control"
-        type="number"
-        placeholder="Score"
-        value={scoreInput}
-        onChange={(e) => setScoreInput(e.target.value)}
-        style={{ width: 80, marginRight: 8 }}
-      />
-      <button className="btn btn-primary" onClick={handleAddTested}>Add</button>
-    </div>
+   {/* Add tested competency and score */}
+<div className="section" style={{ marginTop: "1rem" }}>
+  <input
+    className="form-control"
+    type="text"
+    placeholder="Competency"
+    value={compInput}
+    onChange={(e) => setCompInput(e.target.value)}
+    style={{ width: 200, marginRight: 8 }}
+    disabled={competencies.length === 0} // Disable if no competencies are loaded
+  />
+  <input
+    className="form-control"
+    type="number"
+    placeholder="Score"
+    value={scoreInput}
+    onChange={(e) => setScoreInput(e.target.value)}
+    style={{ width: 80, marginRight: 8 }}
+    disabled={competencies.length === 0 || !compInput} // Disable if no competencies are loaded or no competency is selected
+  />
+  <button
+    className="btn btn-primary"
+    onClick={handleAddTested}
+    disabled={competencies.length === 0 || !compInput || !scoreInput} // Disable button if no competencies are loaded, no competency is selected, or no score is entered
+  >
+    Add
+  </button>
+</div>
 
     {/* Tested competencies list */}
     {tested.length > 0 && (

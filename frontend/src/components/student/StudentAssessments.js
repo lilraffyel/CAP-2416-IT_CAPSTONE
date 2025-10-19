@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useLocation } from "react-router-dom";
 
-function StudentAssessments() {
+function StudentAssessments({ setNavBlocked }) { // Receive prop
+  const location = useLocation(); // Get location object
   const [studentId, setStudentId] = useState(null);
   const [assignedTitles, setAssignedTitles] = useState([]);
   const [selectedTitle, setSelectedTitle] = useState(null);
@@ -9,6 +11,19 @@ function StudentAssessments() {
   const [answers, setAnswers] = useState({});
   const [scoreResult, setScoreResult] = useState(null);
   const [error, setError] = useState("");
+  const [submitted, setSubmitted] = useState(false); // Track submission status
+  const [hasSelectedOption, setHasSelectedOption] = useState(false); // Track if an option is selected
+
+  // Inform the parent dashboard when navigation should be blocked
+  useEffect(() => {
+    const shouldBlock = !submitted && hasSelectedOption;
+    setNavBlocked(shouldBlock);
+
+    // Cleanup function to unblock navigation when component unmounts
+    return () => {
+      setNavBlocked(false);
+    };
+  }, [submitted, hasSelectedOption, setNavBlocked]);
 
   useEffect(() => {
     // Fetch logged-in student ID
@@ -33,10 +48,37 @@ function StudentAssessments() {
     }
   }, [studentId]);
 
+  // Automatically load assessment if passed from another page
+  useEffect(() => {
+    const assessmentTitleFromState = location.state?.assessmentTitle;
+    if (assessmentTitleFromState) {
+      loadAssessment(assessmentTitleFromState);
+    }
+  }, [location.state]);
+
+
+  // Prompt confirmation for browser refresh/close
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (!submitted && hasSelectedOption) {
+        event.preventDefault();
+        event.returnValue = "Are you sure you want to leave? Your progress will be lost.";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [submitted, hasSelectedOption]);
+
   const loadAssessment = (title) => {
     setScoreResult(null); // reset
     setAnswers({});
     setSelectedTitle(title);
+    setSubmitted(false); // Reset submission state for retry
+    setHasSelectedOption(false); // Reset option selection state
     axios
       .get(`http://localhost:5000/api/teacher/student-assessment/${title}`)
       .then((res) => setQuestions(res.data.questions))
@@ -48,6 +90,7 @@ function StudentAssessments() {
 
   const handleSelect = (qid, choice) => {
     setAnswers((prev) => ({ ...prev, [qid]: choice }));
+    setHasSelectedOption(true); // Mark that an option has been selected
   };
 
   const handleSubmit = () => {
@@ -69,11 +112,16 @@ function StudentAssessments() {
       .then((res) => {
         setScoreResult(res.data);
         setError("");
+        setSubmitted(true); // Mark as submitted
       })
       .catch((err) => {
         console.error(err);
         setError("Submission failed.");
       });
+  };
+
+  const handleRetry = () => {
+    loadAssessment(selectedTitle); // Reload the assessment
   };
 
   return (
@@ -110,15 +158,19 @@ function StudentAssessments() {
                     value={choice}
                     checked={answers[q.id] === choice}
                     onChange={() => handleSelect(q.id, choice)}
+                    disabled={submitted} // Disable inputs after submission
                   />
                   {choice}
                 </label>
               ))}
             </div>
           ))}
-          <button onClick={handleSubmit}>Submit Assessment</button>
+          <button onClick={handleSubmit} disabled={submitted}>Submit Assessment</button>
           <button
             onClick={() => {
+              if (!submitted && hasSelectedOption && !window.confirm("Are you sure you want to leave? Your progress will be lost.")) {
+                return;
+              }
               setSelectedTitle(null);
               setScoreResult(null); // reset score
             }}
@@ -126,6 +178,11 @@ function StudentAssessments() {
           >
             Go Back
           </button>
+          {submitted && (
+            <button onClick={handleRetry} style={{ marginLeft: '10px' }}>
+              Retry Assessment
+            </button>
+          )}
         </div>
       )}
 

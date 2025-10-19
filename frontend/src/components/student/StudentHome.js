@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 // import StudentProgress from './StudentProgress';
@@ -9,6 +9,8 @@ function StudentHome() {
   const [assignedAssessments, setAssignedAssessments] = useState([]);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'descending' });
+  const [filterText, setFilterText] = useState('');
 
   // 1. Get logged-in student ID
   useEffect(() => {
@@ -40,9 +42,49 @@ function StudentHome() {
   }, [studentId]);
 
   const handleTakeAssessment = (assessmentTitle) => {
-    // Optionally, pass assessmentTitle via state or context
-    navigate('/student/assessments');
+    // Navigate to the assessments page and pass the title in the state
+    navigate('/student/assessments', { state: { assessmentTitle } });
   };
+
+  const handleSort = (key) => {
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const filteredAndSortedResults = useMemo(() => {
+    let sortableResults = [...results];
+
+    // Filter results
+    if (filterText) {
+      sortableResults = sortableResults.filter(r =>
+        r.examName.toLowerCase().includes(filterText.toLowerCase())
+      );
+    }
+
+    // Sort results
+    sortableResults.sort((a, b) => {
+      let aValue = a[sortConfig.key];
+      let bValue = b[sortConfig.key];
+
+      if (sortConfig.key === 'date') {
+        aValue = new Date(aValue);
+        bValue = new Date(bValue);
+      }
+
+      if (aValue < bValue) {
+        return sortConfig.direction === 'ascending' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'ascending' ? 1 : -1;
+      }
+      return 0;
+    });
+
+    return sortableResults;
+  }, [results, sortConfig, filterText]);
 
   if (loading) return <div>Loading...</div>;
 
@@ -78,7 +120,18 @@ function StudentHome() {
       {/* =============== RECENT RESULTS =============== */}
       <section>
         <h3>Your Recent Results</h3>
-        {results.length === 0 ? (
+        <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <button onClick={() => handleSort('date')}>Sort by Date</button>
+          <button onClick={() => handleSort('score')}>Sort by Score</button>
+          <input
+            type="text"
+            placeholder="Filter by exam name..."
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+            style={{ padding: '6px' }}
+          />
+        </div>
+        {filteredAndSortedResults.length === 0 ? (
           <p>No results yet.</p>
         ) : (
           <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "1rem" }}>
@@ -90,7 +143,7 @@ function StudentHome() {
               </tr>
             </thead>
             <tbody>
-              {results.slice(0, 5).map((r, idx) => (
+              {filteredAndSortedResults.slice(0, 5).map((r, idx) => (
                 <tr key={idx} style={{ borderBottom: "1px solid #333" }}>
                   <td style={{ padding: "8px" }}>{new Date(r.date).toLocaleDateString()}</td>
                   <td style={{ padding: "8px" }}>{r.examName}</td>

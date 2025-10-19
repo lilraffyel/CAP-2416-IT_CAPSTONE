@@ -25,7 +25,7 @@ function TeacherDashboard() {
           <li><Link to="/teacher/home">View Student Competencies</Link></li>
           <li><Link to="/teacher/progress">Assign Student Assessments</Link></li>
           
-          <li><Link to="/teacher/tutor-query">View Assessments results</Link></li>
+          <li><Link to="/teacher/tutor-query">Tutor Query</Link></li>
           <li><Link to="/teacher/edit-assessments">Create Student Assessment</Link></li>
           <li><Link to="/teacher/bayes-overview">Bayesian Network Overview</Link></li>
           {/*<li><Link to="/teacher/profile">Show Profile</Link></li> */}

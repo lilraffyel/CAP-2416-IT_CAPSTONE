@@ -217,38 +217,39 @@ useEffect(() => {
 ) : (
   domains.map(domain => (
     <div key={domain} style={{ marginBottom: '1rem' }}>
-      <div style={{ fontWeight: 'bold', marginTop: '0.5rem' }}>{domain}</div>
-      {(assessmentsByDomain[domain] || []).map(assObj => (
-        <span key={assObj.title} style={{ marginRight: '1rem' }}>
-          <button
-            style={{
-              background: selectedAssessment === assObj.title ? '#2980b9' : '#3498db',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '4px',
-              padding: '0.3rem 0.8rem',
-              marginRight: '0.3rem'
-            }}
-            onClick={() => handleAssessmentSelect(assObj.title)}
-          >
-            {assObj.title}
-          </button>
-          <button
-            onClick={() => deleteAssessment(assObj.title)}
-            style={{
-              background: 'red',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              padding: '0.3rem 0.5rem'
-            }}
-            title="Delete assessment"
-          >
-            &times;
-          </button>
-        </span>
-      ))}
-    </div>
+  <div style={{ fontWeight: 'bold', marginTop: '0.5rem' }}>{domain}</div>
+  {(assessmentsByDomain[domain] || []).map(assObj => (
+    <span key={assObj.title} style={{ margin: '0.5rem' }}> {/* Add margin for spacing */}
+      <button
+        style={{
+          background: selectedAssessment === assObj.title ? '#2980b9' : '#3498db',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '4px',
+          padding: '0.3rem 0.8rem',
+          marginRight: '0.3rem'
+        }}
+        onClick={() => handleAssessmentSelect(assObj.title)}
+      >
+        {assObj.title}
+      </button>
+      <button
+        onClick={() => deleteAssessment(assObj.title)}
+        style={{
+          background: 'red',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          padding: '0.3rem 0.5rem',
+          marginLeft: '0.5rem' // Add spacing between buttons
+        }}
+        title="Delete assessment"
+      >
+        &times;
+      </button>
+    </span>
+  ))}
+</div>
   ))
 )}
 </div>
@@ -282,18 +283,24 @@ useEffect(() => {
           ))}
         </select>
       </label>
-      <button
-        onClick={() => {
-          axios.patch(
-            `http://localhost:5000/api/teacher/assessment/${encodeURIComponent(selectedAssessment)}`,
-            { content_domain_id: selectedDomain, bif_file: selectedBifFile },
-            { withCredentials: true }
-          ).then(() => alert("Assessment updated!"));
-        }}
-        style={{ marginLeft: '1rem' }}
-      >
-        Save Assessment Meta
-      </button>
+<button
+  onClick={() => {
+    axios
+      .patch(
+        `http://localhost:5000/api/teacher/assessment/${encodeURIComponent(selectedAssessment)}`,
+        { content_domain_id: selectedDomain, bif_file: selectedBifFile },
+        { withCredentials: true }
+      )
+      .then(() => {
+        alert("Assessment updated!");
+        fetchAssessments(); // Refresh the assessments after the update
+      })
+      .catch(() => alert("Failed to update assessment."));
+  }}
+  style={{ marginLeft: '1rem' }}
+>
+  Save Assessment Meta
+</button>;
     </div>
           <button onClick={addQuestion} style={{ marginBottom: '1rem' }}>Add Question</button>
           {loadingQuestions ? (
