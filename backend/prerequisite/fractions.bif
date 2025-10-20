@@ -1,0 +1,51 @@
+variable Fractions {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Convert_Decimals_And_Fractions_Denoms_10_100 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Reduce_Fractions_To_Simplest {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Read_Write_10000 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Read_Write_1000 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Read_Write_100 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Recognize_Represent_1000 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Recognize_Represent_100 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Count_Repeated_Addition {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Count_By_Steps_1000 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Count_Up_1000 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Count_By_Steps_100 {
+    type discrete [ 2 ] { 0, 1 };
+}
+
+variable Count_Up_100 {
+    type discrete [ 2 ] { 0, 1 };
+}

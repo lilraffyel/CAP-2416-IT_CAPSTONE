@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from pgmpy.readwrite import BIFReader, BIFWriter
-from pgmpy.inference import BeliefPropagation
+# from pgmpy.inference import BeliefPropagation
 from pgmpy.factors.discrete import TabularCPD
 import os
 import numpy as np
@@ -16,13 +16,14 @@ LOADED_MODELS = {}  # { filename: {"model": BayesianModel, "infer": BeliefPropag
 def load_bif_files():
     errors = []
     for filename in os.listdir(BIF_FOLDER):
-        if filename.endswith(".bif"):
+        if filename.endswith(".bif") and not filename.endswith(".backup"):
             try:
                 path = os.path.join(BIF_FOLDER, filename)
                 bif_reader = BIFReader(path)
                 model = bif_reader.get_model()
-                infer = BeliefPropagation(model)
-                LOADED_MODELS[filename] = {"model": model, "infer": infer}
+                # infer = BeliefPropagation(model)
+                # LOADED_MODELS[filename] = {"model": model, "infer": infer}
+                LOADED_MODELS[filename] = {"model": model}
                 print(f"✅ Loaded Bayesian Network: {filename}")
             except Exception as e:
                 errors.append(f"Error loading {filename}: {e}")
@@ -69,7 +70,7 @@ def assess_competencies():
 
     tested = data.get("tested", [])
     model = model_data["model"]
-    infer = model_data["infer"]
+    # infer = model_data["infer"]
 
     results = []
     for item in tested:
@@ -81,7 +82,8 @@ def assess_competencies():
         try:
             score = float(score)
             if score < 7:
-                outcome = determine_next_focus(model, infer, comp)
+                # outcome = determine_next_focus(model, infer, comp)
+                outcome = determine_next_focus(model, comp)
                 results.append({
                     "competency": comp,
                     "score": score,
@@ -100,7 +102,8 @@ def assess_competencies():
 
     return jsonify({"assessment_results": results})
 
-def determine_next_focus(model, infer, failed_competency):
+# def determine_next_focus(model, infer, failed_competency):
+def determine_next_focus(model, failed_competency):
     if failed_competency not in model.nodes():
         return {"next_focus": None, "error": f"Competency '{failed_competency}' not in model"}
     prerequisites = model.get_parents(failed_competency)
@@ -126,8 +129,8 @@ def determine_next_focus(model, infer, failed_competency):
                 evidence_value = '0'
 
             print(f"Inferring {pre} with evidence {failed_competency}={evidence_value} (type: {type(evidence_value)})")
-            result = infer.query(variables=[pre], evidence={failed_competency: evidence_value})
-            prob_dict[pre] = result.values[1]
+            # result = infer.query(variables=[pre], evidence={failed_competency: evidence_value})
+            # prob_dict[pre] = result.values[1]
         except Exception as e:
             print(f"Error inferring for {pre}: {e}")
 
@@ -236,8 +239,8 @@ def update_cpds():
         try:
             bif_reader = BIFReader(path)
             new_model = bif_reader.get_model()
-            new_infer = BeliefPropagation(new_model)
-            LOADED_MODELS[filename] = {"model": new_model, "infer": new_infer}
+            # new_infer = BeliefPropagation(new_model)
+            LOADED_MODELS[filename] = {"model": new_model}
             os.remove(backup_path)  # Remove backup on success
             return jsonify({"message": "CPDs updated and saved successfully"})
         except Exception as e:

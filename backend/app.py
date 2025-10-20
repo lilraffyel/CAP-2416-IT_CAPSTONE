@@ -34,8 +34,9 @@ bif_reader = BIFReader("network.bif")
 model = bif_reader.get_model()
 inference = VariableElimination(model)  # 🔹 Use Variable Elimination
 
-print("[DEBUG] Loaded Nodes:", model.nodes())
-print("[DEBUG] Loaded Edges:", model.edges())
+# DEBUGGING
+# print("[DEBUG] Loaded Nodes:", model.nodes())
+# print("[DEBUG] Loaded Edges:", model.edges())
 
 # API to fetch CPDs
 @app.route("/api/get_cpds", methods=["GET"])
@@ -206,4 +207,4 @@ app.register_blueprint(admin_routes, url_prefix='/api/admin')
 #Run the Flask App
 if __name__ == "__main__":
     print(app.url_map)
-    app.run(debug=True, port=5000)
+    app.run(debug=False, port=5000)
