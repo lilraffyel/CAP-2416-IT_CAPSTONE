@@ -3,7 +3,6 @@ import axios from "axios";
 import {
   listBifFiles,
   getCompetencies,
-  assessCompetencies
 } from "../api";
 import "./TutorQuery.css";
 
@@ -28,7 +27,7 @@ function TutorQuery() {
   const [scoreInput, setScoreInput] = useState("");
 
   // State for assessment results
-  const [assessmentResults, setAssessmentResults] = useState([]);
+  const [manualQueryResults, setManualQueryResults] = useState(null);
 
   // State for student results (like StudentResults.js)
   const [studentResults, setStudentResults] = useState([]);
@@ -99,7 +98,7 @@ function TutorQuery() {
     // Clear previous data
     setCompetencies([]);
     setTested([]);
-    setAssessmentResults([]);
+    setManualQueryResults(null);
   };
   
   
@@ -130,24 +129,35 @@ function TutorQuery() {
   // Add the competency and score to the tested list
   const handleAddTested = () => {
     if (!compInput || !scoreInput) return;
-    setTested([...tested, { competency: compInput, score: parseInt(scoreInput) }]);
+    // We only assess one at a time, so we replace the array content
+    setTested([{ competency: compInput, score: parseInt(scoreInput) }]);
     setCompInput("");
     setScoreInput("");
   };
 
   // Assess the tested competencies (and get mastery probabilities if applicable)
   const handleAssess = async () => {
-    if (!selectedBif) {
-      alert("Please select a BIF file first!");
+    if (!selectedBif || tested.length === 0) {
+      alert("Please select a BIF file and add a tested competency.");
       return;
     }
+    // We'll just use the first item for now as per the new design
+    const itemToAssess = tested[0];
     try {
-      const data = await assessCompetencies(selectedBif, tested);
-      if (data.assessment_results) {
-        setAssessmentResults(data.assessment_results);
-      }
+      const res = await axios.post(
+        `http://localhost:5000/api/teacher/manual-query`,
+        {
+          bif_file: selectedBif,
+          competency: itemToAssess.competency,
+          score: itemToAssess.score,
+          total: 10, // --- FIX: Send a total score of 10 ---
+        },
+        { withCredentials: true }
+      );
+      setManualQueryResults(res.data);
     } catch (err) {
       console.error("Error assessing competencies:", err);
+      setManualQueryResults({ error: "Failed to fetch manual query result." });
     }
   };
 
@@ -166,17 +176,18 @@ function TutorQuery() {
   };
 
   // Handler for Auto Query Results
-  const handleAutoQuery = async (studentId, assessmentId) => {
-  try {
-    const res = await axios.get(
-      `http://localhost:5000/api/teacher/auto-query-result/${studentId}/${assessmentId}`,
-      { withCredentials: true }
-    );
-    setAutoQueryResults(res.data);
-  } catch (err) {
-    setAutoQueryResults({ error: "Failed to fetch automatic query result." });
-  }
-};
+  const handleAutoQuery = async (resultId) => {
+    try {
+      const res = await axios.get(
+        // --- FIX: Use the resultId in the URL ---
+        `http://localhost:5000/api/teacher/auto-query-result/${resultId}`,
+        { withCredentials: true }
+      );
+      setAutoQueryResults(res.data);
+    } catch (err) {
+      setAutoQueryResults({ error: "Failed to fetch automatic query result." });
+    }
+  };
 
   const filteredResults = studentResults.filter((r) => {
     if (!filterText) return true;
@@ -249,22 +260,23 @@ function TutorQuery() {
       </thead>
       <tbody>
         {filteredResults.map((r, idx) => (
-  <tr key={idx} style={{ borderBottom: "1px solid #333" }}>
-    <td style={{ padding: "8px" }}>{new Date(r.date).toLocaleDateString()}</td>
-    <td style={{ padding: "8px" }}>{r.examName}</td>
-    <td style={{ padding: "8px" }}>{r.score}</td>
-    <td style={{ padding: "8px" }}>
-      {r.result_id && (
-        <button
-  className="btn btn-info"
-  onClick={() => handleAutoQuery(r.student_id, r.assessment_id)}
->
-  Auto Query
-</button>
-      )}
-    </td>
-  </tr>
-))}
+          <tr key={idx} style={{ borderBottom: "1px solid #333" }}>
+            <td style={{ padding: "8px" }}>{new Date(r.date).toLocaleDateString()}</td>
+            <td style={{ padding: "8px" }}>{r.examName}</td>
+            <td style={{ padding: "8px" }}>{r.score}</td>
+            <td style={{ padding: "8px" }}>
+              {r.result_id && (
+                <button
+                  className="btn btn-info"
+                  // --- FIX: Pass the unique result_id ---
+                  onClick={() => handleAutoQuery(r.result_id)}
+                >
+                  Auto Query
+                </button>
+              )}
+            </td>
+          </tr>
+        ))}
       </tbody>
     </table>
   </div>
@@ -381,16 +393,19 @@ function TutorQuery() {
   <input
     className="form-control"
     type="number"
-    placeholder="Score"
+    placeholder="Score (out of 10)" // --- FIX: Update placeholder text ---
     value={scoreInput}
     onChange={(e) => setScoreInput(e.target.value)}
-    style={{ width: 80, marginRight: 8 }}
-    disabled={competencies.length === 0 || !compInput} // Disable if no competencies are loaded or no competency is selected
+    style={{ width: 140, marginRight: 8 }} // Increased width for new placeholder
+    min="0"
+    max="10" // --- FIX: Set max score to 10 ---
+    disabled={competencies.length === 0 || !compInput || tested.length > 0}
   />
   <button
     className="btn btn-primary"
     onClick={handleAddTested}
-    disabled={competencies.length === 0 || !compInput || !scoreInput} // Disable button if no competencies are loaded, no competency is selected, or no score is entered
+    // --- FIX: Also disable if an item is already in the 'tested' list ---
+    disabled={competencies.length === 0 || !compInput || !scoreInput || tested.length > 0}
   >
     Add
   </button>
@@ -404,6 +419,13 @@ function TutorQuery() {
           {tested.map((t, idx) => (
             <li key={idx} style={{ marginBottom: 4 }}>
               {t.competency}: {t.score}
+              {/* --- FIX: Add a button to clear the tested item and re-enable inputs --- */}
+              <button 
+                onClick={() => setTested([])} 
+                style={{marginLeft: '1em', fontSize: '0.8em', cursor: 'pointer'}}
+              >
+                Clear
+              </button>
             </li>
           ))}
         </ul>
@@ -411,35 +433,40 @@ function TutorQuery() {
       </div>
     )}
 
-    {/* Assessment results as percentages */}
-    {assessmentResults.length > 0 && (
+    {/* Manual Query Results */}
+    {manualQueryResults && (
       <div className="section">
-        <h4>Assessment Results</h4>
-        <ul style={{ padding: 0, listStyle: "none" }}>
-          {assessmentResults.map((res, idx) => (
-            <li key={idx} style={{ marginBottom: 12 }}>
-              {res.competency}: Score {res.score}{" "}
-              {res.next_focus && (
-                <span>
-                  | Next Focus: <b>{res.next_focus}</b>
-                </span>
-              )}
-              {res.mastery_probabilities && (
-                <div>
-                  Mastery Probabilities:
-                  <ul style={{ paddingLeft: 16 }}>
-                    {Object.entries(res.mastery_probabilities).map(([k, v]) => (
-                      <li key={k}>
-                        {k}: <b>{formatPercent(v)}</b>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {res.error && <span style={{ color: "red" }}>Error: {res.error}</span>}
-            </li>
-          ))}
-        </ul>
+        <h4>Manual Query Result</h4>
+        {manualQueryResults.competency ? (
+          <div>
+            <div>
+              <b>Competency:</b> {manualQueryResults.competency}
+            </div>
+            <div>
+              {/* --- FIX: Display the score and total correctly --- */}
+              <b>Score:</b> {manualQueryResults.score} / {manualQueryResults.total}
+            </div>
+            {manualQueryResults.mastery_probabilities && (
+              <div>
+                <b>Mastery Probabilities:</b>
+                <ul style={{ paddingLeft: 16 }}>
+                  {Object.entries(manualQueryResults.mastery_probabilities).map(([k, v]) => (
+                    <li key={k}>
+                      {k}: <b>{formatPercent(v)}</b>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {manualQueryResults.next_focus && (
+              <div>
+                <b>Next Focus:</b> {manualQueryResults.next_focus}
+              </div>
+            )}
+          </div>
+        ) : manualQueryResults.error ? (
+          <div style={{ color: "red" }}>{manualQueryResults.error}</div>
+        ) : null}
       </div>
     )}
   </div>

@@ -1,43 +1,78 @@
 from flask import Blueprint, request, jsonify
 from pgmpy.readwrite import BIFReader, BIFWriter
-# from pgmpy.inference import BeliefPropagation
+from pgmpy.inference import VariableElimination
 from pgmpy.factors.discrete import TabularCPD
-import os
 import numpy as np
-import shutil
+import io
+from database import get_db_connection
 
 prereq_bp = Blueprint('prereq', __name__)
 
-# Use a relative path for portability
-BIF_FOLDER = os.path.dirname(os.path.abspath(__file__))
+# This dictionary now acts as our in-memory cache.
+LOADED_MODELS = {}
 
-LOADED_MODELS = {}  # { filename: {"model": BayesianModel, "infer": BeliefPropagation}, ... }
+def get_model(filename):
+    """
+    Lazily loads a Bayesian Network from the database into the cache if not already present.
+    Returns the model and inference engine.
+    """
+    # 1. Cache Hit: If model is already loaded, return it immediately.
+    if filename in LOADED_MODELS:
+        print(f"✅ Cache HIT for: {filename}")
+        return LOADED_MODELS[filename]
 
-def load_bif_files():
-    errors = []
-    for filename in os.listdir(BIF_FOLDER):
-        if filename.endswith(".bif") and not filename.endswith(".backup"):
-            try:
-                path = os.path.join(BIF_FOLDER, filename)
-                bif_reader = BIFReader(path)
-                model = bif_reader.get_model()
-                # infer = BeliefPropagation(model)
-                # LOADED_MODELS[filename] = {"model": model, "infer": infer}
-                LOADED_MODELS[filename] = {"model": model}
-                print(f"✅ Loaded Bayesian Network: {filename}")
-            except Exception as e:
-                errors.append(f"Error loading {filename}: {e}")
-                print(f"❌ Error loading {filename}: {e}")
-    return errors
+    # 2. Cache Miss: If not loaded, fetch from DB.
+    print(f"⚠️ Cache MISS for: {filename}. Loading from DB...")
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT content FROM bayesian_networks WHERE name = ?", (filename,))
+        network = cursor.fetchone()
+        conn.close()
 
-# Load BIF files and store any errors
-BIF_LOAD_ERRORS = load_bif_files()
+        if not network:
+            raise FileNotFoundError(f"Network '{filename}' not found in the database.")
+
+        bif_reader = BIFReader(string=network['content'])
+        model = bif_reader.get_model()
+        model.check_model()
+        infer = VariableElimination(model)
+
+        # 3. Store the newly loaded model in the cache.
+        LOADED_MODELS[filename] = {"model": model, "infer": infer}
+        print(f"👍 Loaded and cached: {filename}")
+        
+        return LOADED_MODELS[filename]
+
+    except Exception as e:
+        print(f"❌ Error loading '{filename}' from DB: {e}")
+        return None
+
+def clear_model_cache(filename=None):
+    """Clears the entire model cache, or just a specific model."""
+    if filename:
+        if filename in LOADED_MODELS:
+            del LOADED_MODELS[filename]
+            print(f"🔥 Cache cleared for: {filename}")
+    else:
+        LOADED_MODELS.clear()
+        print("🔥 Entire model cache cleared.")
+
+# We no longer eagerly load all files on startup.
+# BIF_LOAD_ERRORS = load_bif_files()
 
 @prereq_bp.route('/biffiles', methods=['GET'])
 def list_bif_files():
-    if not LOADED_MODELS and BIF_LOAD_ERRORS:
-        return jsonify({"bif_files": [], "error": "No BIF files loaded: " + "; ".join(BIF_LOAD_ERRORS)}), 500
-    return jsonify({"bif_files": list(LOADED_MODELS.keys())})
+    # List files directly from the database, not from the cache.
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM bayesian_networks")
+        files = [row['name'] for row in cursor.fetchall()]
+        conn.close()
+        return jsonify({"bif_files": files})
+    except Exception as e:
+        return jsonify({"error": f"Database error: {e}"}), 500
 
 @prereq_bp.route("/competencies", methods=["GET"])
 def get_competencies():
@@ -45,10 +80,10 @@ def get_competencies():
     if not filename:
         return jsonify({"error": "Missing 'bif' query parameter"}), 400
 
-    model_data = LOADED_MODELS.get(filename)
+    # Use the lazy-loading function
+    model_data = get_model(filename)
     if not model_data:
-        print("Available BIFs:", list(LOADED_MODELS.keys()))
-        return jsonify({"error": f"BIF file '{filename}' not found"}), 404
+        return jsonify({"error": f"BIF file '{filename}' not found or failed to load"}), 404
 
     model = model_data["model"]
     nodes = list(model.nodes())
@@ -60,7 +95,8 @@ def assess_competencies():
     if not filename:
         return jsonify({"error": "Missing 'bif' query parameter"}), 400
 
-    model_data = LOADED_MODELS.get(filename)
+    # Use the lazy-loading function
+    model_data = get_model(filename)
     if not model_data:
         return jsonify({"error": f"BIF file '{filename}' not found"}), 404
 
@@ -70,7 +106,7 @@ def assess_competencies():
 
     tested = data.get("tested", [])
     model = model_data["model"]
-    # infer = model_data["infer"]
+    infer = model_data["infer"]
 
     results = []
     for item in tested:
@@ -82,8 +118,9 @@ def assess_competencies():
         try:
             score = float(score)
             if score < 7:
-                # outcome = determine_next_focus(model, infer, comp)
-                outcome = determine_next_focus(model, comp)
+                # ✅ FIX: Pass the evidence state as 0 for the manual query.
+                # The determine_next_focus function will handle converting it to a string.
+                outcome = determine_next_focus(model, infer, comp, 0)
                 results.append({
                     "competency": comp,
                     "score": score,
@@ -102,8 +139,11 @@ def assess_competencies():
 
     return jsonify({"assessment_results": results})
 
-# def determine_next_focus(model, infer, failed_competency):
-def determine_next_focus(model, failed_competency):
+def determine_next_focus(model, infer, failed_competency, evidence_state=0):
+    """
+    Determines the most likely prerequisite to focus on.
+    evidence_state defaults to 0 (not mastered).
+    """
     if failed_competency not in model.nodes():
         return {"next_focus": None, "error": f"Competency '{failed_competency}' not in model"}
     prerequisites = model.get_parents(failed_competency)
@@ -115,22 +155,16 @@ def determine_next_focus(model, failed_competency):
     prob_dict = {}
     for pre in prerequisites:
         try:
-            # Get the state names for the failed competency
-            state_names = model.get_cpds(failed_competency).state_names.get(failed_competency, None)
-            print(f"State names for {failed_competency}:", state_names)
-            if state_names:
-                # Use the first state as "not mastered"
-                not_mastered = state_names[0]
-                # Ensure evidence type matches state name type
-                state_type = type(not_mastered)
-                evidence_value = state_type(not_mastered)
-            else:
-                # fallback as string
-                evidence_value = '0'
+            # ✅ FIX: The evidence value MUST be a string to match the BIF state names ('0', '1').
+            evidence_dict = {failed_competency: str(evidence_state)}
+            
+            print(f"  - [determine_next_focus] Querying for '{pre}' with evidence: {evidence_dict}")
 
-            print(f"Inferring {pre} with evidence {failed_competency}={evidence_value} (type: {type(evidence_value)})")
-            # result = infer.query(variables=[pre], evidence={failed_competency: evidence_value})
-            # prob_dict[pre] = result.values[1]
+            # Query for the probability of the prerequisite being mastered (state 1)
+            # given the evidence that the dependent competency was in a specific state.
+            result = infer.query(variables=[pre], evidence=evidence_dict)
+            # The probability of being in state '1' (mastered)
+            prob_dict[pre] = result.values[1]
         except Exception as e:
             print(f"Error inferring for {pre}: {e}")
 
@@ -225,27 +259,34 @@ def update_cpds():
             )
             new_cpds.append(cpd)
 
-        path = os.path.join(BIF_FOLDER, filename)
-        backup_path = path + ".backup"
-        shutil.copy(path, backup_path)  # Create backup
-
+        # --- DATABASE UPDATE LOGIC ---
+        # 1. Apply changes to the in-memory model
         model.remove_cpds(*model.get_cpds())
         model.add_cpds(*new_cpds)
+        model.check_model() # Validate the new model structure
 
+        # --- FIX: Get string content directly from the writer object ---
         writer = BIFWriter(model)
-        writer.write_bif(path)
+        new_content = str(writer)
+        # --- END FIX ---
 
-        # Reload model
-        try:
-            bif_reader = BIFReader(path)
-            new_model = bif_reader.get_model()
-            # new_infer = BeliefPropagation(new_model)
-            LOADED_MODELS[filename] = {"model": new_model}
-            os.remove(backup_path)  # Remove backup on success
-            return jsonify({"message": "CPDs updated and saved successfully"})
-        except Exception as e:
-            shutil.copy(backup_path, path)  # Restore backup on failure
-            return jsonify({"error": f"Failed to reload model after update: {e}"}), 500
+        # 3. Update the database
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE bayesian_networks SET content = ? WHERE name = ?",
+            (new_content, filename)
+        )
+        conn.commit()
+        conn.close()
+
+        # 4. Reload all models from DB to ensure consistency across the app
+        load_bif_files()
+        
+        return jsonify({"message": "CPDs updated and saved to database successfully"})
+        # --- END DATABASE UPDATE LOGIC ---
 
     except Exception as e:
+        # If anything fails, reload the original state from the DB to prevent inconsistency
+        load_bif_files()
         return jsonify({"error": f"Failed to update CPDs: {e}"}), 500

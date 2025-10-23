@@ -12,7 +12,8 @@ function StudentResults() {
   useEffect(() => {
     // Step 1: Get logged-in student ID
     axios
-      .get("http://localhost:5000/api/students/me", { withCredentials: true })
+      // --- FIX: Use singular 'student' to match app.py ---
+      .get("http://localhost:5000/api/student/me", { withCredentials: true })
       .then((res) => {
         setStudentId(res.data.studentId);
       })
@@ -27,7 +28,8 @@ function StudentResults() {
 
     // Step 2: Fetch results for the fetched student ID
     axios
-      .get(`http://localhost:5000/api/students/results/${studentId}`, { withCredentials: true })
+      // --- FIX: Use singular 'student' to match app.py ---
+      .get(`http://localhost:5000/api/student/results/${studentId}`, { withCredentials: true })
       .then((res) => setResults(res.data))
       .catch((err) => {
         console.error(err);

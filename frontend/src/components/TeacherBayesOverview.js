@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import estimateStructure from '../components/estimate_structure.png';
-import orderingStructure from '../components/ordering_structure.png';
-import comparingStructure from '../components/comparing_structure.png';
-import moneyStructure from '../components/money_structure.png';
-import placeStructure from '../components/place_structure.png';
-import countingStructure from '../components/counting_structure.png';
+// import estimateStructure from '../components/estimate_structure.png';
+// import orderingStructure from '../components/ordering_structure.png';
+// import comparingStructure from '../components/comparing_structure.png';
+// import moneyStructure from '../components/money_structure.png';
+// import placeStructure from '../components/place_structure.png';
+// import countingStructure from '../components/counting_structure.png';
 
 // Import simplified images
 import estimateSimplified from '../components/estimate_simplified.png';
@@ -15,12 +15,12 @@ import placeSimplified from '../components/place_simplified.png';
 import countingSimplified from '../components/counting_simplified.png';
 
 const structureImages = {
-  estimate: estimateStructure,
-  ordering: orderingStructure,
-  comparing: comparingStructure,
-  money: moneyStructure,
-  place_value: placeStructure,
-  counting: countingStructure,
+  // estimate: estimateStructure,
+  // ordering: orderingStructure,
+  // comparing: comparingStructure,
+  // money: moneyStructure,
+  // place_value: placeStructure,
+  // counting: countingStructure,
 };
 
 const simplifiedStructureImages = {

@@ -1,22 +1,16 @@
 from flask import Blueprint, request, jsonify
-from pgmpy.readwrite.BIF import BIFReader
-from pgmpy.inference import VariableElimination
-from prerequisite.prerequisite_api import LOADED_MODELS
-import sqlite3
+from database import get_db_connection
+# Import the new lazy-loading function and remove unused LOADED_MODELS
+from prerequisite.prerequisite_api import get_model, determine_next_focus
 
 teacher_routes = Blueprint('teacher_routes', __name__)
-
-def get_db():
-    conn = sqlite3.connect('database.db')
-    conn.row_factory = sqlite3.Row
-    return conn
 
 # ─── Student and Domain Info ─────────────────────────────────────────────
 
 @teacher_routes.route('/students', methods=['GET'])
 def get_students():
     tutor_id = request.args.get('tutor_id')
-    conn = get_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
     if tutor_id:
         # Only students assigned to this tutor, no duplicates
@@ -41,7 +35,7 @@ def get_students():
     if not tutor_id:
         return jsonify({'error': 'Missing tutor_id'}), 400
 
-    conn = get_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     # Join tutor_assignments with users to get only students assigned to that tutor_id
@@ -62,7 +56,7 @@ def get_students():
 
 @teacher_routes.route('/help-requests', methods=['GET'])
 def get_help_requests():
-    conn = get_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
         SELECT hr.student_id, d.name AS domain
@@ -77,7 +71,7 @@ def get_help_requests():
 
 @teacher_routes.route('/domains', methods=['GET'])
 def get_domains():
-    conn = get_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT id, name FROM content_domains")
     domains = [dict(row) for row in cursor.fetchall()]
@@ -86,7 +80,7 @@ def get_domains():
 
 @teacher_routes.route('/competencies', methods=['GET'])
 def get_competencies():
-    conn = get_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
         SELECT c.id, c.title AS label, cd.name AS domain, c.content_domain_id
@@ -100,7 +94,7 @@ def get_competencies():
 # ─── Assignment API ─────────────────────────────────────────────────────
 @teacher_routes.route('/assignments', methods=['GET'])
 def get_assignments():
-    conn = get_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
         SELECT a.student_id, a.competency_id
@@ -124,7 +118,7 @@ def assign_competency():
     if not tutor_id:
         return jsonify({'error': 'Tutor ID is required'}), 400
 
-    conn = get_db()
+    conn = get_db_connection()
     conn.execute(
         'INSERT INTO assignments (student_id, competency_id, tutor_id) VALUES (?, ?, ?)',
         (student_id, competency_id, tutor_id)
@@ -139,7 +133,7 @@ def assign_competency():
 
 @teacher_routes.route('/student-assessments/<student_id>', methods=['GET'])
 def get_student_assessments(student_id):
-    conn = get_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
         SELECT c.title FROM assignments a
@@ -152,7 +146,7 @@ def get_student_assessments(student_id):
 
 @teacher_routes.route('/student-assessment/<title>', methods=['GET'])
 def get_assessment_by_title(title):
-    conn = get_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("SELECT id FROM assessments WHERE title = ?", (title,))
@@ -191,7 +185,7 @@ def submit_assessment():
     if not student_id or not assessment_title or not answers:
         return jsonify({'error': 'Missing data'}), 400
 
-    conn = get_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("SELECT id FROM assessments WHERE title = ?", (assessment_title,))
@@ -241,7 +235,7 @@ def submit_assessment():
 
 @teacher_routes.route('/latest-results', methods=['GET'])
 def get_latest_results():
-    conn = get_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -281,7 +275,7 @@ def save_comment():
     if not result_id:
         return jsonify({'error': 'Missing resultId'}), 400
 
-    conn = get_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO teacher_comments (result_id, comment)
@@ -295,7 +289,7 @@ def save_comment():
 
 @teacher_routes.route('/result/<int:result_id>', methods=['DELETE'])
 def delete_result(result_id):
-    conn = get_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
     try:
         # Delete any comments linked to this result first (if any)
@@ -401,12 +395,14 @@ def delete_result(result_id):
 
 @teacher_routes.route('/assessments', methods=['GET'])
 def get_all_assessments():
-    conn = get_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
+    # ✅ Join with bayesian_networks to get the bif_file name from bif_id
     cursor.execute("""
-        SELECT a.title, a.bif_file, cd.name AS domain, a.content_domain_id
+        SELECT a.title, bn.name AS bif_file, cd.name AS domain, a.content_domain_id
         FROM assessments a
         LEFT JOIN content_domains cd ON a.content_domain_id = cd.id
+        LEFT JOIN bayesian_networks bn ON a.bif_id = bn.id
     """)
     rows = cursor.fetchall()
     result = {}
@@ -427,14 +423,25 @@ def add_assessment():
     data = request.get_json()
     title = data.get("title")
     content_domain_id = data.get("content_domain_id")
-    bif_file = data.get("bif_file")
+    bif_file = data.get("bif_file") # This is the filename string from the frontend
     if not title or not content_domain_id:
         return jsonify({'error': 'Missing title or content_domain_id'}), 400
-    conn = get_db()
+    
+    conn = get_db_connection()
     cursor = conn.cursor()
+
+    # ✅ Look up the bif_id from the bayesian_networks table
+    bif_id = None
+    if bif_file:
+        cursor.execute("SELECT id FROM bayesian_networks WHERE name = ?", (bif_file,))
+        bif_row = cursor.fetchone()
+        if bif_row:
+            bif_id = bif_row['id']
+
+    # ✅ Insert using bif_id
     cursor.execute(
-        "INSERT INTO assessments (title, content_domain_id, bif_file) VALUES (?, ?, ?)",
-        (title, content_domain_id, bif_file)
+        "INSERT INTO assessments (title, content_domain_id, bif_id) VALUES (?, ?, ?)",
+        (title, content_domain_id, bif_id)
     )
     conn.commit()
     conn.close()
@@ -444,12 +451,23 @@ def add_assessment():
 def update_assessment(title):
     data = request.get_json()
     content_domain_id = data.get("content_domain_id")
-    bif_file = data.get("bif_file")
-    conn = get_db()
+    bif_file = data.get("bif_file") # Filename string from frontend
+    
+    conn = get_db_connection()
     cursor = conn.cursor()
+
+    # ✅ Look up the bif_id from the bayesian_networks table
+    bif_id = None
+    if bif_file:
+        cursor.execute("SELECT id FROM bayesian_networks WHERE name = ?", (bif_file,))
+        bif_row = cursor.fetchone()
+        if bif_row:
+            bif_id = bif_row['id']
+
+    # ✅ Update using bif_id
     cursor.execute(
-        "UPDATE assessments SET content_domain_id = ?, bif_file = ? WHERE title = ?",
-        (content_domain_id, bif_file, title)
+        "UPDATE assessments SET content_domain_id = ?, bif_id = ? WHERE title = ?",
+        (content_domain_id, bif_id, title)
     )
     conn.commit()
     conn.close()
@@ -457,7 +475,7 @@ def update_assessment(title):
 
 @teacher_routes.route('/assessment/<title>', methods=['DELETE'])
 def delete_assessment(title):
-    conn = get_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM assessments WHERE title = ?", (title,))
     row = cursor.fetchone()
@@ -479,7 +497,7 @@ def delete_assessment(title):
 
 @teacher_routes.route('/assessment/<title>', methods=['GET'])
 def get_questions(title):
-    conn = get_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM assessments WHERE title = ?", (title,))
     row = cursor.fetchone()
@@ -509,7 +527,7 @@ def save_questions(title):
     questions = data.get('questions', [])
     if len(questions) > 10:
         return jsonify({'error': 'Maximum 10 questions allowed per assessment.'}), 400
-    conn = get_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
     # Get assessment ID
     cursor.execute("SELECT id FROM assessments WHERE title = ?", (title,))
@@ -546,19 +564,66 @@ def save_questions(title):
     conn.close()
     return jsonify({'message': 'Assessment updated successfully'})
 
-@teacher_routes.route('/auto-query-result/<student_id>/<int:assessment_id>', methods=['GET'])
-def auto_query_result(student_id, assessment_id):
-    conn = get_db()
+@teacher_routes.route('/manual-query', methods=['POST'])
+def manual_query():
+    data = request.get_json()
+    bif_file = data.get('bif_file')
+    competency_node = data.get('competency')
+    score = data.get('score')
+    total = data.get('total') # --- FIX: Get total from request ---
+
+    if not all([bif_file, competency_node, score is not None, total is not None]):
+        return jsonify({'error': 'Missing bif_file, competency, score, or total'}), 400
+
+    # Use the lazy-loading function from prerequisite_api
+    model_data = get_model(bif_file)
+    if not model_data:
+        return jsonify({'error': f"BIF file '{bif_file}' not found or failed to load"}), 404
+
+    model = model_data["model"]
+    infer = model_data["infer"]
+
+    # --- FIX: Calculate evidence_state from score and total, just like auto-query ---
+    try:
+        score = int(score)
+        total = int(total)
+        mastery_threshold = 0.7 
+        evidence_state = 1 if (score / total) >= mastery_threshold else 0
+    except (ValueError, ZeroDivisionError):
+        return jsonify({'error': 'Invalid score or total provided.'}), 400
+
+    # If the competency was 'mastered', no focus is needed.
+    if evidence_state == 1:
+        return jsonify({
+            "competency": competency_node,
+            "score": score,
+            "total": total,
+            "next_focus": "Competency mastered, no immediate focus needed."
+        })
+
+    # Call the existing logic to determine the next focus area
+    outcome = determine_next_focus(model, infer, competency_node, evidence_state)
+
+    return jsonify({
+        "competency": competency_node,
+        "score": score,
+        "total": total,
+        **outcome  # Unpack the outcome dictionary (next_focus, mastery_probabilities)
+    })
+
+@teacher_routes.route('/auto-query-result/<int:result_id>', methods=['GET'])
+def auto_query_result(result_id):
+    conn = get_db_connection()
     cursor = conn.cursor()
+    # --- FIX: Query by the unique result_id ---
     cursor.execute("""
-        SELECT sr.score, sr.total, c.id AS competency_node, a.bif_file
+        SELECT sr.score, sr.total, c.title AS competency_node, bn.name AS bif_file
         FROM student_results sr
         JOIN assessments a ON sr.assessment_id = a.id
-        JOIN competencies c ON c.title = a.title
-        WHERE sr.student_id = ? AND sr.assessment_id = ?
-        ORDER BY sr.attempt_number DESC
-        LIMIT 1
-    """, (student_id, assessment_id))
+        LEFT JOIN competencies c ON c.title = a.title
+        LEFT JOIN bayesian_networks bn ON a.bif_id = bn.id
+        WHERE sr.id = ?
+    """, (result_id,))
     row = cursor.fetchone()
     conn.close()
     if not row:
@@ -567,46 +632,60 @@ def auto_query_result(student_id, assessment_id):
     competency_node = row['competency_node']
     score = row['score']
     total = row['total']
-    bif_file = row['bif_file'] or "network.bif"
+    bif_file = row['bif_file']
 
-    # Use the loaded model from prerequisite_api.py
-    model_data = LOADED_MODELS.get(bif_file)
+    # --- START DEBUGGING ---
+    print("\n--- AUTO-QUERY DEBUG ---")
+    print(f"  - BIF File: {bif_file}")
+    print(f"  - Competency Node: {competency_node}")
+    print(f"  - Score/Total: {score}/{total}")
+    # --- END DEBUGGING ---
+
+    if not bif_file:
+        return jsonify({'error': 'Assessment is not linked to a Bayesian Network'}), 404
+
+    # Use the lazy-loading function
+    model_data = get_model(bif_file)
     if not model_data:
-        return jsonify({'error': f"BIF file '{bif_file}' not loaded"}), 404
+        return jsonify({'error': f"BIF file '{bif_file}' not found or failed to load"}), 404
 
     model = model_data["model"]
     infer = model_data["infer"]
 
-    # Use the same logic as assess_competencies
-    try:
-        score_val = float(score)
-        if score_val < 7:
-            # Use determine_next_focus from prerequisite_api.py
-            from prerequisite.prerequisite_api import determine_next_focus
-            outcome = determine_next_focus(model, infer, competency_node)
-            result = {
-                "competency": competency_node,
-                "score": score,
-                "total": total,
-                "next_focus": outcome.get("next_focus"),
-                "mastery_probabilities": outcome.get("mastery_probabilities"),
-            }
-        else:
-            result = {
-                "competency": competency_node,
-                "score": score,
-                "total": total,
-                "next_focus": None,
-                "mastery_probabilities": None,
-            }
-        return jsonify(result)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    # Determine the evidence state based on the score
+    # Assuming a 70% threshold for mastery (state 1)
+    mastery_threshold = 0.7 
+    evidence_state = 1 if (score / total) >= mastery_threshold else 0
+
+    # --- START DEBUGGING ---
+    print(f"  - Calculated Evidence State: {evidence_state} (Type: {type(evidence_state)})")
+    print(f"  - Calling determine_next_focus with: model, infer, '{competency_node}', {evidence_state}")
+    print("------------------------\n")
+    # --- END DEBUGGING ---
+
+    # If the student passed, there's no need to find a focus area.
+    if evidence_state == 1:
+        return jsonify({
+            "competency": competency_node,
+            "score": score,
+            "total": total,
+            "next_focus": "Competency mastered, no immediate focus needed."
+        })
+
+    # ✅ Pass the model, infer, node, AND the evidence state to the function
+    outcome = determine_next_focus(model, infer, competency_node, evidence_state)
+
+    return jsonify({
+        "competency": competency_node,
+        "score": score,
+        "total": total,
+        **outcome  # Unpack the outcome dictionary (next_focus, mastery_probabilities, etc.)
+    })
 
 
 @teacher_routes.route('/results/<student_id>', methods=['GET'])
 def get_teacher_student_results(student_id):
-    conn = get_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
         SELECT sr.id as result_id,
@@ -626,13 +705,15 @@ def get_teacher_student_results(student_id):
 
 @teacher_routes.route('/query-result/<int:result_id>', methods=['GET'])
 def query_result(result_id):
-    conn = get_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
+    # Also fetch the bif_file name associated with this result
     cursor.execute("""
-        SELECT c.title AS competency, sr.score, sr.total
+        SELECT c.title AS competency, sr.score, sr.total, bn.name as bif_file
         FROM student_results sr
         JOIN assessments a ON sr.assessment_id = a.id
         LEFT JOIN competencies c ON c.title = a.title
+        LEFT JOIN bayesian_networks bn ON a.bif_id = bn.id
         WHERE sr.id = ?
     """, (result_id,))
     row = cursor.fetchone()
@@ -641,21 +722,28 @@ def query_result(result_id):
         return jsonify({'error': 'Result not found'}), 404
 
     competency = row['competency']
-    score = row['score']
-    total = row['total']
-    mastery_prob = score / total if total else 0
+    bif_file = row['bif_file']
+
+    if not bif_file or not competency:
+        return jsonify({'error': 'Result is not linked to a valid competency or Bayesian Network'}), 400
+
+    # Use the lazy-loading function
+    model_data = get_model(bif_file)
+    if not model_data:
+        return jsonify({'error': f"Model '{bif_file}' not loaded."}), 500
+    
+    infer = model_data["infer"]
 
     try:
-        result = inference.query(variables=[competency], show_progress=False)
+        # Use the correct inference engine
+        result = infer.query(variables=[competency], show_progress=False)
         prob = result.values.item() if result.values.shape == () else result.values[1]
         return jsonify({
             'competency': competency,
-            'score': score,
-            'total': total,
+            'score': row['score'],
+            'total': row['total'],
             'mastery_probability': prob
         })
-    
-    
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -669,7 +757,7 @@ def unassign_competency():
     if not student_id or not competency_id or not tutor_id:
         return jsonify({'error': 'Missing data'}), 400
 
-    conn = get_db()
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
         'DELETE FROM assignments WHERE student_id = ? AND competency_id = ? AND tutor_id = ?',
@@ -677,5 +765,5 @@ def unassign_competency():
     )
     conn.commit()
     conn.close()
-    return jsonify({'message': 'Assignment removed'})    
-    
+    return jsonify({'message': 'Assignment removed'})
+

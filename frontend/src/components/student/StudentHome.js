@@ -15,7 +15,8 @@ function StudentHome() {
   // 1. Get logged-in student ID
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/students/me", { withCredentials: true })
+      // --- FIX: Use singular 'student' to match app.py ---
+      .get("http://localhost:5000/api/student/me", { withCredentials: true })
       .then((res) => {
         setStudentId(res.data.studentId);
       })
@@ -27,17 +28,27 @@ function StudentHome() {
     if (!studentId) return;
     setLoading(true);
 
-    // Fetch assigned assessments
-    axios
-      .get(`http://localhost:5000/api/teacher/student-assessments/${studentId}`)
-      .then((res) => setAssignedAssessments(res.data))
-      .catch(() => setAssignedAssessments([]));
+    const fetchAssigned = axios.get(
+      // --- FIX: Use singular 'student' to match app.py ---
+      `http://localhost:5000/api/student/assigned-assessments/${studentId}`,
+      { withCredentials: true }
+    );
 
-    // Fetch recent results
-    axios
-      .get(`http://localhost:5000/api/students/results/${studentId}`, { withCredentials: true })
-      .then((res) => setResults(res.data))
-      .catch(() => setResults([]))
+    const fetchResults = axios.get(
+      // --- FIX: Use singular 'student' to match app.py ---
+      `http://localhost:5000/api/student/results/${studentId}`,
+      { withCredentials: true }
+    );
+
+    Promise.all([fetchAssigned, fetchResults])
+      .then(([assignedRes, resultsRes]) => {
+        setAssignedAssessments(assignedRes.data);
+        setResults(resultsRes.data);
+      })
+      .catch(() => {
+        setAssignedAssessments([]);
+        setResults([]);
+      })
       .finally(() => setLoading(false));
   }, [studentId]);
 

@@ -196,6 +196,7 @@ function BayesianNetworkManagement() {
   const [selectedNetwork, setSelectedNetwork] = useState("");
   const [cpds, setCpds] = useState([]);
   const [editCpd, setEditCpd] = useState(null);
+  const [isAdding, setIsAdding] = useState(false); // Track add vs. edit mode
   const [message, setMessage] = useState("");
   const [pendingChanges, setPendingChanges] = useState([]);
 
@@ -234,6 +235,7 @@ function BayesianNetworkManagement() {
     setSelectedNetwork(e.target.value);
     setMessage("");
     setEditCpd(null);
+    setIsAdding(false); // Reset mode on network change
     setPendingChanges([]);
   };
 
@@ -249,7 +251,8 @@ function BayesianNetworkManagement() {
     if (isSingular && Array.isArray(values) && values.length > 0 && Array.isArray(values[0])) {
       values = values.flat();
     }
-
+    
+    setIsAdding(false); // We are in "edit" mode
     setEditCpd({ variable, ...cpd, values });
   };
 
@@ -270,6 +273,7 @@ function BayesianNetworkManagement() {
       evidence: evidence,
     });
     setEditCpd(null);
+    setIsAdding(false); // Reset mode
     setMessage("Change queued. Click 'Save Changes & Reload BIFs' to apply.");
   };
 
@@ -282,7 +286,12 @@ function BayesianNetworkManagement() {
   };
 
   const handleAddCpd = () => {
+    setIsAdding(true); // We are in "add" mode
     setEditCpd({ variable: "", values: [0.5, 0.5], evidence: [] });
+  };
+
+  const handleRemoveQueuedChange = (indexToRemove) => {
+    setPendingChanges(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
   const handleSaveAll = () => {
@@ -330,6 +339,52 @@ function BayesianNetworkManagement() {
               Save Changes & Reload BIFs
             </button>
           )}
+
+          {/* START: Display Pending Changes in a Table */}
+          {pendingChanges.length > 0 && (
+            <div style={{ margin: "1em 0" }}>
+              <h4>Pending Changes</h4>
+              <table border="1">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Variable</th>
+                    <th>Network</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingChanges.map((change, index) => (
+                    <tr key={index}>
+                      <td>
+                        <span
+                          style={{
+                            fontWeight: "bold",
+                            textTransform: "uppercase",
+                            padding: '3px 8px',
+                            borderRadius: '4px',
+                            color: 'white',
+                            backgroundColor: change.type === 'delete' ? '#d9534f' : '#5bc0de',
+                          }}
+                        >
+                          {change.type}
+                        </span>
+                      </td>
+                      <td>{change.variable}</td>
+                      <td><em>{change.network}</em></td>
+                      <td>
+                        <button onClick={() => handleRemoveQueuedChange(index)}>
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {/* END: Display Pending Changes */}
+
           <table border="1">
             <thead>
               <tr>
@@ -364,13 +419,13 @@ function BayesianNetworkManagement() {
 
       {editCpd && (
         <div style={{ border: "1px solid #ccc", padding: "1em", margin: "1em 0" }}>
-          <h4>{editCpd.variable ? "Edit CPD" : "Add CPD"}</h4>
+          <h4>{isAdding ? "Add CPD" : "Edit CPD"}</h4>
           <label>
             Variable:
             <input
               value={editCpd.variable}
               onChange={e => setEditCpd({ ...editCpd, variable: e.target.value })}
-              disabled={!!editCpd.variable}
+              disabled={!isAdding}
             />
           </label>
           <br />
@@ -392,7 +447,7 @@ function BayesianNetworkManagement() {
           </label>
           <br />
           <button onClick={handleSaveCpd}>Queue Change</button>
-          <button onClick={() => setEditCpd(null)}>Cancel</button>
+          <button onClick={() => { setEditCpd(null); setIsAdding(false); }}>Cancel</button>
         </div>
       )}
 

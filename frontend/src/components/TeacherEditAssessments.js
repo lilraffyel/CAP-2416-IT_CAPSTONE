@@ -35,15 +35,12 @@ useEffect(() => {
   axios.get("http://localhost:5000/api/teacher/domains", { withCredentials: true })
     .then(res => setContentDomains(res.data))
     .catch(() => setContentDomains([]));
-  // Hardcode or fetch BIF files from backend
-  setBifFiles([
-    "estimate.bif",
-    "place-value.bif",
-    "counting.bif",
-    "ordering.bif",
-    "comparing.bif",
-    // ...add more as needed
-  ]);
+  
+  // ✅ Fetch BIF files from the backend instead of hardcoding
+  axios.get("http://localhost:5000/api/biffiles", { withCredentials: true })
+    .then(res => setBifFiles(res.data.bif_files || []))
+    .catch(() => setBifFiles([]));
+
 }, []);
 
   const fetchAssessments = () => {

@@ -73,18 +73,18 @@ def get_tutor_assignments():
 # backend/routes/admin_routes.py
 import os
 import numpy as np
+import io
 from flask import Blueprint, request, jsonify
-from database import get_db_connection  # ✅ use your existing helper
+from database import get_db_connection
 from pgmpy.readwrite.BIF import BIFReader, BIFWriter
 from pgmpy.factors.discrete import TabularCPD
+# Import the new cache management functions
+from prerequisite.prerequisite_api import get_model, clear_model_cache
 
 admin_routes = Blueprint('admin_routes', __name__)
 
-
-def reload_bif(network_path):
-    bif_reader = BIFReader(network_path)
-    model = bif_reader.get_model()
-    return bif_reader, model
+# This helper is no longer needed, we will use get_model()
+# def reload_bif_from_db(network_name): ...
 
 # 🔹 1. Get all help requests with student & domain info
 @admin_routes.route('/help-requests', methods=['GET'])
@@ -290,10 +290,16 @@ def remove_help_request():
 
 @admin_routes.route("/get_cpds", methods=["GET"])
 def get_cpds():
-    network = request.args.get("network", "network.bif")
-    network_path = os.path.join(os.path.dirname(__file__), "prerequisite", network)
+    network = request.args.get("network")
+    if not network:
+        return jsonify({"error": "Network name is required."}), 400
     try:
-        bif_reader, model = reload_bif(network_path)
+        # Use the lazy-loading function
+        model_data = get_model(network)
+        if not model_data:
+            return jsonify({"error": f"BIF file '{network}' not found or failed to load."}), 404
+        
+        model = model_data["model"]
         cpds = {}
         for cpd in model.get_cpds():
             is_singular = not cpd.variables[1:]
@@ -364,97 +370,99 @@ def delete_cpd():
 @admin_routes.route("/batch_update_cpds", methods=["POST"])
 def batch_update_cpds():
     import numpy as np
+    from collections import defaultdict
+
     changes = request.get_json().get("changes", [])
     results = []
+    
+    grouped_changes = defaultdict(list)
     for change in changes:
-        network = change.get("network", "network.bif")
-        network_path = os.path.join(os.path.dirname(__file__), "prerequisite", network)
+        network = change.get("network")
+        if network:
+            grouped_changes[network].append(change)
+        else:
+            results.append("Error: Found a change item missing the 'network' property.")
+
+    for network, network_changes in grouped_changes.items():
         try:
-            if change["type"] == "update":
-                variable = change["variable"]
-                values = change["values"]
-                evidence = change.get("evidence", [])
+            # Load the model ONCE for this network using the lazy-loader
+            model_data = get_model(network)
+            if not model_data:
+                # We need a model to apply changes to. If it doesn't exist, create an empty one.
+                from pgmpy.models import BayesianNetwork
+                model = BayesianNetwork()
+            else:
+                model = model_data["model"]
 
-                # --- DEBUG PRINTS ---
-                print(f"\nValidating CPD for {variable}")
-                print("Evidence:", evidence)
-                print("Values from frontend:", values)
+            # Apply all changes for this network to the same model object
+            for change in network_changes:
+                if change["type"] == "update":
+                    variable = change["variable"]
+                    values = change["values"]
+                    evidence = change.get("evidence", [])
 
-                # --- FIX: VALIDATE BEFORE TRANSPOSING ---
-                # The validation logic checks if rows sum to 1, which is true for the
-                # data format coming from the frontend, BEFORE it's transposed for pgmpy.
-                def validate_rows(arr):
-                    # For singular nodes, the frontend sends [[v1], [v2]], which is a column vector.
-                    # The sum of its elements should be 1.
-                    if not evidence and isinstance(arr, list) and all(isinstance(x, list) and len(x) == 1 for x in arr):
-                        total = sum(x[0] for x in arr)
-                        print("Total for singular node column vector:", total)
-                        return abs(total - 1) < 1e-3
-                    
-                    # For complex nodes, the frontend sends rows that should sum to 1.
-                    if isinstance(arr, list) and all(isinstance(x, (float, int)) for x in arr):
-                        total = sum(arr)
-                        print("Total for row:", total)
-                        return abs(total - 1) < 1e-3
+                    try:
+                        values_np = np.array(values, dtype=float)
+                    except ValueError:
+                        results.append(f"Error for {variable}: 'values' field contains non-numeric data.")
+                        continue
 
-                    # Recurse for nested lists (complex nodes)
-                    if isinstance(arr, list) and len(arr) > 0 and isinstance(arr[0], list):
-                        return all(validate_rows(row) for row in arr)
-                    
-                    return False
+                    if variable not in model.nodes:
+                        model.add_node(variable)
 
-                if not validate_rows(values):
-                    results.append(f"CPD for {variable} invalid: each row must sum to 1.")
-                    continue
-                
-                # --- Transpose AFTER validation ---
-                # The frontend now sends singular nodes as [[v1], [v2]]. This is correct for pgmpy.
-                # For complex nodes, we need to transpose them back.
-                if evidence:
-                    # This logic correctly handles complex nodes (with 1 or more parents)
-                    if isinstance(values[0][0], list):
-                        # Multi-dimensional values (multiple parents): Flatten and transpose
-                        values = np.array(values).reshape(-1, len(values[0][0])).T.tolist()
+                    if not evidence:
+                        if values_np.shape != (2, 1):
+                            results.append(f"Error for singular node {variable}: Expected a column vector of shape (2, 1).")
+                            continue
+                        values_for_pgmpy = values_np
                     else:
-                        # Already 2D (one parent): Transpose only
-                        values = np.array(values).T.tolist()
-                
-                print("Values after processing for pgmpy:", values)
+                        num_parent_combos = int(np.prod(values_np.shape) / 2)
+                        values_for_pgmpy = values_np.reshape(num_parent_combos, 2).T
 
-                bif_reader, model = reload_bif(network_path)
-                # Build state_names from existing CPDs
-                state_names = {}
-                for cpd in model.get_cpds():
-                    state_names[cpd.variable] = cpd.state_names.get(cpd.variable, [0, 1])
-                    for parent in cpd.variables[1:]:
-                        state_names[parent] = cpd.state_names.get(parent, [0, 1])
-                cpd_state_names = {variable: state_names.get(variable, [0, 1])}
-                for parent in evidence:
-                    cpd_state_names[parent] = state_names.get(parent, [0, 1])
-                evidence_card = [2] * len(evidence) if evidence else None
+                    is_valid = np.isclose(values_for_pgmpy.sum(), 1.0) if not evidence else np.all(np.isclose(values_for_pgmpy.sum(axis=0), 1.0))
+                    if not is_valid:
+                        results.append(f"Error for {variable}: Probabilities do not sum to 1 correctly.")
+                        continue
+                    
+                    evidence_card = [2] * len(evidence) if evidence else None
+                    cpd_state_names = {variable: ['0', '1'], **{parent: ['0', '1'] for parent in evidence}}
 
-                cpd = TabularCPD(
-                    variable=variable,
-                    variable_card=2,
-                    values=values,
-                    evidence=evidence if evidence else None,
-                    evidence_card=evidence_card,
-                    state_names=cpd_state_names
-                )
-                model.add_cpds(cpd)
-                model.check_model()
-                writer = BIFWriter(model)
-                writer.write_bif(network_path)
-                results.append(f"CPD for {variable} updated.")
-            elif change["type"] == "delete":
-                variable = change["variable"]
-                bif_reader, model = reload_bif(network_path)
-                model.remove_cpds(variable)
-                model.check_model()
-                writer = BIFWriter(model)
-                writer.write_bif(network_path)
-                results.append(f"CPD for {variable} deleted.")
+                    cpd = TabularCPD(
+                        variable=variable,
+                        variable_card=2,
+                        values=values_for_pgmpy.tolist(),
+                        evidence=evidence if evidence else None,
+                        evidence_card=evidence_card,
+                        state_names=cpd_state_names
+                    )
+                    model.add_cpds(cpd)
+                    results.append(f"Queued update for {variable}.")
+
+                elif change["type"] == "delete":
+                    variable = change["variable"]
+                    # Check if the node actually exists before trying to remove it
+                    if variable in model.nodes:
+                        model.remove_node(variable) # Use remove_node to clear everything
+                        results.append(f"Queued delete for {variable}.")
+                    else:
+                        results.append(f"Skipped delete for {variable} as it was not found in the model.")
+
+            # After all changes for this network are applied, save it
+            model.check_model()
+            writer = BIFWriter(model)
+            new_content = str(writer)
+            
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("UPDATE bayesian_networks SET content = ? WHERE name = ?", (new_content, network))
+            conn.commit()
+            conn.close()
+            
+            # --- OPTIMIZATION: Invalidate only the modified network from the cache ---
+            clear_model_cache(network)
+            results.append(f"Successfully saved and cleared cache for {network}.")
+
         except Exception as e:
-            results.append(f"Error processing {change.get('variable', '')}: {str(e)}")
-    reload_bif(network_path)
+            results.append(f"Error processing network {network}: {str(e)}")
+    
     return jsonify({"message": "Batch update complete. " + "; ".join(results)})
