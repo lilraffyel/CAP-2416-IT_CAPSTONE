@@ -15,8 +15,7 @@ function StudentHome() {
   // 1. Get logged-in student ID
   useEffect(() => {
     axios
-      // --- FIX: Use singular 'student' to match app.py ---
-      .get("http://localhost:5000/api/student/me", { withCredentials: true })
+      .get("http://localhost:5000/api/students/me", { withCredentials: true })
       .then((res) => {
         setStudentId(res.data.studentId);
       })
@@ -28,33 +27,23 @@ function StudentHome() {
     if (!studentId) return;
     setLoading(true);
 
-    const fetchAssigned = axios.get(
-      // --- FIX: Use singular 'student' to match app.py ---
-      `http://localhost:5000/api/student/assigned-assessments/${studentId}`,
-      { withCredentials: true }
-    );
+    // Fetch assigned assessments
+    axios
+      .get(`http://localhost:5000/api/teacher/student-assessments/${studentId}`)
+      .then((res) => setAssignedAssessments(res.data))
+      .catch(() => setAssignedAssessments([]));
 
-    const fetchResults = axios.get(
-      // --- FIX: Use singular 'student' to match app.py ---
-      `http://localhost:5000/api/student/results/${studentId}`,
-      { withCredentials: true }
-    );
-
-    Promise.all([fetchAssigned, fetchResults])
-      .then(([assignedRes, resultsRes]) => {
-        setAssignedAssessments(assignedRes.data);
-        setResults(resultsRes.data);
-      })
-      .catch(() => {
-        setAssignedAssessments([]);
-        setResults([]);
-      })
+    // Fetch recent results
+    axios
+      .get(`http://localhost:5000/api/students/results/${studentId}`, { withCredentials: true })
+      .then((res) => setResults(res.data))
+      .catch(() => setResults([]))
       .finally(() => setLoading(false));
   }, [studentId]);
 
   const handleTakeAssessment = (assessmentTitle) => {
-    // Navigate to the assessments page and pass the title in the state
-    navigate('/student/assessments', { state: { assessmentTitle } });
+    // Optionally, pass assessmentTitle via state or context
+    navigate('/student/assessments');
   };
 
   const handleSort = (key) => {

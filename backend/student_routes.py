@@ -3,7 +3,7 @@ from database import get_db_connection
 
 student_bp = Blueprint('student', __name__)
 
-# --- FIX: Path must be relative to the '/api/student' prefix ---
+# Get current logged-in student ID
 @student_bp.route('/me')
 def get_current_student():
     student_id = session.get('student_id')
@@ -11,7 +11,7 @@ def get_current_student():
         return jsonify({'error': 'Not logged in'}), 401
     return jsonify({'studentId': student_id})
 
-# --- FIX: Path must be relative to the '/api/student' prefix ---
+# Get all content domains
 @student_bp.route('/domains')
 def get_content_domains():
     try:
@@ -24,7 +24,7 @@ def get_content_domains():
         print(f"[ERROR] {e}")
         return jsonify({"error": "Failed to fetch domains"}), 500
 
-# --- FIX: Path must be relative to the '/api/student' prefix ---
+# Submit a help request
 @student_bp.route('/help-request', methods=['POST'])
 def submit_help_request():
     data = request.get_json()
@@ -49,36 +49,6 @@ def submit_help_request():
         return jsonify({"error": "Database error"}), 500
     
 
-# --- FIX: Path must be relative to the '/api/student' prefix ---
-@student_bp.route('/assigned-assessments/<student_id>', methods=['GET'])
-def get_assigned_assessments(student_id):
-    """Fetches assessments assigned to a specific student that they have not yet completed."""
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            SELECT a.id, a.title, a.description
-            FROM assessments a
-            WHERE a.student_id = ? AND a.status = 'assigned'
-            ORDER BY a.created_at DESC
-        """, (student_id,))
-        rows = cursor.fetchall()
-
-        assessments = [{
-            "id": row["id"],
-            "title": row["title"],
-            "description": row["description"]
-        } for row in rows]
-
-        conn.close()
-        return jsonify(assessments)
-    except Exception as e:
-        print(f"[ERROR] {e}")
-        return jsonify({"error": "Database error"}), 500
-    
-
-# --- FIX: Path must be relative to the '/api/student' prefix ---
 @student_bp.route('/results/<student_id>', methods=['GET'])
 def get_student_results(student_id):
     try:
