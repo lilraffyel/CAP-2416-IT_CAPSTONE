@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import {
   listBifFiles,
@@ -28,15 +28,17 @@ function TutorQuery() {
 
   // State for assessment results
   const [manualQueryResults, setManualQueryResults] = useState(null);
+  const [isManualQueryLoading, setIsManualQueryLoading] = useState(false); // <-- Loading state for manual query
 
   // State for student results (like StudentResults.js)
   const [studentResults, setStudentResults] = useState([]);
   const [resultsError, setResultsError] = useState(null);
-  // eslint-disable-next-line no-unused-vars
-  const [sortField, setSortField] = useState("");
+  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'descending' });
   const [filterText, setFilterText] = useState("");
+  const [showScoreSortOptions, setShowScoreSortOptions] = useState(false);
   //State for Auto Query Results
   const [autoQueryResults, setAutoQueryResults] = useState([]);
+  const [isAutoQueryLoading, setIsAutoQueryLoading] = useState(false); // <-- Loading state for auto query
   const [tutorId, setTutorId] = useState(null);
   
   // Load BIF files on mount
@@ -141,8 +143,8 @@ function TutorQuery() {
       alert("Please select a BIF file and add a tested competency.");
       return;
     }
-    // We'll just use the first item for now as per the new design
     const itemToAssess = tested[0];
+    setIsManualQueryLoading(true); // <-- Set loading true
     try {
       const res = await axios.post(
         `http://localhost:5000/api/teacher/manual-query`,
@@ -158,25 +160,25 @@ function TutorQuery() {
     } catch (err) {
       console.error("Error assessing competencies:", err);
       setManualQueryResults({ error: "Failed to fetch manual query result." });
+    } finally {
+      setIsManualQueryLoading(false); // <-- Set loading false
     }
   };
 
   // Sorting and filtering for student results
-  const handleSort = (field) => {
-    setSortField(field);
-    const sorted = [...studentResults].sort((a, b) => {
-      if (field === "date") {
-        return new Date(a.date) - new Date(b.date);
-      } else if (field === "score") {
-        return a.score - b.score;
-      }
-      return 0;
-    });
-    setStudentResults(sorted);
+  const handleSort = (key, direction) => {
+    if (direction) {
+      setSortConfig({ key, direction });
+    } else {
+      const newDirection = sortConfig.key === key && sortConfig.direction === 'ascending' ? 'descending' : 'ascending';
+      setSortConfig({ key, direction: newDirection });
+    }
+    setShowScoreSortOptions(false);
   };
 
   // Handler for Auto Query Results
   const handleAutoQuery = async (resultId) => {
+    setIsAutoQueryLoading(true); // <-- Set loading true
     try {
       const res = await axios.get(
         // --- FIX: Use the resultId in the URL ---
@@ -186,13 +188,32 @@ function TutorQuery() {
       setAutoQueryResults(res.data);
     } catch (err) {
       setAutoQueryResults({ error: "Failed to fetch automatic query result." });
+    } finally {
+      setIsAutoQueryLoading(false); // <-- Set loading false
     }
   };
 
-  const filteredResults = studentResults.filter((r) => {
-    if (!filterText) return true;
-    return r.examName && r.examName.toLowerCase().includes(filterText.toLowerCase());
-  });
+  const filteredAndSortedResults = useMemo(() => {
+    let sortableResults = [...studentResults];
+    if (filterText) {
+      sortableResults = sortableResults.filter(r =>
+        r.examName && r.examName.toLowerCase().includes(filterText.toLowerCase())
+      );
+    }
+    sortableResults.sort((a, b) => {
+      let aValue = a[sortConfig.key];
+      let bValue = b[sortConfig.key];
+      if (sortConfig.key === 'date') {
+        aValue = new Date(aValue);
+        bValue = new Date(bValue);
+      }
+      if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
+      return 0;
+    });
+    return sortableResults;
+  }, [studentResults, sortConfig, filterText]);
+
 
   // Format mastery probability as percentage
   function formatPercent(val) {
@@ -234,11 +255,17 @@ function TutorQuery() {
     {selectedStudent && (
   <div className="section" style={{ marginBottom: "2rem" }}>
     <h3 style={{ margin: "0.5rem 0" }}>Results for {selectedStudent}</h3>
-    <div style={{ marginBottom: "0.5rem" }}>
+    <div style={{ marginBottom: "0.5rem", display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
       <button className="btn btn-secondary" onClick={() => handleSort("date")}>Sort by Date</button>
-      <button className="btn btn-secondary" onClick={() => handleSort("score")} style={{ marginLeft: "0.5rem" }}>
+      <button className="btn btn-secondary" onClick={() => setShowScoreSortOptions(!showScoreSortOptions)}>
         Sort by Score
       </button>
+      {showScoreSortOptions && (
+        <>
+          <button className="btn btn-secondary" onClick={() => handleSort('score', 'ascending')}>Ascending</button>
+          <button className="btn btn-secondary" onClick={() => handleSort('score', 'descending')}>Descending</button>
+        </>
+      )}
       <input
         className="form-control"
         style={{ marginLeft: "1rem", width: 200, display: "inline-block" }}
@@ -259,7 +286,7 @@ function TutorQuery() {
         </tr>
       </thead>
       <tbody>
-        {filteredResults.map((r, idx) => (
+        {filteredAndSortedResults.map((r, idx) => (
           <tr key={idx} style={{ borderBottom: "1px solid #333" }}>
             <td style={{ padding: "8px" }}>{new Date(r.date).toLocaleDateString()}</td>
             <td style={{ padding: "8px" }}>{r.examName}</td>
@@ -285,7 +312,9 @@ function TutorQuery() {
     {/* Auto Query Button and Results */}
 {selectedStudent && (
   <div className="section" style={{ marginBottom: "2rem" }}>
-    {autoQueryResults && autoQueryResults.competency ? (
+    {isAutoQueryLoading ? (
+      <div>Loading automatic query result...</div>
+    ) : autoQueryResults && autoQueryResults.competency ? (
       <div>
         <div>
           <b>Competency:</b> {autoQueryResults.competency}
@@ -434,7 +463,12 @@ function TutorQuery() {
     )}
 
     {/* Manual Query Results */}
-    {manualQueryResults && (
+    {isManualQueryLoading ? (
+      <div className="section">
+        <h4>Manual Query Result</h4>
+        <p>Loading manual query result...</p>
+      </div>
+    ) : manualQueryResults && (
       <div className="section">
         <h4>Manual Query Result</h4>
         {manualQueryResults.competency ? (

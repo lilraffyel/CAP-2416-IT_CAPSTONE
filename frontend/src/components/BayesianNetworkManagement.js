@@ -199,6 +199,7 @@ function BayesianNetworkManagement() {
   const [isAdding, setIsAdding] = useState(false); // Track add vs. edit mode
   const [message, setMessage] = useState("");
   const [pendingChanges, setPendingChanges] = useState([]);
+  const [isLoading, setIsLoading] = useState(false); // <-- Add loading state
 
   useEffect(() => {
     setNetworks([
@@ -212,6 +213,7 @@ function BayesianNetworkManagement() {
 
   useEffect(() => {
     if (selectedNetwork) {
+      setIsLoading(true); // <-- Set loading to true before the request
       axios
         .get(`http://localhost:5000/api/admin/get_cpds?network=${selectedNetwork}`, { withCredentials: true })
         .then((res) => {
@@ -227,6 +229,9 @@ function BayesianNetworkManagement() {
           setCpds([]);
           setMessage("Error loading CPDs.");
           console.error("Fetch error:", err);
+        })
+        .finally(() => {
+          setIsLoading(false); // <-- Set loading to false after the request completes
         });
     }
   }, [selectedNetwork]);
@@ -330,7 +335,7 @@ function BayesianNetworkManagement() {
       {selectedNetwork && (
         <>
           <h3>Network Structure</h3>
-          {renderStructure(cpds)}
+          {isLoading ? <p>Loading network structure...</p> : renderStructure(cpds)}
 
           <h3>Conditional Probability Tables (CPDs)</h3>
           <button onClick={handleAddCpd}>Add New CPD</button>
@@ -395,7 +400,11 @@ function BayesianNetworkManagement() {
               </tr>
             </thead>
             <tbody>
-              {cpds.length === 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={4}>Loading CPDs...</td>
+                </tr>
+              ) : cpds.length === 0 ? (
                 <tr>
                   <td colSpan={4}>No CPDs found.</td>
                 </tr>

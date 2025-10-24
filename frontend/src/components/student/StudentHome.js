@@ -11,6 +11,7 @@ function StudentHome() {
   const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'descending' });
   const [filterText, setFilterText] = useState('');
+  const [showScoreSortOptions, setShowScoreSortOptions] = useState(false);
 
   // 1. Get logged-in student ID
   useEffect(() => {
@@ -42,16 +43,19 @@ function StudentHome() {
   }, [studentId]);
 
   const handleTakeAssessment = (assessmentTitle) => {
-    // Optionally, pass assessmentTitle via state or context
-    navigate('/student/assessments');
+    // --- FIX: Pass the assessmentTitle in the navigation state ---
+    navigate('/student/assessments', { state: { assessmentTitle } });
   };
 
-  const handleSort = (key) => {
-    let direction = 'ascending';
-    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
+  const handleSort = (key, direction) => {
+    // If direction is provided, use it. Otherwise, toggle.
+    if (direction) {
+      setSortConfig({ key, direction });
+    } else {
+      const newDirection = sortConfig.key === key && sortConfig.direction === 'ascending' ? 'descending' : 'ascending';
+      setSortConfig({ key, direction: newDirection });
     }
-    setSortConfig({ key, direction });
+    setShowScoreSortOptions(false); // Hide options after selection
   };
 
   const filteredAndSortedResults = useMemo(() => {
@@ -120,9 +124,15 @@ function StudentHome() {
       {/* =============== RECENT RESULTS =============== */}
       <section>
         <h3>Your Recent Results</h3>
-        <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <button onClick={() => handleSort('date')}>Sort by Date</button>
-          <button onClick={() => handleSort('score')}>Sort by Score</button>
+          <button onClick={() => setShowScoreSortOptions(!showScoreSortOptions)}>Sort by Score</button>
+          {showScoreSortOptions && (
+            <>
+              <button onClick={() => handleSort('score', 'ascending')}>Ascending</button>
+              <button onClick={() => handleSort('score', 'descending')}>Descending</button>
+            </>
+          )}
           <input
             type="text"
             placeholder="Filter by exam name..."

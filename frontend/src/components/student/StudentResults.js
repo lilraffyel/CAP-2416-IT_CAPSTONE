@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 
 function StudentResults() {
   const [studentId, setStudentId] = useState(null);
   const [results, setResults] = useState([]);
   const [error, setError] = useState(null);
-  // eslint-disable-next-line no-unused-vars
-  const [sortField, setSortField] = useState("");
+  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'descending' });
   const [filterText, setFilterText] = useState("");
+  const [showScoreSortOptions, setShowScoreSortOptions] = useState(false);
 
   useEffect(() => {
     // Step 1: Get logged-in student ID
     axios
       // --- FIX: Use singular 'student' to match app.py ---
-      .get("http://localhost:5000/api/student/me", { withCredentials: true })
+      .get("http://localhost:5000/api/students/me", { withCredentials: true })
       .then((res) => {
         setStudentId(res.data.studentId);
       })
@@ -29,7 +29,7 @@ function StudentResults() {
     // Step 2: Fetch results for the fetched student ID
     axios
       // --- FIX: Use singular 'student' to match app.py ---
-      .get(`http://localhost:5000/api/student/results/${studentId}`, { withCredentials: true })
+      .get(`http://localhost:5000/api/students/results/${studentId}`, { withCredentials: true })
       .then((res) => setResults(res.data))
       .catch((err) => {
         console.error(err);
@@ -37,34 +37,54 @@ function StudentResults() {
       });
   }, [studentId]);
 
-  const handleSort = (field) => {
-    setSortField(field);
-    const sorted = [...results].sort((a, b) => {
-      if (field === "date") {
-        return new Date(a.date) - new Date(b.date);
-      } else if (field === "score") {
-        return a.score - b.score;
-      }
-      return 0;
-    });
-    setResults(sorted);
+  const handleSort = (key, direction) => {
+    if (direction) {
+      setSortConfig({ key, direction });
+    } else {
+      const newDirection = sortConfig.key === key && sortConfig.direction === 'ascending' ? 'descending' : 'ascending';
+      setSortConfig({ key, direction: newDirection });
+    }
+    setShowScoreSortOptions(false);
   };
 
-  const filteredResults = results.filter((r) => {
-    if (!filterText) return true;
-    return r.examName.toLowerCase().includes(filterText.toLowerCase());
-  });
+  const filteredAndSortedResults = useMemo(() => {
+    let sortableResults = [...results];
+    if (filterText) {
+      sortableResults = sortableResults.filter(r =>
+        r.examName.toLowerCase().includes(filterText.toLowerCase())
+      );
+    }
+    sortableResults.sort((a, b) => {
+      let aValue = a[sortConfig.key];
+      let bValue = b[sortConfig.key];
+      if (sortConfig.key === 'date') {
+        aValue = new Date(aValue);
+        bValue = new Date(bValue);
+      }
+      if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
+      return 0;
+    });
+    return sortableResults;
+  }, [results, sortConfig, filterText]);
+
 
   if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="content-box">
       <h2>Results</h2>
-      <p>Sort by:</p>
-      <button onClick={() => handleSort("date")}>Date</button>
-      <button onClick={() => handleSort("score")} style={{ marginLeft: "0.5rem" }}>
-        Score
-      </button>
+      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
+        <span>Sort by:</span>
+        <button onClick={() => handleSort('date')}>Date</button>
+        <button onClick={() => setShowScoreSortOptions(!showScoreSortOptions)}>Score</button>
+        {showScoreSortOptions && (
+          <>
+            <button onClick={() => handleSort('score', 'ascending')}>Ascending</button>
+            <button onClick={() => handleSort('score', 'descending')}>Descending</button>
+          </>
+        )}
+      </div>
 
       <div style={{ marginTop: "1rem" }}>
         <label>Filter by Exam Name: </label>
@@ -85,7 +105,7 @@ function StudentResults() {
           </tr>
         </thead>
         <tbody>
-          {filteredResults.map((r, idx) => (
+          {filteredAndSortedResults.map((r, idx) => (
             <tr key={idx} style={{ borderBottom: "1px solid #333" }}>
               <td style={{ padding: "8px" }}>{new Date(r.date).toLocaleDateString()}</td>
               <td style={{ padding: "8px" }}>{r.examName}</td>

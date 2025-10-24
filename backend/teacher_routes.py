@@ -177,60 +177,65 @@ def get_assessment_by_title(title):
 
 @teacher_routes.route('/submit-assessment', methods=['POST'])
 def submit_assessment():
-    data = request.json
+    data = request.get_json()
     student_id = data.get('studentId')
     assessment_title = data.get('assessmentTitle')
-    answers = data.get('answers')  # {question_id: selected_choice}
+    answers = data.get('answers', {})
 
-    if not student_id or not assessment_title or not answers:
-        return jsonify({'error': 'Missing data'}), 400
+    if not student_id or not assessment_title:
+        return jsonify({'error': 'Missing student ID or assessment title'}), 400
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT id FROM assessments WHERE title = ?", (assessment_title,))
-    assessment_row = cursor.fetchone()
-    if not assessment_row:
+    try:
+        # Get the assessment ID
+        cursor.execute("SELECT id FROM assessments WHERE title = ?", (assessment_title,))
+        assessment_row = cursor.fetchone()
+        if not assessment_row:
+            return jsonify({'error': 'Assessment not found'}), 404
+        assessment_id = assessment_row['id']
+
+        # Get all questions for this assessment to get the correct total and check answers
+        cursor.execute("SELECT id, correct_answer FROM questions WHERE assessment_id = ?", (assessment_id,))
+        all_questions = cursor.fetchall()
+        
+        total_questions = len(all_questions)
+        
+        score = 0
+        for question in all_questions:
+            question_id_str = str(question['id'])
+            if question_id_str in answers:
+                if answers[question_id_str] == question['correct_answer']:
+                    score += 1
+
+        # --- FIX: Calculate the attempt number before inserting ---
+        # 1. Find the last attempt number for this student and assessment.
+        cursor.execute(
+            "SELECT MAX(attempt_number) as max_attempt FROM student_results WHERE student_id = ? AND assessment_id = ?",
+            (student_id, assessment_id)
+        )
+        last_attempt = cursor.fetchone()
+        
+        # 2. If a previous attempt exists, increment it. Otherwise, start at 1.
+        new_attempt_number = 1
+        if last_attempt and last_attempt['max_attempt'] is not None:
+            new_attempt_number = last_attempt['max_attempt'] + 1
+
+        # 3. Insert the result into the database including the new attempt number.
+        cursor.execute(
+            "INSERT INTO student_results (student_id, assessment_id, score, total, attempt_number) VALUES (?, ?, ?, ?, ?)",
+            (student_id, assessment_id, score, total_questions, new_attempt_number)
+        )
+        conn.commit()
+
+        return jsonify({'score': score, 'total': total_questions})
+
+    except Exception as e:
+        print(f"[ERROR] during assessment submission: {e}")
+        return jsonify({'error': 'An internal error occurred during submission.'}), 500
+    finally:
         conn.close()
-        return jsonify({'error': 'Assessment not found'}), 404
-
-    assessment_id = assessment_row['id']
-    score = 0
-    total = 0
-
-    for qid_str, student_answer in answers.items():
-        try:
-            qid = int(qid_str)
-        except ValueError:
-            continue
-        cursor.execute("SELECT correct_answer, score FROM questions WHERE id = ?", (qid,))
-        row = cursor.fetchone()
-        if row:
-            total += row['score']
-            if student_answer.strip() == row['correct_answer'].strip():
-                score += row['score']
-
-    # ✅ Calculate next attempt number
-    cursor.execute("""
-        SELECT COUNT(*) FROM student_results
-        WHERE student_id = ? AND assessment_id = ?
-    """, (student_id, assessment_id))
-    attempt_number = cursor.fetchone()[0] + 1
-
-    # ✅ Insert with attempt_number
-    cursor.execute("""
-        INSERT INTO student_results (student_id, assessment_id, score, total, attempt_number)
-        VALUES (?, ?, ?, ?, ?)
-    """, (student_id, assessment_id, score, total, attempt_number))
-
-    conn.commit()
-    conn.close()
-    return jsonify({
-        'message': f'Submission complete. You scored {score}/{total}!',
-        'score': score,
-        'total': total,
-        'attempt': attempt_number
-    })
 
 
 @teacher_routes.route('/latest-results', methods=['GET'])
@@ -450,25 +455,47 @@ def add_assessment():
 @teacher_routes.route('/assessment/<title>', methods=['PATCH'])
 def update_assessment(title):
     data = request.get_json()
+    new_title = data.get("newTitle")
     content_domain_id = data.get("content_domain_id")
     bif_file = data.get("bif_file") # Filename string from frontend
     
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # ✅ Look up the bif_id from the bayesian_networks table
-    bif_id = None
-    if bif_file:
-        cursor.execute("SELECT id FROM bayesian_networks WHERE name = ?", (bif_file,))
-        bif_row = cursor.fetchone()
-        if bif_row:
-            bif_id = bif_row['id']
+    # Build the update query dynamically
+    updates = []
+    params = []
 
-    # ✅ Update using bif_id
-    cursor.execute(
-        "UPDATE assessments SET content_domain_id = ?, bif_id = ? WHERE title = ?",
-        (content_domain_id, bif_id, title)
-    )
+    if new_title:
+        updates.append("title = ?")
+        params.append(new_title)
+    
+    if content_domain_id is not None:
+        updates.append("content_domain_id = ?")
+        params.append(content_domain_id)
+
+    # Look up the bif_id from the bayesian_networks table
+    if bif_file is not None:
+        bif_id = None
+        if bif_file:
+            cursor.execute("SELECT id FROM bayesian_networks WHERE name = ?", (bif_file,))
+            bif_row = cursor.fetchone()
+            if bif_row:
+                bif_id = bif_row['id']
+        updates.append("bif_id = ?")
+        params.append(bif_id)
+
+    if not updates:
+        conn.close()
+        return jsonify({"message": "No update data provided."})
+
+    # Add the original title to the end of params for the WHERE clause
+    params.append(title)
+
+    # Update using the collected fields
+    query = f"UPDATE assessments SET {', '.join(updates)} WHERE title = ?"
+    cursor.execute(query, tuple(params))
+    
     conn.commit()
     conn.close()
     return jsonify({"message": "Assessment updated."})
@@ -615,12 +642,11 @@ def manual_query():
 def auto_query_result(result_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    # --- FIX: Query by the unique result_id ---
+    # --- FIX: Join assessments to bayesian_networks to get the BIF file ---
     cursor.execute("""
-        SELECT sr.score, sr.total, c.title AS competency_node, bn.name AS bif_file
+        SELECT sr.score, sr.total, a.title AS assessment_title, bn.name AS bif_file
         FROM student_results sr
         JOIN assessments a ON sr.assessment_id = a.id
-        LEFT JOIN competencies c ON c.title = a.title
         LEFT JOIN bayesian_networks bn ON a.bif_id = bn.id
         WHERE sr.id = ?
     """, (result_id,))
@@ -629,10 +655,19 @@ def auto_query_result(result_id):
     if not row:
         return jsonify({'error': 'Result not found'}), 404
 
-    competency_node = row['competency_node']
+    assessment_title = row['assessment_title']
     score = row['score']
     total = row['total']
     bif_file = row['bif_file']
+
+    # --- FIX: Manually map the assessment title to the correct BIF node name ---
+    # This is necessary because the assessment title is not the same as the node name in the BIF file.
+    competency_node = None
+    if assessment_title == "Place Value and Number Representation":
+        competency_node = "PlaceValueNR"
+    else:
+        # Fallback for other assessments - this might need similar mappings
+        competency_node = assessment_title
 
     # --- START DEBUGGING ---
     print("\n--- AUTO-QUERY DEBUG ---")

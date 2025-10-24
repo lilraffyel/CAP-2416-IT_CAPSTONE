@@ -14,14 +14,14 @@ import moneySimplified from '../components/money_simplified.png';
 import placeSimplified from '../components/place_simplified.png';
 import countingSimplified from '../components/counting_simplified.png';
 
-const structureImages = {
-  // estimate: estimateStructure,
-  // ordering: orderingStructure,
-  // comparing: comparingStructure,
-  // money: moneyStructure,
-  // place_value: placeStructure,
-  // counting: countingStructure,
-};
+// const structureImages = {
+//   // estimate: estimateStructure,
+//   // ordering: orderingStructure,
+//   // comparing: comparingStructure,
+//   // money: moneyStructure,
+//   // place_value: placeStructure,
+//   // counting: countingStructure,
+// };
 
 const simplifiedStructureImages = {
   estimate: estimateSimplified,
@@ -34,20 +34,19 @@ const simplifiedStructureImages = {
 
 function TeacherBayesOverview() {
   const [selectedBif, setSelectedBif] = useState('estimate');
-  const [mode, setMode] = useState('simplified'); // Add mode state
+  // const [mode, setMode] = useState('simplified'); // No longer needed
 
   const handleBifChange = (event) => {
     setSelectedBif(event.target.value);
   };
 
-  const handleModeChange = (event) => {
-    setMode(event.target.value);
-  };
+  // const handleModeChange = (event) => { // No longer needed
+  //   setMode(event.target.value);
+  // };
 
-  const structureImage = mode === 'simplified'
-    ? simplifiedStructureImages[selectedBif]
-    : structureImages[selectedBif];
+  const structureImage = simplifiedStructureImages[selectedBif];
 
+  /* --- Temporarily commented out to avoid unused variable warnings ---
   const hardcodedTableEstimate = (
     <div style={{ marginTop: '1rem' }}>
       <h3>Conditional Probability Distributions (CPDs) for Estimate</h3>
@@ -174,6 +173,9 @@ function TeacherBayesOverview() {
       </table>
     </div>
   );
+  */
+
+  /* --- Temporarily commented out to avoid unused variable warnings ---
   const hardcodedTableOrdering = (
     <div style={{ marginTop: '1rem' }}>
       <h3>Conditional Probability Distributions (CPDs) for Ordering</h3>
@@ -250,7 +252,9 @@ function TeacherBayesOverview() {
       </table>
     </div>
   );
+  */
 
+  /* --- Temporarily commented out to avoid unused variable warnings ---
   const hardcodedTableComparing = (
     <div style={{ marginTop: '1rem' }}>
       <h3>Conditional Probability Distributions (CPDs) for Comparing</h3>
@@ -358,6 +362,9 @@ function TeacherBayesOverview() {
     </div>
     
   );
+  */
+
+  /* --- Temporarily commented out to avoid unused variable warnings ---
   const hardcodedTableMoney = (
     <div style={{ marginTop: '1rem' }}>
       <h3>Conditional Probability Distributions (CPDs) for Money</h3>
@@ -454,7 +461,9 @@ function TeacherBayesOverview() {
       </table>
     </div>
   );
+  */
 
+  /* --- Temporarily commented out to avoid unused variable warnings ---
   const hardcodedTablePlaceValue = (
     <div style={{ marginTop: '1rem' }}>
       <h3>Conditional Probability Distributions (CPDs) for Place Value</h3>
@@ -581,6 +590,9 @@ function TeacherBayesOverview() {
       </table>
     </div>
   );
+  */
+
+  /* --- Temporarily commented out to avoid unused variable warnings ---
   const hardcodedTableCounting = (
     <div style={{ marginTop: '1rem' }}>
       <h3>Conditional Probability Distributions (CPDs) for Counting</h3>
@@ -757,38 +769,17 @@ function TeacherBayesOverview() {
       </table>
     </div>
   );
+  */
 
 
  
-
-// ...existing code...
 
 return (
   <div>
     <h2>Bayesian Network Overview</h2>
     <p>Visualize or review the Bayesian Network structure that powers the tutoring system.</p>
 
-    {/* Mode Selection */}
-    <div style={{ marginBottom: '1rem' }}>
-      <label>
-        <input
-          type="radio"
-          value="simplified"
-          checked={mode === 'simplified'}
-          onChange={handleModeChange}
-        />
-        Simplified
-      </label>
-      <label style={{ marginLeft: '1rem' }}>
-        <input
-          type="radio"
-          value="advanced"
-          checked={mode === 'advanced'}
-          onChange={handleModeChange}
-        />
-        Advanced
-      </label>
-    </div>
+    {/* --- Mode Selection radio buttons removed --- */}
 
     {/* BIF Selection Dropdown */}
     <div>
@@ -811,13 +802,11 @@ return (
       src={structureImage}
       alt={`${selectedBif} structure`}
       style={
-        mode === 'simplified'
-          ? selectedBif === 'ordering'
-            ? { maxWidth: "600px", width: "100%", height: "auto", display: "block", margin: "0 auto" }
-            : selectedBif === 'comparing'
-              ? { maxWidth: "1300px", width: "100%", height: "auto", display: "block", margin: "0 auto" }
-              : { maxWidth: "1000px", width: "100%", height: "auto", display: "block", margin: "0 auto" }
-          : { maxWidth: "100%", height: "auto" }
+        selectedBif === 'ordering'
+          ? { maxWidth: "600px", width: "100%", height: "auto", display: "block", margin: "0 auto" }
+          : selectedBif === 'comparing'
+            ? { maxWidth: "1300px", width: "100%", height: "auto", display: "block", margin: "0 auto" }
+            : { maxWidth: "1000px", width: "100%", height: "auto", display: "block", margin: "0 auto" }
       }
     />
   ) : (
@@ -826,7 +815,8 @@ return (
 </div>
 
     {/* Table Display */}
-    {mode === 'advanced' && (
+    {/* --- Temporarily commented out the Advanced view table rendering --- */}
+    {/* {mode === 'advanced' && (
       <>
         {selectedBif === "estimate" && hardcodedTableEstimate}
         {selectedBif === "ordering" && hardcodedTableOrdering}
@@ -835,7 +825,7 @@ return (
         {selectedBif === "place_value" && hardcodedTablePlaceValue}
         {selectedBif === "counting" && hardcodedTableCounting}
       </>
-    )}
+    )} */}
   </div>
 );
 }

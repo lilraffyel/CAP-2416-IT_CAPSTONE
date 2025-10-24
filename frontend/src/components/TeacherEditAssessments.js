@@ -10,6 +10,7 @@ function TeacherEditAssessments() {
   const [questions, setQuestions] = useState([]);
   const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [newAssessmentTitle, setNewAssessmentTitle] = useState("");
+  const [editingTitle, setEditingTitle] = useState(""); // <-- Add state for the editable title
   const [assessmentsByDomain, setAssessmentsByDomain] = useState({});
   const [domains, setDomains] = useState([]);
   const [contentDomains, setContentDomains] = useState([]);
@@ -58,6 +59,7 @@ useEffect(() => {
   // Select an assessment and load its questions
   const handleAssessmentSelect = (assName) => {
     setSelectedAssessment(assName);
+    setEditingTitle(assName); // <-- Set the editable title when an assessment is selected
     setLoadingQuestions(true);
     axios.get(`http://localhost:5000/api/teacher/assessment/${encodeURIComponent(assName)}`, { withCredentials: true })
       .then(res => {
@@ -254,7 +256,15 @@ useEffect(() => {
       {/* Questions Table */}
       {selectedAssessment && (
   <div style={{ marginTop: '1rem' }}>
-    <h3>Editing Assessment: {selectedAssessment}</h3>
+    <h3>
+      Editing Assessment:{" "}
+      <input 
+        type="text"
+        value={editingTitle}
+        onChange={(e) => setEditingTitle(e.target.value)}
+        style={{ fontSize: '1.17em', fontWeight: 'bold', border: '1px solid #ccc', padding: '4px' }}
+      />
+    </h3>
     <div style={{ marginBottom: '1rem' }}>
       <label>
         Content Domain:{" "}
@@ -285,19 +295,24 @@ useEffect(() => {
     axios
       .patch(
         `http://localhost:5000/api/teacher/assessment/${encodeURIComponent(selectedAssessment)}`,
-        { content_domain_id: selectedDomain, bif_file: selectedBifFile },
+        { 
+          newTitle: editingTitle, // <-- Send the new title
+          content_domain_id: selectedDomain, 
+          bif_file: selectedBifFile 
+        },
         { withCredentials: true }
       )
       .then(() => {
         alert("Assessment updated!");
         fetchAssessments(); // Refresh the assessments after the update
+        setSelectedAssessment(editingTitle); // <-- Update the selected assessment to the new title
       })
       .catch(() => alert("Failed to update assessment."));
   }}
   style={{ marginLeft: '1rem' }}
 >
   Save Assessment Meta
-</button>;
+</button>
     </div>
           <button onClick={addQuestion} style={{ marginBottom: '1rem' }}>Add Question</button>
           {loadingQuestions ? (
