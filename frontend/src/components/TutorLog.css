@@ -1,0 +1,143 @@
+.tutor-log-container {
+  color: #f1f1f1;
+}
+
+.tutor-log-layout {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+/* Left panel (Your Students) */
+.tutor-log-sidebar {
+  flex: 1;
+  background: #1f1f1f; /* darker gray for contrast */
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+}
+
+.tutor-log-sidebar h3 {
+  color: #eaeaea;
+}
+
+.tutor-log-search,
+.tutor-log-sort {
+  width: 100%;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background-color: #2b2b2b;
+  color: #f1f1f1;
+}
+
+.tutor-log-student-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tutor-log-student-button {
+  width: 100%;
+  text-align: left;
+  background: #2a2a2a;
+  color: #f1f1f1;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.tutor-log-student-button:hover {
+  background: #383838;
+  border-color: #666;
+}
+
+.tutor-log-student-button.active {
+  background: #0d6efd; /* blue accent */
+  border-color: #0a58ca;
+  color: white;
+}
+
+
+/* Right panel (Details) */
+.tutor-log-details {
+  flex: 2;
+  background: #212121; /* darker than white for better contrast */
+  color: #eaeaea;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+}
+
+.tutor-log-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background: #2b2b2b;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tutor-log-table th,
+.tutor-log-table td {
+  border: 1px solid #444;
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  color: #f1f1f1;
+}
+
+.tutor-log-table th {
+  background: #343434;
+  color: #f5f5f5;
+  font-weight: 600;
+}
+
+.tutor-log-note {
+  background: #2b2b2b;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1.5rem;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+.tutor-log-note textarea {
+  width: 100%;
+  background: #1e1e1e;
+  color: #f1f1f1;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 0.6rem;
+  resize: vertical;
+}
+
+.tutor-log-note button {
+  background: #0d6efd;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.tutor-log-note button:hover {
+  background: #0a58ca;
+}
+
+.tutor-log-empty-state {
+  color: #aaa;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+
+.tutor-log-student-button div,
+.tutor-log-student-button.active div,
+.tutor-log-student-button:hover div {
+  color: #ffffff !important;
+  text-shadow: 0 0 2px rgba(0,0,0,0.5); 
+}
