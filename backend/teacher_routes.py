@@ -1,16 +1,68 @@
-from flask import Blueprint, request, jsonify
-from database import get_db_connection
-# Import the new lazy-loading function and remove unused LOADED_MODELS
-from prerequisite.prerequisite_api import get_model, determine_next_focus
+from flask import Blueprint, request, jsonify, send_from_directory
+from pgmpy.readwrite.BIF import BIFReader
+from pgmpy.inference import VariableElimination
+from prerequisite.prerequisite_api import LOADED_MODELS
+import sqlite3
+import os
+
 
 teacher_routes = Blueprint('teacher_routes', __name__)
+
+def get_db():
+    conn = sqlite3.connect('database.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def ensure_tutor_notes_table(cursor):
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS tutor_notes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tutor_id TEXT NOT NULL,
+            student_id TEXT NOT NULL,
+            comment TEXT,
+            materials TEXT,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(tutor_id, student_id),
+            FOREIGN KEY (tutor_id) REFERENCES users(id),
+            FOREIGN KEY (student_id) REFERENCES users(id)
+        )
+        """
+    )
+    cursor.connection.commit()
+
+
+# ─── File Upload Storage Helper ─────────────────────────────────────────────
+
+
+UPLOAD_ROOT = os.path.join(os.getcwd(), "uploads", "tutor_materials")
+os.makedirs(UPLOAD_ROOT, exist_ok=True)
+
+def ensure_tutor_materials_table(cursor):
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS tutor_materials (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tutor_id TEXT NOT NULL,
+            student_id TEXT NOT NULL,
+            original_filename TEXT NOT NULL,
+            stored_path TEXT NOT NULL,
+            mime_type TEXT,
+            uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (tutor_id) REFERENCES users(id),
+            FOREIGN KEY (student_id) REFERENCES users(id)
+        )
+    """)
+    cursor.connection.commit()
+
+
 
 # ─── Student and Domain Info ─────────────────────────────────────────────
 
 @teacher_routes.route('/students', methods=['GET'])
 def get_students():
     tutor_id = request.args.get('tutor_id')
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
     if tutor_id:
         # Only students assigned to this tutor, no duplicates
@@ -26,6 +78,52 @@ def get_students():
     conn.close()
     return jsonify(students)
 
+@teacher_routes.route('/tutor/<tutor_id>/students', methods=['GET'])
+def get_tutor_students_overview(tutor_id):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT
+            u.id AS student_id,
+            u.name AS student_name,
+            MIN(ta.assigned_at) AS first_assigned_at,
+            COALESCE(MAX(sr.submitted_at), '') AS last_submitted_at,
+            COUNT(DISTINCT sr.id) AS completed_assessments,
+            AVG(
+                CASE WHEN sr.total > 0 THEN (CAST(sr.score AS REAL) / sr.total) * 100
+                     ELSE NULL
+                END
+            ) AS average_percent
+        FROM tutor_assignments ta
+        JOIN users u ON u.id = ta.student_id
+        LEFT JOIN student_results sr ON sr.student_id = u.id
+        WHERE ta.tutor_id = ?
+        GROUP BY u.id, u.name
+        ORDER BY u.name COLLATE NOCASE
+        """,
+        (tutor_id,),
+    )
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    students = []
+    for row in rows:
+        avg_percent = row["average_percent"]
+        students.append(
+            {
+                "studentId": row["student_id"],
+                "studentName": row["student_name"],
+                "firstAssignedAt": row["first_assigned_at"],
+                "lastSubmittedAt": row["last_submitted_at"],
+                "completedAssessments": row["completed_assessments"],
+                "averagePercent": round(avg_percent, 2) if avg_percent is not None else None,
+            }
+        )
+
+    return jsonify(students)
 '''
 @teacher_routes.route('/students', methods=['GET'])
 def get_students():
@@ -35,7 +133,7 @@ def get_students():
     if not tutor_id:
         return jsonify({'error': 'Missing tutor_id'}), 400
 
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
 
     # Join tutor_assignments with users to get only students assigned to that tutor_id
@@ -56,7 +154,7 @@ def get_students():
 
 @teacher_routes.route('/help-requests', methods=['GET'])
 def get_help_requests():
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
         SELECT hr.student_id, d.name AS domain
@@ -71,7 +169,7 @@ def get_help_requests():
 
 @teacher_routes.route('/domains', methods=['GET'])
 def get_domains():
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT id, name FROM content_domains")
     domains = [dict(row) for row in cursor.fetchall()]
@@ -80,7 +178,7 @@ def get_domains():
 
 @teacher_routes.route('/competencies', methods=['GET'])
 def get_competencies():
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
         SELECT c.id, c.title AS label, cd.name AS domain, c.content_domain_id
@@ -94,7 +192,7 @@ def get_competencies():
 # ─── Assignment API ─────────────────────────────────────────────────────
 @teacher_routes.route('/assignments', methods=['GET'])
 def get_assignments():
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
         SELECT a.student_id, a.competency_id
@@ -118,7 +216,7 @@ def assign_competency():
     if not tutor_id:
         return jsonify({'error': 'Tutor ID is required'}), 400
 
-    conn = get_db_connection()
+    conn = get_db()
     conn.execute(
         'INSERT INTO assignments (student_id, competency_id, tutor_id) VALUES (?, ?, ?)',
         (student_id, competency_id, tutor_id)
@@ -133,7 +231,7 @@ def assign_competency():
 
 @teacher_routes.route('/student-assessments/<student_id>', methods=['GET'])
 def get_student_assessments(student_id):
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
         SELECT c.title FROM assignments a
@@ -146,7 +244,7 @@ def get_student_assessments(student_id):
 
 @teacher_routes.route('/student-assessment/<title>', methods=['GET'])
 def get_assessment_by_title(title):
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("SELECT id FROM assessments WHERE title = ?", (title,))
@@ -173,6 +271,181 @@ def get_assessment_by_title(title):
     conn.close()
     return jsonify({'title': title, 'questions': questions})
 
+# ─── Tutor Log APIs ────────────────────────────────────────────────────────
+
+
+@teacher_routes.route('/tutor/<tutor_id>/students/<student_id>/results', methods=['GET'])
+def get_tutor_student_results(tutor_id, student_id):
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT
+            sr.id AS result_id,
+            a.title AS assessment_name,
+            sr.score,
+            sr.total,
+            sr.attempt_number,
+            sr.submitted_at
+        FROM student_results sr
+        JOIN assessments a ON sr.assessment_id = a.id
+        WHERE sr.student_id = ?
+        ORDER BY sr.submitted_at DESC, sr.attempt_number DESC
+        """,
+        (student_id,),
+    )
+
+    results = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(results)
+
+
+@teacher_routes.route('/tutor/<tutor_id>/students/<student_id>/note', methods=['GET'])
+def get_tutor_student_note(tutor_id, student_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    ensure_tutor_notes_table(cursor)
+
+    cursor.execute(
+        """
+        SELECT comment, materials, updated_at
+        FROM tutor_notes
+        WHERE tutor_id = ? AND student_id = ?
+        """,
+        (tutor_id, student_id),
+    )
+    row = cursor.fetchone()
+    conn.close()
+
+    if not row:
+        return jsonify({"comment": "", "materials": "", "updated_at": None})
+
+    return jsonify({"comment": row["comment"] or "", "materials": row["materials"] or "", "updated_at": row["updated_at"]})
+
+
+@teacher_routes.route('/tutor/<tutor_id>/students/<student_id>/note', methods=['POST'])
+def save_tutor_student_note(tutor_id, student_id):
+    data = request.get_json() or {}
+    comment = data.get('comment', '')
+    materials = data.get('materials', '')
+
+    conn = get_db()
+    cursor = conn.cursor()
+    ensure_tutor_notes_table(cursor)
+
+    cursor.execute(
+        """
+        INSERT INTO tutor_notes (tutor_id, student_id, comment, materials, updated_at)
+        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(tutor_id, student_id)
+        DO UPDATE SET
+            comment = excluded.comment,
+            materials = excluded.materials,
+            updated_at = CURRENT_TIMESTAMP
+        """,
+        (tutor_id, student_id, comment, materials),
+    )
+
+    conn.commit()
+
+    cursor.execute(
+        """
+        SELECT comment, materials, updated_at
+        FROM tutor_notes
+        WHERE tutor_id = ? AND student_id = ?
+        """,
+        (tutor_id, student_id),
+    )
+    row = cursor.fetchone()
+    conn.close()
+
+    return jsonify({
+        'message': 'Tutor note saved successfully',
+        'comment': row['comment'] or '',
+        'materials': row['materials'] or '',
+        'updated_at': row['updated_at'],
+    })
+
+@teacher_routes.route('/tutor/<tutor_id>/students/<student_id>/materials', methods=['GET'])
+def list_tutor_student_materials(tutor_id, student_id):
+    conn = get_db()
+    cur = conn.cursor()
+    ensure_tutor_materials_table(cur)
+    cur.execute("""
+        SELECT id, original_filename, stored_path, mime_type, uploaded_at
+        FROM tutor_materials
+        WHERE tutor_id=? AND student_id=?
+        ORDER BY uploaded_at DESC, id DESC
+    """, (tutor_id, student_id))
+    rows = [dict(r) for r in cur.fetchall()]
+    conn.close()
+    return jsonify(rows)  # return [] if none (200), not 404
+
+
+@teacher_routes.route('/tutor/<tutor_id>/students/<student_id>/materials', methods=['POST'])
+def upload_tutor_student_material(tutor_id, student_id):
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    file = request.files['file']
+    if not file or file.filename.strip() == '':
+        return jsonify({'error': 'Empty filename'}), 400
+
+    # per-tutor/student directory
+    subdir = os.path.join(UPLOAD_ROOT, str(tutor_id), str(student_id))
+    os.makedirs(subdir, exist_ok=True)
+
+    # avoid collisions
+    fname = file.filename
+    base, ext = os.path.splitext(fname)
+    stored_name = fname
+    i = 0
+    while os.path.exists(os.path.join(subdir, stored_name)):
+        i += 1
+        stored_name = f"{base} ({i}){ext}"
+
+    full_path = os.path.join(subdir, stored_name)
+    file.save(full_path)
+
+    conn = get_db()
+    cur = conn.cursor()
+    ensure_tutor_materials_table(cur)
+    cur.execute("""
+        INSERT INTO tutor_materials (tutor_id, student_id, original_filename, stored_path, mime_type)
+        VALUES (?, ?, ?, ?, ?)
+    """, (tutor_id, student_id, fname, full_path, file.mimetype))
+    conn.commit()
+    mat_id = cur.lastrowid
+    conn.close()
+    return jsonify({'message': 'Uploaded', 'id': mat_id})
+
+
+@teacher_routes.route('/tutor/materials/<int:material_id>/download', methods=['GET'])
+def download_tutor_material(material_id):
+    conn = get_db()
+    cur = conn.cursor()
+    ensure_tutor_materials_table(cur)
+    cur.execute("""
+        SELECT original_filename, stored_path
+        FROM tutor_materials WHERE id=?
+    """, (material_id,))
+    row = cur.fetchone()
+    conn.close()
+    if not row:
+        return jsonify({'error': 'Not found'}), 404
+
+    original_filename = row['original_filename']
+    stored_path = row['stored_path']
+    if not os.path.exists(stored_path):
+        return jsonify({'error': 'File missing on server'}), 410
+
+    folder = os.path.dirname(stored_path)
+    fname = os.path.basename(stored_path)
+    return send_from_directory(folder, fname, as_attachment=True, download_name=original_filename)
+
+
+
+
 # ─── Submitting Assessment ───────────────────────────────────────────────
 
 @teacher_routes.route('/submit-assessment', methods=['POST'])
@@ -185,7 +458,7 @@ def submit_assessment():
     if not student_id or not assessment_title or not answers:
         return jsonify({'error': 'Missing data'}), 400
 
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("SELECT id FROM assessments WHERE title = ?", (assessment_title,))
@@ -235,7 +508,7 @@ def submit_assessment():
 
 @teacher_routes.route('/latest-results', methods=['GET'])
 def get_latest_results():
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -275,7 +548,7 @@ def save_comment():
     if not result_id:
         return jsonify({'error': 'Missing resultId'}), 400
 
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO teacher_comments (result_id, comment)
@@ -289,7 +562,7 @@ def save_comment():
 
 @teacher_routes.route('/result/<int:result_id>', methods=['DELETE'])
 def delete_result(result_id):
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
     try:
         # Delete any comments linked to this result first (if any)
@@ -395,14 +668,12 @@ def delete_result(result_id):
 
 @teacher_routes.route('/assessments', methods=['GET'])
 def get_all_assessments():
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
-    # ✅ Join with bayesian_networks to get the bif_file name from bif_id
     cursor.execute("""
-        SELECT a.title, bn.name AS bif_file, cd.name AS domain, a.content_domain_id
+        SELECT a.title, a.bif_file, cd.name AS domain, a.content_domain_id
         FROM assessments a
         LEFT JOIN content_domains cd ON a.content_domain_id = cd.id
-        LEFT JOIN bayesian_networks bn ON a.bif_id = bn.id
     """)
     rows = cursor.fetchall()
     result = {}
@@ -423,25 +694,14 @@ def add_assessment():
     data = request.get_json()
     title = data.get("title")
     content_domain_id = data.get("content_domain_id")
-    bif_file = data.get("bif_file") # This is the filename string from the frontend
+    bif_file = data.get("bif_file")
     if not title or not content_domain_id:
         return jsonify({'error': 'Missing title or content_domain_id'}), 400
-    
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
-
-    # ✅ Look up the bif_id from the bayesian_networks table
-    bif_id = None
-    if bif_file:
-        cursor.execute("SELECT id FROM bayesian_networks WHERE name = ?", (bif_file,))
-        bif_row = cursor.fetchone()
-        if bif_row:
-            bif_id = bif_row['id']
-
-    # ✅ Insert using bif_id
     cursor.execute(
-        "INSERT INTO assessments (title, content_domain_id, bif_id) VALUES (?, ?, ?)",
-        (title, content_domain_id, bif_id)
+        "INSERT INTO assessments (title, content_domain_id, bif_file) VALUES (?, ?, ?)",
+        (title, content_domain_id, bif_file)
     )
     conn.commit()
     conn.close()
@@ -451,23 +711,12 @@ def add_assessment():
 def update_assessment(title):
     data = request.get_json()
     content_domain_id = data.get("content_domain_id")
-    bif_file = data.get("bif_file") # Filename string from frontend
-    
-    conn = get_db_connection()
+    bif_file = data.get("bif_file")
+    conn = get_db()
     cursor = conn.cursor()
-
-    # ✅ Look up the bif_id from the bayesian_networks table
-    bif_id = None
-    if bif_file:
-        cursor.execute("SELECT id FROM bayesian_networks WHERE name = ?", (bif_file,))
-        bif_row = cursor.fetchone()
-        if bif_row:
-            bif_id = bif_row['id']
-
-    # ✅ Update using bif_id
     cursor.execute(
-        "UPDATE assessments SET content_domain_id = ?, bif_id = ? WHERE title = ?",
-        (content_domain_id, bif_id, title)
+        "UPDATE assessments SET content_domain_id = ?, bif_file = ? WHERE title = ?",
+        (content_domain_id, bif_file, title)
     )
     conn.commit()
     conn.close()
@@ -475,7 +724,7 @@ def update_assessment(title):
 
 @teacher_routes.route('/assessment/<title>', methods=['DELETE'])
 def delete_assessment(title):
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM assessments WHERE title = ?", (title,))
     row = cursor.fetchone()
@@ -497,7 +746,7 @@ def delete_assessment(title):
 
 @teacher_routes.route('/assessment/<title>', methods=['GET'])
 def get_questions(title):
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM assessments WHERE title = ?", (title,))
     row = cursor.fetchone()
@@ -527,7 +776,7 @@ def save_questions(title):
     questions = data.get('questions', [])
     if len(questions) > 10:
         return jsonify({'error': 'Maximum 10 questions allowed per assessment.'}), 400
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
     # Get assessment ID
     cursor.execute("SELECT id FROM assessments WHERE title = ?", (title,))
@@ -564,66 +813,19 @@ def save_questions(title):
     conn.close()
     return jsonify({'message': 'Assessment updated successfully'})
 
-@teacher_routes.route('/manual-query', methods=['POST'])
-def manual_query():
-    data = request.get_json()
-    bif_file = data.get('bif_file')
-    competency_node = data.get('competency')
-    score = data.get('score')
-    total = data.get('total') # --- FIX: Get total from request ---
-
-    if not all([bif_file, competency_node, score is not None, total is not None]):
-        return jsonify({'error': 'Missing bif_file, competency, score, or total'}), 400
-
-    # Use the lazy-loading function from prerequisite_api
-    model_data = get_model(bif_file)
-    if not model_data:
-        return jsonify({'error': f"BIF file '{bif_file}' not found or failed to load"}), 404
-
-    model = model_data["model"]
-    infer = model_data["infer"]
-
-    # --- FIX: Calculate evidence_state from score and total, just like auto-query ---
-    try:
-        score = int(score)
-        total = int(total)
-        mastery_threshold = 0.7 
-        evidence_state = 1 if (score / total) >= mastery_threshold else 0
-    except (ValueError, ZeroDivisionError):
-        return jsonify({'error': 'Invalid score or total provided.'}), 400
-
-    # If the competency was 'mastered', no focus is needed.
-    if evidence_state == 1:
-        return jsonify({
-            "competency": competency_node,
-            "score": score,
-            "total": total,
-            "next_focus": "Competency mastered, no immediate focus needed."
-        })
-
-    # Call the existing logic to determine the next focus area
-    outcome = determine_next_focus(model, infer, competency_node, evidence_state)
-
-    return jsonify({
-        "competency": competency_node,
-        "score": score,
-        "total": total,
-        **outcome  # Unpack the outcome dictionary (next_focus, mastery_probabilities)
-    })
-
-@teacher_routes.route('/auto-query-result/<int:result_id>', methods=['GET'])
-def auto_query_result(result_id):
-    conn = get_db_connection()
+@teacher_routes.route('/auto-query-result/<student_id>/<int:assessment_id>', methods=['GET'])
+def auto_query_result(student_id, assessment_id):
+    conn = get_db()
     cursor = conn.cursor()
-    # --- FIX: Query by the unique result_id ---
     cursor.execute("""
-        SELECT sr.score, sr.total, c.title AS competency_node, bn.name AS bif_file
+        SELECT sr.score, sr.total, c.id AS competency_node, a.bif_file
         FROM student_results sr
         JOIN assessments a ON sr.assessment_id = a.id
-        LEFT JOIN competencies c ON c.title = a.title
-        LEFT JOIN bayesian_networks bn ON a.bif_id = bn.id
-        WHERE sr.id = ?
-    """, (result_id,))
+        JOIN competencies c ON c.title = a.title
+        WHERE sr.student_id = ? AND sr.assessment_id = ?
+        ORDER BY sr.attempt_number DESC
+        LIMIT 1
+    """, (student_id, assessment_id))
     row = cursor.fetchone()
     conn.close()
     if not row:
@@ -632,60 +834,46 @@ def auto_query_result(result_id):
     competency_node = row['competency_node']
     score = row['score']
     total = row['total']
-    bif_file = row['bif_file']
+    bif_file = row['bif_file'] or "network.bif"
 
-    # --- START DEBUGGING ---
-    print("\n--- AUTO-QUERY DEBUG ---")
-    print(f"  - BIF File: {bif_file}")
-    print(f"  - Competency Node: {competency_node}")
-    print(f"  - Score/Total: {score}/{total}")
-    # --- END DEBUGGING ---
-
-    if not bif_file:
-        return jsonify({'error': 'Assessment is not linked to a Bayesian Network'}), 404
-
-    # Use the lazy-loading function
-    model_data = get_model(bif_file)
+    # Use the loaded model from prerequisite_api.py
+    model_data = LOADED_MODELS.get(bif_file)
     if not model_data:
-        return jsonify({'error': f"BIF file '{bif_file}' not found or failed to load"}), 404
+        return jsonify({'error': f"BIF file '{bif_file}' not loaded"}), 404
 
     model = model_data["model"]
     infer = model_data["infer"]
 
-    # Determine the evidence state based on the score
-    # Assuming a 70% threshold for mastery (state 1)
-    mastery_threshold = 0.7 
-    evidence_state = 1 if (score / total) >= mastery_threshold else 0
-
-    # --- START DEBUGGING ---
-    print(f"  - Calculated Evidence State: {evidence_state} (Type: {type(evidence_state)})")
-    print(f"  - Calling determine_next_focus with: model, infer, '{competency_node}', {evidence_state}")
-    print("------------------------\n")
-    # --- END DEBUGGING ---
-
-    # If the student passed, there's no need to find a focus area.
-    if evidence_state == 1:
-        return jsonify({
-            "competency": competency_node,
-            "score": score,
-            "total": total,
-            "next_focus": "Competency mastered, no immediate focus needed."
-        })
-
-    # ✅ Pass the model, infer, node, AND the evidence state to the function
-    outcome = determine_next_focus(model, infer, competency_node, evidence_state)
-
-    return jsonify({
-        "competency": competency_node,
-        "score": score,
-        "total": total,
-        **outcome  # Unpack the outcome dictionary (next_focus, mastery_probabilities, etc.)
-    })
+    # Use the same logic as assess_competencies
+    try:
+        score_val = float(score)
+        if score_val < 7:
+            # Use determine_next_focus from prerequisite_api.py
+            from prerequisite.prerequisite_api import determine_next_focus
+            outcome = determine_next_focus(model, infer, competency_node)
+            result = {
+                "competency": competency_node,
+                "score": score,
+                "total": total,
+                "next_focus": outcome.get("next_focus"),
+                "mastery_probabilities": outcome.get("mastery_probabilities"),
+            }
+        else:
+            result = {
+                "competency": competency_node,
+                "score": score,
+                "total": total,
+                "next_focus": None,
+                "mastery_probabilities": None,
+            }
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @teacher_routes.route('/results/<student_id>', methods=['GET'])
 def get_teacher_student_results(student_id):
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
         SELECT sr.id as result_id,
@@ -705,15 +893,13 @@ def get_teacher_student_results(student_id):
 
 @teacher_routes.route('/query-result/<int:result_id>', methods=['GET'])
 def query_result(result_id):
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
-    # Also fetch the bif_file name associated with this result
     cursor.execute("""
-        SELECT c.title AS competency, sr.score, sr.total, bn.name as bif_file
+        SELECT c.title AS competency, sr.score, sr.total
         FROM student_results sr
         JOIN assessments a ON sr.assessment_id = a.id
         LEFT JOIN competencies c ON c.title = a.title
-        LEFT JOIN bayesian_networks bn ON a.bif_id = bn.id
         WHERE sr.id = ?
     """, (result_id,))
     row = cursor.fetchone()
@@ -722,28 +908,21 @@ def query_result(result_id):
         return jsonify({'error': 'Result not found'}), 404
 
     competency = row['competency']
-    bif_file = row['bif_file']
-
-    if not bif_file or not competency:
-        return jsonify({'error': 'Result is not linked to a valid competency or Bayesian Network'}), 400
-
-    # Use the lazy-loading function
-    model_data = get_model(bif_file)
-    if not model_data:
-        return jsonify({'error': f"Model '{bif_file}' not loaded."}), 500
-    
-    infer = model_data["infer"]
+    score = row['score']
+    total = row['total']
+    mastery_prob = score / total if total else 0
 
     try:
-        # Use the correct inference engine
-        result = infer.query(variables=[competency], show_progress=False)
+        result = inference.query(variables=[competency], show_progress=False)
         prob = result.values.item() if result.values.shape == () else result.values[1]
         return jsonify({
             'competency': competency,
-            'score': row['score'],
-            'total': row['total'],
+            'score': score,
+            'total': total,
             'mastery_probability': prob
         })
+    
+    
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -757,7 +936,7 @@ def unassign_competency():
     if not student_id or not competency_id or not tutor_id:
         return jsonify({'error': 'Missing data'}), 400
 
-    conn = get_db_connection()
+    conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
         'DELETE FROM assignments WHERE student_id = ? AND competency_id = ? AND tutor_id = ?',
@@ -765,5 +944,5 @@ def unassign_competency():
     )
     conn.commit()
     conn.close()
-    return jsonify({'message': 'Assignment removed'})
-
+    return jsonify({'message': 'Assignment removed'})    
+    
