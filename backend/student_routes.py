@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, session
 from database import get_db_connection
+from query_helpers import run_manual_query, run_auto_query
 
 student_bp = Blueprint('student', __name__)
 
@@ -56,7 +57,7 @@ def get_student_results(student_id):
         cursor = conn.cursor()
 
         cursor.execute("""
-            SELECT sr.submitted_at, a.title, sr.score
+            SELECT sr.id AS result_id, sr.submitted_at, a.title, sr.score, sr.total
             FROM student_results sr
             JOIN assessments a ON sr.assessment_id = a.id
             WHERE sr.student_id = ?
@@ -65,9 +66,11 @@ def get_student_results(student_id):
         rows = cursor.fetchall()
 
         results = [{
+            "result_id": row["result_id"],
             "date": row["submitted_at"],
             "examName": row["title"],
-            "score": row["score"]
+            "score": row["score"],
+            "total": row["total"],
         } for row in rows]
 
         conn.close()
@@ -75,4 +78,35 @@ def get_student_results(student_id):
     except Exception as e:
         print(f"[ERROR] {e}")
         return jsonify({"error": "Database error"}), 500
+
+
+@student_bp.route('/manual-query', methods=['POST'])
+def student_manual_query():
+    data = request.get_json() or {}
+    bif_file = data.get('bif_file')
+    competency = data.get('competency')
+    score = data.get('score')
+    total = data.get('total', 10)
+
+    if score is None:
+        return jsonify({'error': 'Missing score for manual query'}), 400
+
+    result, error = run_manual_query(bif_file, competency, score, total)
+    if error:
+        lower_error = error.lower()
+        status = 404 if ('not found' in lower_error or 'not loaded' in lower_error) else 400
+        return jsonify({'error': error}), status
+
+    return jsonify(result)
+
+
+@student_bp.route('/auto-query-result/<int:result_id>', methods=['GET'])
+def student_auto_query(result_id):
+    result, error = run_auto_query(result_id)
+    if error:
+        lower_error = error.lower()
+        status = 404 if ('not found' in lower_error or 'not loaded' in lower_error) else 400
+        return jsonify({'error': error}), status
+
+    return jsonify(result)
 
