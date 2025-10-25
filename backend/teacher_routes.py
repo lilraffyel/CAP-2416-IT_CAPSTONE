@@ -7,6 +7,15 @@ import sqlite3
 import os
 
 
+#Allowed File Types
+ALLOWED_EXTENSIONS = {'.pdf', '.doc', '.docx', '.ppt', '.pptx', '.txt', '.png', '.jpg', '.jpeg'}
+
+def is_allowed_file(filename: str) -> bool:
+    import os
+    _, ext = os.path.splitext(filename.lower())
+    return ext in ALLOWED_EXTENSIONS
+
+
 teacher_routes = Blueprint('teacher_routes', __name__)
 
 def get_db():
@@ -391,8 +400,21 @@ def upload_tutor_student_material(tutor_id, student_id):
     file = request.files['file']
     if not file or file.filename.strip() == '':
         return jsonify({'error': 'Empty filename'}), 400
+    
+    # validate file type or extension
+    if not is_allowed_file(file.filename):
+        return jsonify({'error': 'Unsupported file type. Allowed: pdf, docx, pptx, txt, png, jpg, jpeg'}), 400
 
-    # per-tutor/student directory
+    # File Size Validation
+    file.seek(0, os.SEEK_END)
+    size_bytes = file.tell()
+    file.seek(0)
+    MAX_ONE_FILE = 20 * 1024 * 1024   # 20 MB limit
+    if size_bytes > MAX_ONE_FILE:
+        return jsonify({'error': 'File exceeds 20 MB limit'}), 400
+
+
+    # save file per-tutor/student directory
     subdir = os.path.join(UPLOAD_ROOT, str(tutor_id), str(student_id))
     os.makedirs(subdir, exist_ok=True)
 
