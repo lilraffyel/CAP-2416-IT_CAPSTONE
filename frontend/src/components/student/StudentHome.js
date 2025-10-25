@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 // import StudentProgress from './StudentProgress';
 
+const API_BASE = "https://cap-2416-it-capstone.onrender.com";
+// const API_BASE = "http://localhost:5000";
+
 function StudentHome() {
   const navigate = useNavigate();
   const [studentId, setStudentId] = useState(null);
@@ -16,7 +19,7 @@ function StudentHome() {
   // 1. Get logged-in student ID
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/students/me", { withCredentials: true })
+      .get(`${API_BASE}/api/students/me`, { withCredentials: true })
       .then((res) => {
         setStudentId(res.data.studentId);
       })
@@ -30,13 +33,13 @@ function StudentHome() {
 
     // Fetch assigned assessments
     axios
-      .get(`http://localhost:5000/api/teacher/student-assessments/${studentId}`)
+      .get(`${API_BASE}/api/teacher/student-assessments/${studentId}`)
       .then((res) => setAssignedAssessments(res.data))
       .catch(() => setAssignedAssessments([]));
 
     // Fetch recent results
     axios
-      .get(`http://localhost:5000/api/students/results/${studentId}`, { withCredentials: true })
+      .get(`${API_BASE}/api/students/results/${studentId}`, { withCredentials: true })
       .then((res) => setResults(res.data))
       .catch(() => setResults([]))
       .finally(() => setLoading(false));

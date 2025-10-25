@@ -3,6 +3,9 @@ import axios from "axios";
 import { listBifFiles, getCompetencies } from "../../api";
 import "../TutorQuery.css";
 
+const API_BASE = "https://cap-2416-it-capstone.onrender.com";
+// const API_BASE = "http://localhost:5000";
+
 function StudentTutorQuery() {
   const [studentId, setStudentId] = useState(null);
   const [results, setResults] = useState([]);
@@ -35,7 +38,7 @@ function StudentTutorQuery() {
   // Determine current student id
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/students/me", { withCredentials: true })
+      .get(`${API_BASE}/api/students/me`, { withCredentials: true })
       .then((res) => setStudentId(res.data.studentId))
       .catch((err) => {
         console.error(err);
@@ -47,7 +50,7 @@ function StudentTutorQuery() {
   useEffect(() => {
     if (!studentId) return;
     axios
-      .get(`http://localhost:5000/api/students/results/${studentId}`, { withCredentials: true })
+      .get(`${API_BASE}/api/students/results/${studentId}`, { withCredentials: true })
       .then((res) => setResults(res.data))
       .catch((err) => {
         console.error(err);
@@ -92,7 +95,7 @@ function StudentTutorQuery() {
     setIsAutoQueryLoading(true);
     setAutoQueryResults(null);
     try {
-      const res = await axios.get(`http://localhost:5000/api/students/auto-query-result/${resultId}`, {
+      const res = await axios.get(`${API_BASE}/api/students/auto-query-result/${resultId}`, {
         withCredentials: true,
       });
       setAutoQueryResults(res.data);
@@ -149,7 +152,7 @@ function StudentTutorQuery() {
     setIsManualQueryLoading(true);
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/students/manual-query",
+        `${API_BASE}/api/students/manual-query`,
         {
           bif_file: selectedBif,
           competency: itemToAssess.competency,

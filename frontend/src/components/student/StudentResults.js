@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 
+const API_BASE = "https://cap-2416-it-capstone.onrender.com";
+// const API_BASE = "http://localhost:5000";
+
 function StudentResults() {
   const [studentId, setStudentId] = useState(null);
   const [results, setResults] = useState([]);
@@ -13,7 +16,7 @@ function StudentResults() {
     // Step 1: Get logged-in student ID
     axios
       // --- FIX: Use singular 'student' to match app.py ---
-      .get("http://localhost:5000/api/students/me", { withCredentials: true })
+      .get(`${API_BASE}/api/students/me`, { withCredentials: true })
       .then((res) => {
         setStudentId(res.data.studentId);
       })
@@ -29,7 +32,7 @@ function StudentResults() {
     // Step 2: Fetch results for the fetched student ID
     axios
       // --- FIX: Use singular 'student' to match app.py ---
-      .get(`http://localhost:5000/api/students/results/${studentId}`, { withCredentials: true })
+      .get(`${API_BASE}/api/students/results/${studentId}`, { withCredentials: true })
       .then((res) => setResults(res.data))
       .catch((err) => {
         console.error(err);
