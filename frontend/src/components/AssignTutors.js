@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 
+const API_BASE = "https://cap-2416-it-capstone.onrender.com";
+// const API_BASE = "http://localhost:5000";
+
 function AssignTutors() {
   const [students, setStudents] = useState([]);
   const [helpRequests, setHelpRequests] = useState([]);
@@ -11,7 +14,7 @@ function AssignTutors() {
 
   const fetchStudents = useCallback(async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/admin/students');
+      const res = await axios.get(`${API_BASE}/api/admin/students`);
       setStudents(res.data);
     } catch (err) {
       console.error(err);
@@ -20,7 +23,7 @@ function AssignTutors() {
 
   const fetchHelpRequests = useCallback(async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/admin/help-requests');
+      const res = await axios.get(`${API_BASE}/api/admin/help-requests`);
       setHelpRequests(res.data);
     } catch (err) {
       console.error(err);
@@ -29,7 +32,7 @@ function AssignTutors() {
 
   const fetchTutors = useCallback(async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/admin/tutors');
+      const res = await axios.get(`${API_BASE}/api/admin/tutors`);
       setTutors(res.data);
     } catch (err) {
       console.error(err);
@@ -38,7 +41,7 @@ function AssignTutors() {
 
   const fetchAssignments = useCallback(async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/admin/tutor-assignments');
+      const res = await axios.get(`${API_BASE}/api/admin/tutor-assignments`);
       setAssignments(res.data);
     } catch (err) {
       console.error(err);
@@ -60,7 +63,7 @@ function AssignTutors() {
 
   const handleAssignTutor = async (studentId) => {
     try {
-      await axios.post('http://localhost:5000/api/admin/assign-tutor', {
+      await axios.post(`${API_BASE}/api/admin/assign-tutor`, {
         studentId,
         tutorId: selectedTutor[studentId]
       });
@@ -73,7 +76,7 @@ function AssignTutors() {
 
   const handleUnassignTutor = async (studentId, tutorId) => {
     try {
-      await axios.post('http://localhost:5000/api/admin/unassign-tutor', {
+      await axios.post(`${API_BASE}/api/admin/unassign-tutor`, {
         studentId,
         tutorId
       });
@@ -86,7 +89,7 @@ function AssignTutors() {
 
   const handleRemoveHelpRequest = async (helpRequestId) => {
     try {
-      await axios.post('http://localhost:5000/api/admin/remove-help-request', {
+      await axios.post(`${API_BASE}/api/admin/remove-help-request`, {
         helpRequestId
       });
       setMessage('Help request removed successfully!');

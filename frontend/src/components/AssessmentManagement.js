@@ -7,6 +7,14 @@ function AssessmentManagement() {
   const [editScore, setEditScore] = useState("");
   const [loading, setLoading] = useState(true);
 
+const API_BASE = "https://cap-2416-it-capstone.onrender.com";
+// const API_BASE = "http://localhost:5000";
+
+fetch(`${API_BASE}/api/assessments`)
+  .then(res => res.json())
+  .then(data => console.log(data));
+
+
   // Fetch all student assessment results on mount
   useEffect(() => {
     fetchResults();
@@ -15,7 +23,7 @@ function AssessmentManagement() {
   const fetchResults = () => {
     setLoading(true);
     axios
-      .get("http://localhost:5000/api/teacher/latest-results", { withCredentials: true })
+      .get(`${API_BASE}/api/teacher/latest-results`, { withCredentials: true })
       .then((res) => setAssessments(res.data))
       .catch(() => setAssessments([]))
       .finally(() => setLoading(false));
@@ -41,7 +49,7 @@ function AssessmentManagement() {
   const handleDelete = (id) => {
     if (!window.confirm("Delete this student result?")) return;
     axios
-      .delete(`http://localhost:5000/api/teacher/result/${id}`, { withCredentials: true })
+      .delete(`${API_BASE}/api/teacher/result/${id}`, { withCredentials: true })
       .then(() => {
         setAssessments(assessments.filter((a) => a.result_id !== id));
       })

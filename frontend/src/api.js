@@ -1,4 +1,5 @@
-const API_URL = "http://127.0.0.1:5000";
+const API_URL = "https://cap-2416-it-capstone.onrender.com";
+// const API_URL = "http://127.0.0.1:5000";
 
 /**
  * 1) List all BIF files

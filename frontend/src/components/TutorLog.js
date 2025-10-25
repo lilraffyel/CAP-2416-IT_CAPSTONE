@@ -2,6 +2,9 @@ import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import "./TutorLog.css";
 
+const API_BASE = "https://cap-2416-it-capstone.onrender.com";
+// const API_BASE = "${API_BASE}";
+
 function formatDate(value) {
   if (!value) return "-";
   const date = new Date(value);
@@ -31,7 +34,7 @@ export default function TutorLog() {
   useEffect(() => {
     setIsLoadingStudents(true);
     axios
-      .get("http://localhost:5000/api/me", { withCredentials: true })
+      .get(`${API_BASE}/api/me`, { withCredentials: true })
       .then((res) => {
         if (res.data.role !== "Tutor") {
           setRoleMismatch(true);
@@ -48,7 +51,7 @@ export default function TutorLog() {
     if (!tutorId) return;
     setIsLoadingStudents(true);
     axios
-      .get(`http://localhost:5000/api/teacher/tutor/${tutorId}/students`, { withCredentials: true })
+      .get(`${API_BASE}/api/teacher/tutor/${tutorId}/students`, { withCredentials: true })
       .then((res) => setStudents(res.data || []))
       .catch(() => setStudents([]))
       .finally(() => setIsLoadingStudents(false));
@@ -64,7 +67,7 @@ export default function TutorLog() {
     }
     setIsLoadingDetails(true);
 
-    const base = `http://localhost:5000/api/teacher/tutor/${tutorId}/students/${selectedStudentId}`;
+    const base = `${API_BASE}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}`;
     Promise.all([
       axios.get(`${base}/results`, { withCredentials: true }).catch(() => ({ data: [] })),
       axios.get(`${base}/note`, { withCredentials: true }).catch(() => ({ data: { comment: "", materials: "", updated_at: null }})),
@@ -114,7 +117,7 @@ export default function TutorLog() {
     setStatusMessage("");
     try {
       const res = await axios.post(
-        `http://localhost:5000/api/teacher/tutor/${tutorId}/students/${selectedStudentId}/note`,
+        `${API_BASE}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}/note`,
         { comment: note.comment, materials: note.materials },
         { withCredentials: true }
       );
@@ -134,14 +137,14 @@ export default function TutorLog() {
     form.append("file", fileToUpload);
     try {
       await axios.post(
-        `http://localhost:5000/api/teacher/tutor/${tutorId}/students/${selectedStudentId}/materials`,
+        `${API_BASE}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}/materials`,
         form,
         { withCredentials: true, headers: { "Content-Type": "multipart/form-data" } }
       );
       setFileToUpload(null);
       // refresh list
       const list = await axios.get(
-        `http://localhost:5000/api/teacher/tutor/${tutorId}/students/${selectedStudentId}/materials`,
+        `${API_BASE}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}/materials`,
         { withCredentials: true }
       );
       setMaterials(list.data || []);
@@ -268,7 +271,7 @@ export default function TutorLog() {
                   <ul style={{ marginTop: "0.75rem" }}>
                     {materials.map((m) => (
                       <li key={m.id} style={{ marginBottom: "0.35rem" }}>
-                        <a href={`http://localhost:5000/api/teacher/tutor/materials/${m.id}/download`} target="_blank" rel="noreferrer">
+                        <a href={`${API_BASE}/api/teacher/tutor/materials/${m.id}/download`} target="_blank" rel="noreferrer">
                           {m.original_filename}
                         </a>{" "}
                         <span style={{ color: "#777", fontSize: "0.9rem" }}>· {formatDate(m.uploaded_at)}</span>

@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
+const API_BASE = "https://cap-2416-it-capstone.onrender.com";
+// const API_BASE = "${API_BASE}";
+
 function TeacherProgress() {
   const [students, setStudents] = useState([]);
   const [domains, setDomains] = useState([]);
@@ -14,30 +17,30 @@ function TeacherProgress() {
   const [dummyRefresh, setDummyRefresh] = useState(0);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/me', { withCredentials: true })
+    axios.get(`${API_BASE}/api/me`, { withCredentials: true })
       .then(res => setTutorId(res.data.tutorId))
       .catch(console.error);
 
-    axios.get('http://localhost:5000/api/teacher/domains')
+    axios.get(`${API_BASE}/api/teacher/domains`)
       .then(res => setDomains(res.data))
       .catch(console.error);
 
-    axios.get('http://localhost:5000/api/teacher/competencies')
+    axios.get(`${API_BASE}/api/teacher/competencies`)
       .then(res => setCompetencies(res.data))
       .catch(console.error);
 
-    axios.get('http://localhost:5000/api/teacher/help-requests')
+    axios.get(`${API_BASE}/api/teacher/help-requests`)
       .then(res => setHelpRequests(res.data))
       .catch(console.error);
 
-    axios.get('http://localhost:5000/api/teacher/assignments')
+    axios.get(`${API_BASE}/api/teacher/assignments`)
       .then(res => setAssignments(res.data))
       .catch(console.error);
   }, [dummyRefresh]);
 
   useEffect(() => {
     if (tutorId) {
-      axios.get(`http://localhost:5000/api/teacher/students?tutor_id=${tutorId}`)
+      axios.get(`${API_BASE}/api/teacher/students?tutor_id=${tutorId}`)
         .then(res => setStudents(res.data))
         .catch(console.error);
     }
@@ -66,7 +69,7 @@ function TeacherProgress() {
     const chosenComp = competencySelections[stuId];
     if (!chosenComp) return alert('Please select a competency first!');
 
-    axios.post('http://localhost:5000/api/teacher/assign', {
+    axios.post(`${API_BASE}/api/teacher/assign`, {
       studentId: stuId,
       competencyId: chosenComp,
       tutorId: tutorId,
@@ -80,7 +83,7 @@ function TeacherProgress() {
 
   // NEW: Remove/unassign a competency from a student
   const handleUnassign = (stuId, compId) => {
-    axios.post('http://localhost:5000/api/teacher/unassign', {
+    axios.post(`${API_BASE}/api/teacher/unassign`, {
       studentId: stuId,
       competencyId: compId,
       tutorId: tutorId,

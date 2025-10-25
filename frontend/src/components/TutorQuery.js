@@ -6,6 +6,9 @@ import {
 } from "../api";
 import "./TutorQuery.css";
 
+const API_BASE = "https://cap-2416-it-capstone.onrender.com";
+// const API_BASE = "${API_BASE}";
+
 function TutorQuery() {
   // ================= STUDENT SELECTION STATES =================
   const [showStudentDropdown, setShowStudentDropdown] = useState(false);
@@ -52,7 +55,7 @@ function TutorQuery() {
 
   // Fetch tutorId on mount
   useEffect(() => {
-    axios.get('http://localhost:5000/api/me', { withCredentials: true })
+    axios.get(`${API_BASE}/api/me`, { withCredentials: true })
       .then(res => setTutorId(res.data.tutorId))
       .catch(console.error);
   }, []);
@@ -60,7 +63,7 @@ function TutorQuery() {
   // Fetch students assigned to this tutor
   useEffect(() => {
     if (!tutorId) return;
-    axios.get(`http://localhost:5000/api/teacher/students?tutor_id=${tutorId}`)
+    axios.get(`${API_BASE}/api/teacher/students?tutor_id=${tutorId}`)
       .then(res => setStudents(res.data)) // keep full objects
       .catch(console.error);
   }, [tutorId]);
@@ -72,7 +75,7 @@ function TutorQuery() {
     return;
   }
   axios
-    .get(`http://localhost:5000/api/teacher/results/${selectedStudent}`, { withCredentials: true })
+    .get(`${API_BASE}/api/teacher/results/${selectedStudent}`, { withCredentials: true })
     .then((res) => {
       setStudentResults(res.data);
       console.log("studentResults", res.data); // <--- Add this line here
@@ -147,7 +150,7 @@ function TutorQuery() {
     setIsManualQueryLoading(true); // <-- Set loading true
     try {
       const res = await axios.post(
-        `http://localhost:5000/api/teacher/manual-query`,
+        `${API_BASE}/api/teacher/manual-query`,
         {
           bif_file: selectedBif,
           competency: itemToAssess.competency,
@@ -182,7 +185,7 @@ function TutorQuery() {
     try {
       const res = await axios.get(
         // --- FIX: Use the resultId in the URL ---
-        `http://localhost:5000/api/teacher/auto-query-result/${resultId}`,
+        `${API_BASE}/api/teacher/auto-query-result/${resultId}`,
         { withCredentials: true }
       );
       setAutoQueryResults(res.data);

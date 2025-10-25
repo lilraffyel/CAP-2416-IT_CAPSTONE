@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
+const API_BASE = "https://cap-2416-it-capstone.onrender.com";
+// const API_BASE = "${API_BASE}";
+
 function TeacherEditAssessments() {
    // eslint-disable-next-line no-unused-vars
   const [error, setError] = useState(null);
@@ -36,12 +39,12 @@ const editQuestionAll = (qId, newText, newOptions, newCorrect) => {
 
   // Fetch domains and bif files on mount
 useEffect(() => {
-  axios.get("http://localhost:5000/api/teacher/domains", { withCredentials: true })
+  axios.get(`${API_BASE}/api/teacher/domains`, { withCredentials: true })
     .then(res => setContentDomains(res.data))
     .catch(() => setContentDomains([]));
   
   // ✅ Fetch BIF files from the backend instead of hardcoding
-  axios.get("http://localhost:5000/api/biffiles", { withCredentials: true })
+  axios.get(`${API_BASE}/api/biffiles`, { withCredentials: true })
     .then(res => setBifFiles(res.data.bif_files || []))
     .catch(() => setBifFiles([]));
 
@@ -51,7 +54,7 @@ useEffect(() => {
 useEffect(() => {
   if (selectedBifFile) {
     // --- FIX: Point to the updated /api/teacher/competencies route ---
-    axios.get(`http://localhost:5000/api/teacher/competencies?bif_file=${selectedBifFile}`, { withCredentials: true })
+    axios.get(`${API_BASE}/api/teacher/competencies?bif_file=${selectedBifFile}`, { withCredentials: true })
       .then(res => {
         setAvailableNodes(res.data.competencies || []);
       })
@@ -67,7 +70,7 @@ useEffect(() => {
 }, [selectedBifFile]);
 
   const fetchAssessments = () => {
-  axios.get("http://localhost:5000/api/teacher/assessments", { withCredentials: true })
+  axios.get(`${API_BASE}/api/teacher/assessments`, { withCredentials: true })
     .then(res => {
       setAssessmentsByDomain(res.data);
       setDomains(Object.keys(res.data));
@@ -102,7 +105,7 @@ useEffect(() => {
     }
 
     setLoadingQuestions(true);
-    axios.get(`http://localhost:5000/api/teacher/assessment/${encodeURIComponent(assName)}`, { withCredentials: true })
+    axios.get(`${API_BASE}/api/teacher/assessment/${encodeURIComponent(assName)}`, { withCredentials: true })
       .then(res => {
         setQuestions(res.data);
         setLoadingQuestions(false);
@@ -119,7 +122,7 @@ useEffect(() => {
     alert("Please enter a title and select a content domain.");
     return;
   }
-  axios.post("http://localhost:5000/api/teacher/assessments", {
+  axios.post(`${API_BASE}/api/teacher/assessments`, {
     title: newAssessmentTitle,
     content_domain_id: selectedDomain,
     bif_file: selectedBifFile,
@@ -138,7 +141,7 @@ useEffect(() => {
   // Delete an assessment
   const deleteAssessment = (title) => {
     if (!window.confirm("Delete this assessment and all its questions?")) return;
-    axios.delete(`http://localhost:5000/api/teacher/assessment/${encodeURIComponent(title)}`, { withCredentials: true })
+    axios.delete(`${API_BASE}/api/teacher/assessment/${encodeURIComponent(title)}`, { withCredentials: true })
       .then(() => {
         if (selectedAssessment === title) {
           setSelectedAssessment(null);
@@ -198,7 +201,7 @@ useEffect(() => {
   });
   console.log(cleanedQuestions);
   axios.post(
-    `http://localhost:5000/api/teacher/assessment/${encodeURIComponent(selectedAssessment)}`,
+    `${API_BASE}/api/teacher/assessment/${encodeURIComponent(selectedAssessment)}`,
     { questions: cleanedQuestions },
     { withCredentials: true }
   )
@@ -352,7 +355,7 @@ useEffect(() => {
   onClick={() => {
     axios
       .patch(
-        `http://localhost:5000/api/teacher/assessment/${encodeURIComponent(selectedAssessment)}`,
+        `${API_BASE}/api/teacher/assessment/${encodeURIComponent(selectedAssessment)}`,
         { 
           newTitle: editingTitle, // <-- Send the new title
           content_domain_id: selectedDomain, 

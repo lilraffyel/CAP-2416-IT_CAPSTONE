@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+const API_BASE = "https://cap-2416-it-capstone.onrender.com";
+// const API_BASE = "${API_BASE}";
+
 function UserManagement() {
   // Student states
   const [students, setStudents] = useState([]);
@@ -21,7 +24,7 @@ function UserManagement() {
 
   // Fetch students and tutors from backend API on mount
   useEffect(() => {
-    axios.get("http://localhost:5000/api/users/students", { withCredentials: true })
+    axios.get(`${API_BASE}/api/users/students`, { withCredentials: true })
       .then(res => {
         setStudents(res.data);
         setLoading(false);
@@ -31,7 +34,7 @@ function UserManagement() {
         setLoading(false);
       });
 
-    axios.get("http://localhost:5000/api/users/tutors", { withCredentials: true })
+    axios.get(`${API_BASE}/api/users/tutors`, { withCredentials: true })
       .then(res => setTutors(res.data))
       .catch(() => setTutors([]));
   }, []);
@@ -52,7 +55,7 @@ function UserManagement() {
 
     setStudentButtonDisabled(true);
 
-    axios.post("http://localhost:5000/api/users/add-student", payload, { withCredentials: true })
+    axios.post(`${API_BASE}/api/users/add-student`, payload, { withCredentials: true })
       .then(() => {
         setStudents([...students, { id: payload.id, name: payload.name }]);
         setNewStudent({ name: "", password: "" });
@@ -79,7 +82,7 @@ function UserManagement() {
 
     setTutorButtonDisabled(true);
 
-    axios.post("http://localhost:5000/api/users/add-tutor", payload, { withCredentials: true })
+    axios.post(`${API_BASE}/api/users/add-tutor`, payload, { withCredentials: true })
       .then(() => {
         setTutors([...tutors, { id: payload.id, name: payload.name }]);
         setNewTutor({ name: "", password: "" });
@@ -110,7 +113,7 @@ function UserManagement() {
       password: editStudentData.password || undefined,
     };
 
-    axios.put(`http://localhost:5000/api/users/edit-student/${editStudentId}`, payload, { withCredentials: true })
+    axios.put(`${API_BASE}/api/users/edit-student/${editStudentId}`, payload, { withCredentials: true })
       .then(() => {
         setStudents(students.map(s => s.id === editStudentId ? { ...s, name: editStudentData.name } : s));
         setEditStudentId(null);
@@ -125,7 +128,7 @@ function UserManagement() {
   const handleRemoveStudent = (id) => {
     if (!window.confirm("Are you sure you want to remove this student?")) return;
 
-    axios.delete(`http://localhost:5000/api/users/delete-student/${id}`, { withCredentials: true })
+    axios.delete(`${API_BASE}/api/users/delete-student/${id}`, { withCredentials: true })
       .then(() => {
         setStudents(students.filter(s => s.id !== id));
       })
@@ -150,7 +153,7 @@ function UserManagement() {
       name: editTutorData.name,
       password: editTutorData.password || undefined,
     };
-    axios.put(`http://localhost:5000/api/users/edit-tutor/${editTutorId}`, payload, { withCredentials: true })
+    axios.put(`${API_BASE}/api/users/edit-tutor/${editTutorId}`, payload, { withCredentials: true })
       .then(() => {
         setTutors(tutors.map(t => t.id === editTutorId ? { ...t, name: editTutorData.name } : t));
         setEditTutorId(null);
@@ -164,7 +167,7 @@ function UserManagement() {
   // Remove tutor
   const handleRemoveTutor = (id) => {
     if (!window.confirm("Are you sure you want to remove this tutor?")) return;
-    axios.delete(`http://localhost:5000/api/users/delete-tutor/${id}`, { withCredentials: true })
+    axios.delete(`${API_BASE}/api/users/delete-tutor/${id}`, { withCredentials: true })
       .then(() => {
         setTutors(tutors.filter(t => t.id !== id));
       })
