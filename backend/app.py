@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 from auth_routes import auth_bp
@@ -26,5 +27,6 @@ app.register_blueprint(admin_routes, url_prefix='/api/admin')
 
 #Run the Flask App
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
     print(app.url_map)
-    app.run(debug=False, port=5000)
+    app.run(host="0.0.0.0", port=port, debug=False)
