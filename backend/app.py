@@ -207,4 +207,4 @@ app.register_blueprint(admin_routes, url_prefix='/api/admin')
 #Run the Flask App
 if __name__ == "__main__":
     print(app.url_map)
-    app.run(debug=True, port=5000)
+    app.run(debug=False, port=5000)

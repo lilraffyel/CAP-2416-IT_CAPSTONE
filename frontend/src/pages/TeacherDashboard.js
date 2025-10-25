@@ -9,6 +9,7 @@ import TeacherEditAssessments from '../components/TeacherEditAssessments';
 import TeacherTutorQuery from '../components/TutorQuery';
 //import TeacherProfile from '../components/TeacherProfile';
 import TeacherBayesOverview from '../components/TeacherBayesOverview';
+import TeacherLog from '../components/TutorLog'
 
 function TeacherDashboard() {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ function TeacherDashboard() {
         <ul>
           <li><Link to="/teacher/home">View Student Competencies</Link></li>
           <li><Link to="/teacher/progress">Assign Student Assessments</Link></li>
-          
+          <li><Link to="/teacher/logs">Tutor Logs</Link></li>
           <li><Link to="/teacher/tutor-query">Tutor Query</Link></li>
           <li><Link to="/teacher/edit-assessments">Create Student Assessment</Link></li>
           <li><Link to="/teacher/bayes-overview">Bayesian Network Overview</Link></li>
@@ -38,6 +39,7 @@ function TeacherDashboard() {
         <Routes>
           <Route path="home" element={<TeacherHome />} />
           <Route path="progress" element={<TeacherProgress />} />
+          <Route path="logs" element={<TeacherLog/>} />
           <Route path="edit-assessments" element={<TeacherEditAssessments />} />
           <Route path="tutor-query" element={<TeacherTutorQuery />} />
          {/* <Route path="profile" element={<TeacherProfile />} />*/}
