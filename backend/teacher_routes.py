@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, send_from_directory
 from pgmpy.readwrite.BIF import BIFReader
 from pgmpy.inference import VariableElimination
 from prerequisite.prerequisite_api import LOADED_MODELS
+from query_helpers import run_manual_query, run_auto_query
 import sqlite3
 import os
 
@@ -850,80 +851,35 @@ def save_questions(title):
     conn.close()
     return jsonify({'message': 'Assessment updated successfully'})
 
-@teacher_routes.route('/auto-query-result/<student_id>/<int:assessment_id>', methods=['GET'])
-def auto_query_result(student_id, assessment_id):
-    conn = get_db()
-    cursor = conn.cursor()
-    # --- FIX: Join assessments to bayesian_networks to get the BIF file ---
-    cursor.execute("""
-        SELECT sr.score, sr.total, a.title AS assessment_title, bn.name AS bif_file
-        FROM student_results sr
-        JOIN assessments a ON sr.assessment_id = a.id
-        LEFT JOIN bayesian_networks bn ON a.bif_id = bn.id
-        WHERE sr.id = ?
-    """, (result_id,))
-    row = cursor.fetchone()
-    conn.close()
-    if not row:
-        return jsonify({'error': 'Result not found'}), 404
+@teacher_routes.route('/manual-query', methods=['POST'])
+def manual_query():
+    data = request.get_json() or {}
+    bif_file = data.get('bif_file')
+    competency = data.get('competency')
+    score = data.get('score')
+    total = data.get('total', 10)
 
-    assessment_title = row['assessment_title']
-    score = row['score']
-    total = row['total']
-    bif_file = row['bif_file']
+    if score is None:
+        return jsonify({'error': 'Missing score for manual query'}), 400
 
-    # --- FIX: Manually map the assessment title to the correct BIF node name ---
-    # This is necessary because the assessment title is not the same as the node name in the BIF file.
-    competency_node = None
-    if assessment_title == "Place Value and Number Representation":
-        competency_node = "PlaceValueNR"
-    else:
-        # Fallback for other assessments - this might need similar mappings
-        competency_node = assessment_title
+    result, error = run_manual_query(bif_file, competency, score, total)
+    if error:
+        lower_error = error.lower()
+        status = 404 if ('not found' in lower_error or 'not loaded' in lower_error) else 400
+        return jsonify({'error': error}), status
 
-    # --- START DEBUGGING ---
-    print("\n--- AUTO-QUERY DEBUG ---")
-    print(f"  - BIF File: {bif_file}")
-    print(f"  - Competency Node: {competency_node}")
-    print(f"  - Score/Total: {score}/{total}")
-    # --- END DEBUGGING ---
+    return jsonify(result)
 
-    if not bif_file:
-        return jsonify({'error': 'Assessment is not linked to a Bayesian Network'}), 404
 
-    # Use the lazy-loading function
-    model_data = get_model(bif_file)
-    if not model_data:
-        return jsonify({'error': f"BIF file '{bif_file}' not loaded"}), 404
+@teacher_routes.route('/auto-query-result/<int:result_id>', methods=['GET'])
+def auto_query_result(result_id):
+    result, error = run_auto_query(result_id)
+    if error:
+        lower_error = error.lower()
+        status = 404 if ('not found' in lower_error or 'not loaded' in lower_error) else 400
+        return jsonify({'error': error}), status
 
-    model = model_data["model"]
-    infer = model_data["infer"]
-
-    # Use the same logic as assess_competencies
-    try:
-        score_val = float(score)
-        if score_val < 7:
-            # Use determine_next_focus from prerequisite_api.py
-            from prerequisite.prerequisite_api import determine_next_focus
-            outcome = determine_next_focus(model, infer, competency_node)
-            result = {
-                "competency": competency_node,
-                "score": score,
-                "total": total,
-                "next_focus": outcome.get("next_focus"),
-                "mastery_probabilities": outcome.get("mastery_probabilities"),
-            }
-        else:
-            result = {
-                "competency": competency_node,
-                "score": score,
-                "total": total,
-                "next_focus": None,
-                "mastery_probabilities": None,
-            }
-        return jsonify(result)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    return jsonify(result)
 
 
 @teacher_routes.route('/results/<student_id>', methods=['GET'])
