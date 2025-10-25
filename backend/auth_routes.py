@@ -36,21 +36,25 @@ def login():
     conn = get_db_connection()
     user = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
     conn.close()
-
+    
     if user and user['password'] == password:
         # always store base info
         session['user_id'] = user['id']
         session['role'] = user['role']
 
         # store extra info based on role
-        if user['role'] == 'Student':
-            session['student_id'] = user['id']
-        elif user['role'] == 'Tutor':
-            session['tutor_id'] = user['id']
+        # if user['role'] == 'Student':
+        #     session['student_id'] = user['id']
+        # elif user['role'] == 'Tutor':
+        #     session['tutor_id'] = user['id']
 
-        return jsonify({'status': 'success', 'role': user['role']})
+        # return jsonify({'status': 'success', 'role': user['role']})
+        session['user_id'] = user.id
+        session['role'] = getattr(user, 'role', 'student')
+        return jsonify({"ok": True, "user": {"id": user.id, "role": session['role']}}), 200
     else:
         return jsonify({'status': 'fail'}), 401
+    
 
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
