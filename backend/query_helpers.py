@@ -24,15 +24,6 @@ def _normalize_score(value: float) -> Union[float, int]:
     return float(value)
 
 
-def map_assessment_to_node(assessment_title: str) -> str:
-    """Map a human readable assessment title to its Bayesian node name."""
-
-    title_map = {
-        "Place Value and Number Representation": "PlaceValueNR",
-    }
-    return title_map.get(assessment_title, assessment_title)
-
-
 def run_manual_query(
     bif_file: str,
     competency: str,
@@ -88,10 +79,9 @@ def run_auto_query(result_id: int) -> Tuple[Optional[Dict], Optional[str]]:
     cursor = conn.cursor()
     cursor.execute(
         """
-        SELECT sr.score, sr.total, a.title AS assessment_title, bn.name AS bif_file
+        SELECT sr.score, sr.total, a.title AS assessment_title, a.bif_file, a.competency_node
         FROM student_results sr
         JOIN assessments a ON sr.assessment_id = a.id
-        LEFT JOIN bayesian_networks bn ON a.bif_id = bn.id
         WHERE sr.id = ?
         """,
         (result_id,),
@@ -106,7 +96,8 @@ def run_auto_query(result_id: int) -> Tuple[Optional[Dict], Optional[str]]:
     if not bif_file:
         return None, "Assessment is not linked to a Bayesian Network"
 
-    competency_node = map_assessment_to_node(row["assessment_title"])
+    competency_node = row["competency_node"]
+    if not competency_node:
+        return None, f"Assessment '{row['assessment_title']}' is missing its competency node mapping."
 
     return run_manual_query(bif_file, competency_node, row["score"], row["total"])
-

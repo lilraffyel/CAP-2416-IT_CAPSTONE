@@ -148,7 +148,8 @@ def determine_next_focus(model, infer, failed_competency, evidence_state=0):
         return {"next_focus": None, "error": f"Competency '{failed_competency}' not in model"}
     prerequisites = model.get_parents(failed_competency)
     if not prerequisites:
-        return {"next_focus": None}
+        # If there are no parents, it's a foundational node.
+        return {"next_focus": f"This is a foundational topic. Please review '{failed_competency}' again."}
     if len(prerequisites) == 1:
         return {"next_focus": prerequisites[0]}
 

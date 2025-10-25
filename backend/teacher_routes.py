@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify, send_from_directory
 from pgmpy.readwrite.BIF import BIFReader
 from pgmpy.inference import VariableElimination
-from prerequisite.prerequisite_api import LOADED_MODELS
+# --- FIX: Import the get_model function instead of the cache dictionary ---
+from prerequisite.prerequisite_api import get_model
 from query_helpers import run_manual_query, run_auto_query
 import sqlite3
 import os
@@ -188,6 +189,20 @@ def get_domains():
 
 @teacher_routes.route('/competencies', methods=['GET'])
 def get_competencies():
+    bif_file = request.args.get('bif_file')
+    
+    # --- NEW LOGIC: If a bif_file is specified, get nodes from it ---
+    if bif_file:
+        # --- FIX: Use the get_model() function to load or retrieve the model ---
+        model_data = get_model(bif_file)
+        if not model_data:
+            return jsonify({'error': f'BIF file {bif_file} not found or failed to load.'}), 404
+        
+        model = model_data['model']
+        nodes = model.nodes()
+        return jsonify({'competencies': list(nodes)})
+
+    # --- EXISTING LOGIC: If no bif_file, get all competencies from DB ---
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
@@ -699,7 +714,7 @@ def get_all_assessments():
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT a.title, a.bif_file, cd.name AS domain, a.content_domain_id
+        SELECT a.title, a.bif_file, cd.name AS domain, a.content_domain_id, a.competency_node
         FROM assessments a
         LEFT JOIN content_domains cd ON a.content_domain_id = cd.id
     """)
@@ -712,7 +727,8 @@ def get_all_assessments():
         result[domain].append({
             "title": row['title'],
             "bif_file": row['bif_file'],
-            "content_domain_id": row['content_domain_id']
+            "content_domain_id": row['content_domain_id'],
+            "competency_node": row['competency_node']
         })
     conn.close()
     return jsonify(result)
@@ -723,13 +739,14 @@ def add_assessment():
     title = data.get("title")
     content_domain_id = data.get("content_domain_id")
     bif_file = data.get("bif_file")
+    competency_node = data.get("competency_node")
     if not title or not content_domain_id:
         return jsonify({'error': 'Missing title or content_domain_id'}), 400
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO assessments (title, content_domain_id, bif_file) VALUES (?, ?, ?)",
-        (title, content_domain_id, bif_file)
+        "INSERT INTO assessments (title, content_domain_id, bif_file, competency_node) VALUES (?, ?, ?, ?)",
+        (title, content_domain_id, bif_file, competency_node)
     )
     conn.commit()
     conn.close()
@@ -741,6 +758,8 @@ def update_assessment(title):
     new_title = data.get("newTitle")
     content_domain_id = data.get("content_domain_id")
     bif_file = data.get("bif_file")
+    competency_node = data.get("competency_node")
+    
     conn = get_db()
     cursor = conn.cursor()
 
@@ -756,16 +775,15 @@ def update_assessment(title):
         updates.append("content_domain_id = ?")
         params.append(content_domain_id)
 
-    # Look up the bif_id from the bayesian_networks table
+    # --- FIX: Correctly handle bif_file and competency_node updates ---
     if bif_file is not None:
-        bif_id = None
-        if bif_file:
-            cursor.execute("SELECT id FROM bayesian_networks WHERE name = ?", (bif_file,))
-            bif_row = cursor.fetchone()
-            if bif_row:
-                bif_id = bif_row['id']
-        updates.append("bif_id = ?")
-        params.append(bif_id)
+        updates.append("bif_file = ?")
+        params.append(bif_file)
+
+    if competency_node is not None:
+        updates.append("competency_node = ?")
+        params.append(competency_node)
+    # --- END FIX ---
 
     if not updates:
         conn.close()
@@ -977,5 +995,5 @@ def unassign_competency():
     )
     conn.commit()
     conn.close()
-    return jsonify({'message': 'Assignment removed'})    
-    
+    return jsonify({'message': 'Assignment removed'})
+

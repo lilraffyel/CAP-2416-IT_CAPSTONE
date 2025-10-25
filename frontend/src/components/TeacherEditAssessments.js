@@ -17,6 +17,9 @@ function TeacherEditAssessments() {
 const [bifFiles, setBifFiles] = useState([]);
 const [selectedDomain, setSelectedDomain] = useState("");
 const [selectedBifFile, setSelectedBifFile] = useState("");
+const [competencyNodeInput, setCompetencyNodeInput] = useState("");
+const [availableNodes, setAvailableNodes] = useState([]); // <-- New state for the dropdown options
+
 // Replace both editQuestionText and editQuestionOptions with:
 const editQuestionAll = (qId, newText, newOptions, newCorrect) => {
   setQuestions(questions.map(q =>
@@ -44,6 +47,25 @@ useEffect(() => {
 
 }, []);
 
+// --- NEW useEffect to fetch nodes when a BIF file is selected ---
+useEffect(() => {
+  if (selectedBifFile) {
+    // --- FIX: Point to the updated /api/teacher/competencies route ---
+    axios.get(`http://localhost:5000/api/teacher/competencies?bif_file=${selectedBifFile}`, { withCredentials: true })
+      .then(res => {
+        setAvailableNodes(res.data.competencies || []);
+      })
+      .catch(err => {
+        console.error("Failed to fetch competencies for BIF file:", err);
+        setAvailableNodes([]);
+      });
+  } else {
+    setAvailableNodes([]); // Clear dropdown if no BIF is selected
+  }
+  // Reset the selected node when the BIF file changes
+  setCompetencyNodeInput(""); 
+}, [selectedBifFile]);
+
   const fetchAssessments = () => {
   axios.get("http://localhost:5000/api/teacher/assessments", { withCredentials: true })
     .then(res => {
@@ -60,6 +82,25 @@ useEffect(() => {
   const handleAssessmentSelect = (assName) => {
     setSelectedAssessment(assName);
     setEditingTitle(assName); // <-- Set the editable title when an assessment is selected
+    
+    // --- FIX: Find the full assessment object to populate all fields ---
+    let assObj = null;
+    for (const domain in assessmentsByDomain) {
+      const found = assessmentsByDomain[domain].find(a => a.title === assName);
+      if (found) {
+        assObj = found;
+        break;
+      }
+    }
+
+    if (assObj) {
+      setSelectedDomain(assObj.content_domain_id || "");
+      setSelectedBifFile(assObj.bif_file || "");
+      // We set the competency node here, but the useEffect for selectedBifFile will run
+      // and might reset it. The value will be re-selected correctly if it exists in the new node list.
+      setCompetencyNodeInput(assObj.competency_node || "");
+    }
+
     setLoadingQuestions(true);
     axios.get(`http://localhost:5000/api/teacher/assessment/${encodeURIComponent(assName)}`, { withCredentials: true })
       .then(res => {
@@ -81,12 +122,14 @@ useEffect(() => {
   axios.post("http://localhost:5000/api/teacher/assessments", {
     title: newAssessmentTitle,
     content_domain_id: selectedDomain,
-    bif_file: selectedBifFile
+    bif_file: selectedBifFile,
+    competency_node: competencyNodeInput // <-- Add this line
   }, { withCredentials: true })
     .then(() => {
       setNewAssessmentTitle("");
       setSelectedDomain("");
       setSelectedBifFile("");
+      setCompetencyNodeInput(""); // <-- Add this line
       fetchAssessments();
     })
     .catch(() => alert("Failed to add assessment."));
@@ -183,6 +226,7 @@ useEffect(() => {
     onChange={e => setNewAssessmentTitle(e.target.value)}
     placeholder="Assessment Title"
   />
+  {/* This input is no longer needed here, it's part of the edit section */}
   <select
     value={selectedDomain}
     onChange={e => setSelectedDomain(e.target.value)}
@@ -290,6 +334,20 @@ useEffect(() => {
           ))}
         </select>
       </label>
+      <label style={{ marginLeft: '1rem' }}>
+        Competency Node:{" "}
+        {/* --- CHANGE: Convert input to a dropdown --- */}
+        <select
+          value={competencyNodeInput}
+          onChange={e => setCompetencyNodeInput(e.target.value)}
+          disabled={!selectedBifFile || availableNodes.length === 0}
+        >
+          <option value="">-- Select Node --</option>
+          {availableNodes.map(node => (
+            <option key={node} value={node}>{node}</option>
+          ))}
+        </select>
+      </label>
 <button
   onClick={() => {
     axios
@@ -298,7 +356,8 @@ useEffect(() => {
         { 
           newTitle: editingTitle, // <-- Send the new title
           content_domain_id: selectedDomain, 
-          bif_file: selectedBifFile 
+          bif_file: selectedBifFile,
+          competency_node: competencyNodeInput // <-- Add this line
         },
         { withCredentials: true }
       )
