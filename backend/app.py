@@ -15,12 +15,12 @@ app = Flask(__name__)
 app.secret_key = 'your-secret-key'
 CORS(app, supports_credentials=True) 
 
-#NEW CONFIGURATIONS FOR COOKIE HANDLING
-app.config['SESSION_COOKIE_SAMESITE'] = 'None'
-app.config['SESSION_COOKIE_SECURE'] = True
+# #NEW CONFIGURATIONS FOR COOKIE HANDLING
+# app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+# app.config['SESSION_COOKIE_SECURE'] = True
 
-FRONTEND_ORIGIN = "https://cap-2416-it-frontend.onrender.com"
-CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": [FRONTEND_ORIGIN]}})
+# FRONTEND_ORIGIN = "https://cap-2416-it-frontend.onrender.com"
+# CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": [FRONTEND_ORIGIN]}})
 
 # Register blueprints
 app.register_blueprint(auth_bp, url_prefix='/api')

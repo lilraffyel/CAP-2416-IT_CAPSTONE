@@ -43,15 +43,12 @@ def login():
         session['role'] = user['role']
 
         # store extra info based on role
-        # if user['role'] == 'Student':
-        #     session['student_id'] = user['id']
-        # elif user['role'] == 'Tutor':
-        #     session['tutor_id'] = user['id']
+        if user['role'] == 'Student':
+            session['student_id'] = user['id']
+        elif user['role'] == 'Tutor':
+            session['tutor_id'] = user['id']
 
-        # return jsonify({'status': 'success', 'role': user['role']})
-        session['user_id'] = user.id
-        session['role'] = getattr(user, 'role', 'student')
-        return jsonify({"ok": True, "user": {"id": user.id, "role": session['role']}}), 200
+        return jsonify({'status': 'success', 'role': user['role']})
     else:
         return jsonify({'status': 'fail'}), 401
     
