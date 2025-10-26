@@ -17,13 +17,15 @@ FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'a-super-secret-key-for-dev')
 
 # Session Cookie Configs
+app.config['SESSION_COOKIE_NAME'] = os.environ.get('SESSION_COOKIE_NAME', 'session')
+app.session_cookie_name = app.config['SESSION_COOKIE_NAME']
+
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = os.environ.get('SESSION_COOKIE_SECURE', 'True').lower() == 'true'
 
 Session(app)
 
-app.secret_key = 'your-secret-key'
 CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": [FRONTEND_URL]}}) 
 
 
