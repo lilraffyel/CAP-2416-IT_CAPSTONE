@@ -22,35 +22,42 @@ def login():
         return jsonify({'status': 'fail'}), 401 
 '''  
 
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify, session, current_app
 from database import get_db_connection
 
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    data = request.get_json()
-    user_id = data.get('id')
-    password = data.get('password')
+    try:
+        data = request.get_json() or {}
+        user_id = data.get('id')
+        password = data.get('password')
 
-    conn = get_db_connection()
-    user = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
-    conn.close()
-    
-    if user and user['password'] == password:
-        # always store base info
-        session['user_id'] = user['id']
-        session['role'] = user['role']
+        conn = get_db_connection()
+        user = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
+        conn.close()
 
-        # store extra info based on role
-        if user['role'] == 'Student':
-            session['student_id'] = user['id']
-        elif user['role'] == 'Tutor':
-            session['tutor_id'] = user['id']
+        if user and user['password'] == password:
+            # store base info
+            session.clear()
+            session['user_id'] = user['id']
+            session['role'] = user['role']
 
-        return jsonify({'status': 'success', 'role': user['role']})
-    else:
+            # store extra info based on role
+            if user['role'] == 'Student':
+                session['student_id'] = user['id']
+            elif user['role'] == 'Tutor':
+                session['tutor_id'] = user['id']
+
+            session.permanent = True
+            return jsonify({'status': 'success', 'role': user['role']}), 200
+
         return jsonify({'status': 'fail'}), 401
+
+    except Exception:
+        current_app.logger.exception("Login handler error")
+        return jsonify({"error": "internal server error"}), 500
     
 
 @auth_bp.route('/logout', methods=['POST'])
