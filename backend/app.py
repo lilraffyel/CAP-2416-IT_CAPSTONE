@@ -1,5 +1,6 @@
 import os
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify,
+from flask_session import Session
 from flask_cors import CORS
 from auth_routes import auth_bp
 from student_routes import student_bp 
@@ -12,15 +13,19 @@ from admin_routes import admin_routes
 from prerequisite.prerequisite_api import prereq_bp
 
 app = Flask(__name__)
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'a-super-secret-key-for-dev')
+
+# Session Cookie Configs
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SECURE'] = os.environ.get('SESSION_COOKIE_SECURE', 'True').lower() == 'true'
+
+Session(app)
+
 app.secret_key = 'your-secret-key'
-CORS(app, supports_credentials=True) 
+CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": [FRONTEND_URL]}}) 
 
-# #NEW CONFIGURATIONS FOR COOKIE HANDLING
-# app.config['SESSION_COOKIE_SAMESITE'] = 'None'
-# app.config['SESSION_COOKIE_SECURE'] = True
-
-# FRONTEND_ORIGIN = "https://cap-2416-it-frontend.onrender.com"
-# CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": [FRONTEND_ORIGIN]}})
 
 # Register blueprints
 app.register_blueprint(auth_bp, url_prefix='/api')
