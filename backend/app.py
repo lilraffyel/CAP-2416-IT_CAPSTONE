@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify,
+from flask import Flask, request, jsonify
 from flask_session import Session
 from flask_cors import CORS
 from auth_routes import auth_bp
