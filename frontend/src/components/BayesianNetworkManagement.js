@@ -89,6 +89,53 @@ function reshapeValues(flat, evidence) {
   return nest(arr, shape.slice(0, -1));
 }
 
+// --- NEW: Component for dynamically editing evidence with dropdowns ---
+function EvidenceEditor({ evidence, allNodes, variable, onChange }) {
+  const availableNodes = allNodes.filter(n => n !== variable && !evidence.includes(n));
+
+  const handleEvidenceChange = (index, newValue) => {
+    const newEvidence = [...evidence];
+    newEvidence[index] = newValue;
+    onChange(newEvidence.filter(Boolean)); // Filter out any empty selections
+  };
+
+  const addEvidence = () => {
+    onChange([...evidence, ""]); // Add a placeholder for a new dropdown
+  };
+
+  const removeEvidence = (index) => {
+    const newEvidence = evidence.filter((_, i) => i !== index);
+    onChange(newEvidence);
+  };
+
+  return (
+    <div>
+      {evidence.map((ev, index) => (
+        <div key={index} style={{ marginBottom: '5px' }}>
+          <select
+            value={ev}
+            onChange={(e) => handleEvidenceChange(index, e.target.value)}
+          >
+            <option value="">-- Select Evidence --</option>
+            {/* Add the currently selected node back to the list of options for this dropdown */}
+            {ev && <option value={ev}>{ev}</option>}
+            {availableNodes.map(node => (
+              <option key={node} value={node}>{node}</option>
+            ))}
+          </select>
+          <button type="button" onClick={() => removeEvidence(index)} style={{ marginLeft: '10px' }}>
+            Remove
+          </button>
+        </div>
+      ))}
+      <button type="button" onClick={addEvidence}>
+        Add Evidence
+      </button>
+    </div>
+  );
+}
+
+
 // CPD editor with auto-balance and up/down buttons for flat and nested CPDs
 function CPDValueEditor({ values, onChange, evidence }) {
   const isSingular = !evidence || evidence.length === 0;
@@ -203,6 +250,9 @@ function BayesianNetworkManagement() {
   const [message, setMessage] = useState("");
   const [pendingChanges, setPendingChanges] = useState([]);
   const [isLoading, setIsLoading] = useState(false); // <-- Add loading state
+
+  // --- NEW: Derive all node names from the CPDs list ---
+  const allNodes = cpds.map(([variable, _]) => variable);
 
   useEffect(() => {
     setNetworks([
@@ -442,10 +492,21 @@ function BayesianNetworkManagement() {
           </label>
           <br />
           <label>
-            Evidence (comma separated):
-            <input
-              value={editCpd.evidence.join(",")}
-              onChange={e => setEditCpd({ ...editCpd, evidence: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })}
+            Evidence:
+            {/* --- REPLACE: Use the new EvidenceEditor component --- */}
+            <EvidenceEditor
+              evidence={editCpd.evidence}
+              allNodes={allNodes}
+              variable={editCpd.variable}
+              onChange={newEvidence => {
+                // When evidence changes, we must reset the values to a default state
+                // that matches the new structure.
+                const combos = getParentCombinations(newEvidence);
+                const newValues = combos.length > 1 
+                  ? reshapeValues(Array(combos.length).fill([0.5, 0.5]), newEvidence)
+                  : [0.5, 0.5];
+                setEditCpd({ ...editCpd, evidence: newEvidence, values: newValues });
+              }}
             />
           </label>
           <br />

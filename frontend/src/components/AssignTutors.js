@@ -103,10 +103,9 @@ function AssignTutors() {
   const getHelpRequestsForStudent = (studentId) =>
     helpRequests.filter(hr => hr.student_id === studentId);
 
-  // Helper: get assigned tutor for a student
-  const getAssignedTutorForStudent = (studentId) => {
-    const assignment = assignments.find(a => a.student_id === studentId);
-    return assignment ? { name: assignment.tutor_name, id: assignment.tutor_id } : null;
+  // --- FIX: Change to get an array of all assigned tutors ---
+  const getAssignedTutorsForStudent = (studentId) => {
+    return assignments.filter(a => a.student_id === studentId);
   };
 
   return (
@@ -124,14 +123,14 @@ function AssignTutors() {
         </thead>
         <tbody>
           {students.map((stu) => {
-            const assignedTutor = getAssignedTutorForStudent(stu.id);
-            const studentHelpRequests = getHelpRequestsForStudent(stu.id);
+            // --- FIX: Get all assigned tutors, not just the first one ---
+            const assignedTutors = getAssignedTutorsForStudent(stu.id);
             return (
               <tr key={stu.id}>
                 <td>{stu.name}</td>
                 <td>
-                  {studentHelpRequests.length
-                    ? studentHelpRequests.map(hr => (
+                  {getHelpRequestsForStudent(stu.id).length
+                    ? getHelpRequestsForStudent(stu.id).map(hr => (
                         <div key={hr.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           {hr.domain_name}
                           <button
@@ -144,33 +143,42 @@ function AssignTutors() {
                       ))
                     : 'None'}
                 </td>
-                <td>{assignedTutor ? assignedTutor.name : 'None'}</td>
+                {/* --- FIX: Display a list of tutors --- */}
                 <td>
-                  {assignedTutor ? (
-                    <button onClick={() => handleUnassignTutor(stu.id, assignedTutor.id)}>
-                      Unassign
-                    </button>
+                  {assignedTutors.length > 0 ? (
+                    <ul>
+                      {assignedTutors.map(tutor => (
+                        <li key={tutor.tutor_id}>
+                          {tutor.tutor_name}{' '}
+                          <button onClick={() => handleUnassignTutor(stu.id, tutor.tutor_id)}>
+                            Unassign
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
                   ) : (
-                    <>
-                      <select
-                        value={selectedTutor[stu.id] || ''}
-                        onChange={e =>
-                          setSelectedTutor({ ...selectedTutor, [stu.id]: e.target.value })
-                        }
-                      >
-                        <option value="">Select Tutor</option>
-                        {tutors.map(t => (
-                          <option key={t.id} value={t.id}>{t.name}</option>
-                        ))}
-                      </select>
-                      <button
-                        onClick={() => handleAssignTutor(stu.id)}
-                        disabled={!selectedTutor[stu.id]}
-                      >
-                        Assign
-                      </button>
-                    </>
+                    'None'
                   )}
+                </td>
+                {/* --- FIX: Always show the assignment dropdown --- */}
+                <td>
+                  <select
+                    value={selectedTutor[stu.id] || ''}
+                    onChange={e =>
+                      setSelectedTutor({ ...selectedTutor, [stu.id]: e.target.value })
+                    }
+                  >
+                    <option value="">Select Tutor to Add</option>
+                    {tutors.map(t => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => handleAssignTutor(stu.id)}
+                    disabled={!selectedTutor[stu.id]}
+                  >
+                    Assign
+                  </button>
                 </td>
               </tr>
             );

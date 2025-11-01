@@ -211,7 +211,7 @@ def assign_tutor():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Prevent duplicate assignments
+    # --- FIX: Prevent duplicate assignments for the same student-tutor pair ---
     cursor.execute("""
         SELECT 1 FROM tutor_assignments WHERE student_id = ? AND tutor_id = ?
     """, (student_id, tutor_id))
