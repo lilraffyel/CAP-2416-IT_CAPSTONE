@@ -35,13 +35,20 @@ def ensure_tutor_notes_table(cursor):
             comment TEXT,
             materials TEXT,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE(tutor_id, student_id),
+            last_updated_by TEXT,
             FOREIGN KEY (tutor_id) REFERENCES users(id),
             FOREIGN KEY (student_id) REFERENCES users(id)
         )
         """
     )
     cursor.connection.commit()
+
+    # Legacy databases may not have the ``last_updated_by`` column. Add it on the fly.
+    cursor.execute("PRAGMA table_info(tutor_notes)")
+    columns = {row[1] for row in cursor.fetchall()}
+    if "last_updated_by" not in columns:
+        cursor.execute("ALTER TABLE tutor_notes ADD COLUMN last_updated_by TEXT")
+        cursor.connection.commit()
 
 
 # ─── File Upload Storage Helper ─────────────────────────────────────────────
@@ -334,19 +341,44 @@ def get_tutor_student_note(tutor_id, student_id):
 
     cursor.execute(
         """
-        SELECT comment, materials, updated_at
-        FROM tutor_notes
-        WHERE tutor_id = ? AND student_id = ?
+        SELECT tn.id, tn.comment, tn.materials, tn.updated_at, tn.last_updated_by, tn.tutor_id
+        FROM tutor_notes tn
+        WHERE tn.student_id = ?
+        ORDER BY tn.updated_at DESC, tn.id DESC
+        LIMIT 1
         """,
-        (tutor_id, student_id),
+        (student_id,),
     )
     row = cursor.fetchone()
+
+    last_updated_name = None
+    last_editor_id = None
+    if row:
+        last_editor_id = row["last_updated_by"] or row["tutor_id"]
+        if last_editor_id:
+            cursor.execute("SELECT name FROM users WHERE id = ?", (last_editor_id,))
+            user_row = cursor.fetchone()
+            if user_row:
+                last_updated_name = user_row["name"]
+
     conn.close()
 
     if not row:
-        return jsonify({"comment": "", "materials": "", "updated_at": None})
+        return jsonify({
+            "comment": "",
+            "materials": "",
+            "updated_at": None,
+            "last_updated_by": None,
+            "last_updated_by_name": None,
+        })
 
-    return jsonify({"comment": row["comment"] or "", "materials": row["materials"] or "", "updated_at": row["updated_at"]})
+    return jsonify({
+        "comment": row["comment"] or "",
+        "materials": row["materials"] or "",
+        "updated_at": row["updated_at"],
+        "last_updated_by": last_editor_id,
+        "last_updated_by_name": last_updated_name,
+    })
 
 
 @teacher_routes.route('/tutor/<tutor_id>/students/<student_id>/note', methods=['POST'])
@@ -359,37 +391,71 @@ def save_tutor_student_note(tutor_id, student_id):
     cursor = conn.cursor()
     ensure_tutor_notes_table(cursor)
 
+    # Look for an existing note for this student, regardless of who created it.
     cursor.execute(
         """
-        INSERT INTO tutor_notes (tutor_id, student_id, comment, materials, updated_at)
-        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-        ON CONFLICT(tutor_id, student_id)
-        DO UPDATE SET
-            comment = excluded.comment,
-            materials = excluded.materials,
-            updated_at = CURRENT_TIMESTAMP
+        SELECT id FROM tutor_notes
+        WHERE student_id = ?
+        ORDER BY updated_at DESC, id DESC
+        LIMIT 1
         """,
-        (tutor_id, student_id, comment, materials),
+        (student_id,)
     )
+    existing = cursor.fetchone()
+
+    if existing:
+        cursor.execute(
+            """
+            UPDATE tutor_notes
+            SET comment = ?,
+                materials = ?,
+                updated_at = CURRENT_TIMESTAMP,
+                tutor_id = ?,
+                last_updated_by = ?
+            WHERE id = ?
+            """,
+            (comment, materials, tutor_id, tutor_id, existing["id"]),
+        )
+    else:
+        cursor.execute(
+            """
+            INSERT INTO tutor_notes (tutor_id, student_id, comment, materials, last_updated_by)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (tutor_id, student_id, comment, materials, tutor_id),
+        )
 
     conn.commit()
 
     cursor.execute(
         """
-        SELECT comment, materials, updated_at
+        SELECT comment, materials, updated_at, last_updated_by
         FROM tutor_notes
-        WHERE tutor_id = ? AND student_id = ?
+        WHERE student_id = ?
+        ORDER BY updated_at DESC, id DESC
+        LIMIT 1
         """,
-        (tutor_id, student_id),
+        (student_id,),
     )
     row = cursor.fetchone()
+
+    last_updated_name = None
+    last_editor_id = row["last_updated_by"] if row else None
+    if last_editor_id:
+        cursor.execute("SELECT name FROM users WHERE id = ?", (last_editor_id,))
+        name_row = cursor.fetchone()
+        if name_row:
+            last_updated_name = name_row["name"]
+
     conn.close()
 
     return jsonify({
         'message': 'Tutor note saved successfully',
-        'comment': row['comment'] or '',
-        'materials': row['materials'] or '',
-        'updated_at': row['updated_at'],
+        'comment': row['comment'] or '' if row else '',
+        'materials': row['materials'] or '' if row else '',
+        'updated_at': row['updated_at'] if row else None,
+        'last_updated_by': last_editor_id,
+        'last_updated_by_name': last_updated_name,
     })
 
 @teacher_routes.route('/tutor/<tutor_id>/students/<student_id>/materials', methods=['GET'])
@@ -398,11 +464,18 @@ def list_tutor_student_materials(tutor_id, student_id):
     cur = conn.cursor()
     ensure_tutor_materials_table(cur)
     cur.execute("""
-        SELECT id, original_filename, stored_path, mime_type, uploaded_at
-        FROM tutor_materials
-        WHERE tutor_id=? AND student_id=?
-        ORDER BY uploaded_at DESC, id DESC
-    """, (tutor_id, student_id))
+        SELECT tm.id,
+               tm.tutor_id,
+               tm.original_filename,
+               tm.stored_path,
+               tm.mime_type,
+               tm.uploaded_at,
+               u.name AS uploader_name
+        FROM tutor_materials tm
+        LEFT JOIN users u ON u.id = tm.tutor_id
+        WHERE tm.student_id = ?
+        ORDER BY tm.uploaded_at DESC, tm.id DESC
+    """, (student_id,))
     rows = [dict(r) for r in cur.fetchall()]
     conn.close()
     return jsonify(rows)  # return [] if none (200), not 404
