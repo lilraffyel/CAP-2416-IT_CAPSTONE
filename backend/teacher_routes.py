@@ -26,8 +26,9 @@ def get_db():
 
 
 def ensure_tutor_notes_table(cursor):
-    cursor.execute(
-        """
+    """Create or upgrade the tutor_notes table to support note history."""
+
+    base_table_sql = """
         CREATE TABLE IF NOT EXISTS tutor_notes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             tutor_id TEXT NOT NULL,
@@ -39,16 +40,133 @@ def ensure_tutor_notes_table(cursor):
             FOREIGN KEY (tutor_id) REFERENCES users(id),
             FOREIGN KEY (student_id) REFERENCES users(id)
         )
-        """
-    )
+    """
+
+    cursor.execute(base_table_sql)
     cursor.connection.commit()
 
-    # Legacy databases may not have the ``last_updated_by`` column. Add it on the fly.
     cursor.execute("PRAGMA table_info(tutor_notes)")
     columns = {row[1] for row in cursor.fetchall()}
+
     if "last_updated_by" not in columns:
         cursor.execute("ALTER TABLE tutor_notes ADD COLUMN last_updated_by TEXT")
         cursor.connection.commit()
+
+    # Older databases created the table with a UNIQUE constraint on (tutor_id, student_id)
+    # which prevents storing multiple note entries per tutor. Detect that schema and
+    # rebuild the table without the constraint so every save is preserved.
+    cursor.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='tutor_notes'"
+    )
+    table_row = cursor.fetchone()
+    table_sql = None
+    if table_row:
+        # sqlite3.Row supports key lookup, otherwise fall back to index access.
+        try:
+            table_sql = table_row["sql"]
+        except (TypeError, KeyError):
+            table_sql = table_row[0] if table_row else None
+
+    if table_sql and "UNIQUE" in table_sql.upper():
+        cursor.execute("ALTER TABLE tutor_notes RENAME TO tutor_notes_legacy")
+        cursor.connection.commit()
+
+        cursor.execute(base_table_sql)
+        cursor.connection.commit()
+
+        cursor.execute("SELECT * FROM tutor_notes_legacy")
+        legacy_rows = cursor.fetchall()
+
+        for row in legacy_rows:
+            if hasattr(row, "keys"):
+                row_dict = {key: row[key] for key in row.keys()}
+            else:
+                # Fall back to the tuple representation using cursor description.
+                desc = cursor.description or []
+                row_dict = {
+                    desc[i][0]: row[i]
+                    for i in range(min(len(desc), len(row)))
+                }
+
+            tutor_id = row_dict.get("tutor_id")
+            student_id = row_dict.get("student_id")
+            if not tutor_id or not student_id:
+                continue
+
+            comment = row_dict.get("comment", "") or ""
+            materials = row_dict.get("materials", "") or ""
+            updated_at = row_dict.get("updated_at")
+            last_updated_by = row_dict.get("last_updated_by") or tutor_id
+
+            cursor.execute(
+                """
+                INSERT INTO tutor_notes (
+                    tutor_id,
+                    student_id,
+                    comment,
+                    materials,
+                    updated_at,
+                    last_updated_by
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    tutor_id,
+                    student_id,
+                    comment,
+                    materials,
+                    updated_at,
+                    last_updated_by,
+                ),
+            )
+
+        cursor.execute("DROP TABLE tutor_notes_legacy")
+        cursor.connection.commit()
+
+
+def build_tutor_note_payload(cursor, student_id):
+    """Return the most recent note and the full history for a student."""
+    ensure_tutor_notes_table(cursor)
+
+    cursor.execute(
+        """
+        SELECT
+            tn.id,
+            tn.comment,
+            tn.materials,
+            tn.updated_at,
+            tn.tutor_id,
+            COALESCE(tn.last_updated_by, tn.tutor_id) AS author_id,
+            u.name AS author_name
+        FROM tutor_notes tn
+        LEFT JOIN users u ON u.id = COALESCE(tn.last_updated_by, tn.tutor_id)
+        WHERE tn.student_id = ?
+        ORDER BY tn.updated_at DESC, tn.id DESC
+        """,
+        (student_id,),
+    )
+
+    rows = cursor.fetchall()
+
+    history = []
+    for row in rows:
+        history.append(
+            {
+                "id": row["id"],
+                "comment": row["comment"] or "",
+                "materials": row["materials"] or "",
+                "updated_at": row["updated_at"],
+                "last_updated_by": row["author_id"],
+                "last_updated_by_name": row["author_name"],
+                "author_id": row["author_id"],
+                "author_name": row["author_name"],
+                "tutor_id": row["tutor_id"],
+            }
+        )
+
+    latest = history[0] if history else None
+
+    return {"latest": latest, "history": history}
 
 
 # ─── File Upload Storage Helper ─────────────────────────────────────────────
@@ -337,126 +455,43 @@ def get_tutor_student_results(tutor_id, student_id):
 def get_tutor_student_note(tutor_id, student_id):
     conn = get_db()
     cursor = conn.cursor()
-    ensure_tutor_notes_table(cursor)
-
-    cursor.execute(
-        """
-        SELECT tn.id, tn.comment, tn.materials, tn.updated_at, tn.last_updated_by, tn.tutor_id
-        FROM tutor_notes tn
-        WHERE tn.student_id = ?
-        ORDER BY tn.updated_at DESC, tn.id DESC
-        LIMIT 1
-        """,
-        (student_id,),
-    )
-    row = cursor.fetchone()
-
-    last_updated_name = None
-    last_editor_id = None
-    if row:
-        last_editor_id = row["last_updated_by"] or row["tutor_id"]
-        if last_editor_id:
-            cursor.execute("SELECT name FROM users WHERE id = ?", (last_editor_id,))
-            user_row = cursor.fetchone()
-            if user_row:
-                last_updated_name = user_row["name"]
+    payload = build_tutor_note_payload(cursor, student_id)
 
     conn.close()
 
-    if not row:
-        return jsonify({
-            "comment": "",
-            "materials": "",
-            "updated_at": None,
-            "last_updated_by": None,
-            "last_updated_by_name": None,
-        })
-
-    return jsonify({
-        "comment": row["comment"] or "",
-        "materials": row["materials"] or "",
-        "updated_at": row["updated_at"],
-        "last_updated_by": last_editor_id,
-        "last_updated_by_name": last_updated_name,
-    })
+    return jsonify(payload)
 
 
 @teacher_routes.route('/tutor/<tutor_id>/students/<student_id>/note', methods=['POST'])
 def save_tutor_student_note(tutor_id, student_id):
     data = request.get_json() or {}
-    comment = data.get('comment', '')
-    materials = data.get('materials', '')
+    comment = (data.get('comment', '') or '').strip()
+    materials = (data.get('materials', '') or '').strip()
 
     conn = get_db()
     cursor = conn.cursor()
     ensure_tutor_notes_table(cursor)
 
-    # Look for an existing note for this student, regardless of who created it.
+    if not comment and not materials:
+        conn.close()
+        return jsonify({'error': 'Note entry cannot be empty.'}), 400
+
     cursor.execute(
         """
-        SELECT id FROM tutor_notes
-        WHERE student_id = ?
-        ORDER BY updated_at DESC, id DESC
-        LIMIT 1
+        INSERT INTO tutor_notes (tutor_id, student_id, comment, materials, last_updated_by)
+        VALUES (?, ?, ?, ?, ?)
         """,
-        (student_id,)
+        (tutor_id, student_id, comment, materials, tutor_id)
     )
-    existing = cursor.fetchone()
-
-    if existing:
-        cursor.execute(
-            """
-            UPDATE tutor_notes
-            SET comment = ?,
-                materials = ?,
-                updated_at = CURRENT_TIMESTAMP,
-                tutor_id = ?,
-                last_updated_by = ?
-            WHERE id = ?
-            """,
-            (comment, materials, tutor_id, tutor_id, existing["id"]),
-        )
-    else:
-        cursor.execute(
-            """
-            INSERT INTO tutor_notes (tutor_id, student_id, comment, materials, last_updated_by)
-            VALUES (?, ?, ?, ?, ?)
-            """,
-            (tutor_id, student_id, comment, materials, tutor_id),
-        )
 
     conn.commit()
 
-    cursor.execute(
-        """
-        SELECT comment, materials, updated_at, last_updated_by
-        FROM tutor_notes
-        WHERE student_id = ?
-        ORDER BY updated_at DESC, id DESC
-        LIMIT 1
-        """,
-        (student_id,),
-    )
-    row = cursor.fetchone()
-
-    last_updated_name = None
-    last_editor_id = row["last_updated_by"] if row else None
-    if last_editor_id:
-        cursor.execute("SELECT name FROM users WHERE id = ?", (last_editor_id,))
-        name_row = cursor.fetchone()
-        if name_row:
-            last_updated_name = name_row["name"]
+    payload = build_tutor_note_payload(cursor, student_id)
 
     conn.close()
 
-    return jsonify({
-        'message': 'Tutor note saved successfully',
-        'comment': row['comment'] or '' if row else '',
-        'materials': row['materials'] or '' if row else '',
-        'updated_at': row['updated_at'] if row else None,
-        'last_updated_by': last_editor_id,
-        'last_updated_by_name': last_updated_name,
-    })
+    return jsonify(payload)
+
 
 @teacher_routes.route('/tutor/<tutor_id>/students/<student_id>/materials', methods=['GET'])
 def list_tutor_student_materials(tutor_id, student_id):
@@ -1069,4 +1104,3 @@ def unassign_competency():
     conn.commit()
     conn.close()
     return jsonify({'message': 'Assignment removed'})
-
