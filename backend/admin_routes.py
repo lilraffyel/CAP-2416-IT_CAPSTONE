@@ -415,6 +415,9 @@ def batch_update_cpds():
                     for parent in evidence:
                         if parent not in model.nodes:
                             model.add_node(parent)
+                        # --- FIX: Add the edge from parent to child ---
+                        if not model.has_edge(parent, variable):
+                            model.add_edge(parent, variable)
                     # --- END: Definitive Fix for Old Code ---
 
                     if not evidence:

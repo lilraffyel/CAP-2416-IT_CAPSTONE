@@ -318,6 +318,12 @@ function BayesianNetworkManagement() {
     let { variable, values, evidence } = editCpd;
     const isSingular = !evidence || evidence.length === 0;
 
+    // --- FIX: Prevent adding a CPD with an empty variable name ---
+    if (!variable || variable.trim() === "") {
+      setMessage("Error: Variable name cannot be empty.");
+      return;
+    }
+
     // For singular nodes, pgmpy expects a column vector like [[0.7], [0.3]]
     // Convert our flat array [0.7, 0.3] to that format before queueing.
     if (isSingular && Array.isArray(values) && (values.length === 0 || !Array.isArray(values[0]))) {
