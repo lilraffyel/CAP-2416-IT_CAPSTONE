@@ -409,27 +409,33 @@ def batch_update_cpds():
                     # --- END: Enhanced Debugging ---
 
                     try:
-                        # --- START: Definitive Backend Logic ---
+                        # --- START: Definitive Backend Logic V2 ---
                         values_np = np.array(values, dtype=float)
+
+                        # The frontend sends a simple list of rows.
+                        # We need to check if the number of rows matches the parent combinations.
+                        num_parents = len(evidence)
+                        expected_rows = 2 ** num_parents
+                        
+                        if values_np.shape[0] != expected_rows:
+                            # This error message will be visible in the UI
+                            raise ValueError(f"Incorrect number of probability rows. Expected {expected_rows}, but received {values_np.shape[0]}.")
 
                         if not evidence:
                             # Case 1: Singular node.
-                            # Frontend sends [0.7, 0.3]. We need [[0.7], [0.3]].
-                            if values_np.ndim == 1:
-                                values_for_pgmpy = values_np.reshape(len(values_np), 1)
-                            else: # It might already be [[0.7, 0.3]]
-                                values_for_pgmpy = values_np
+                            # Frontend sends [[0.7, 0.3]]. pgmpy needs [[0.7], [0.3]].
+                            values_for_pgmpy = values_np.T
                         else:
                             # Case 2: Node with evidence.
-                            # Frontend sends a flat list of rows, e.g., [[r1c1, r1c2], [r2c1, r2c2], ...]
-                            # pgmpy needs a transposed and reshaped array.
-                            # For 1 parent, shape is (2, 2). For 2 parents, (2, 2, 2), etc.
-                            shape = tuple([2] * (len(evidence) + 1))
-                            # Transpose the flat list of rows and then reshape it.
+                            # The UI provides rows ordered by parent combinations (00, 01, 10, 11).
+                            # pgmpy needs a transposed, multi-dimensional array.
+                            # The order of values in pgmpy is child, then parents in reverse order.
+                            # Example for 2 parents: (child, parent2, parent1)
+                            shape = tuple([2] * (num_parents + 1))
+                            # Transpose the flat list of rows and then reshape.
                             values_for_pgmpy = values_np.T.reshape(shape)
                         
-                        print(f"Shape for pgmpy: {values_for_pgmpy.shape}")
-                        # --- END: Definitive Backend Logic ---
+                        # --- END: Definitive Backend Logic V2 ---
 
                         # The validation logic now checks columns
                         is_valid = np.all(np.isclose(np.sum(values_for_pgmpy, axis=0), 1.0))

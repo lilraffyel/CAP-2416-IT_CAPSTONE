@@ -55,8 +55,6 @@ function getParentCombinations(evidence, evidenceCard = 2) {
 
 // --- REMOVE 'flattenValues' and 'reshapeValues' ---
 // These functions are the source of the bug and will be removed.
-// The backend will now handle all data shaping.
-
 
 // --- NEW: Component for dynamically editing evidence with dropdowns ---
 function EvidenceEditor({ evidence, allNodes, variable, onChange }) {
@@ -104,15 +102,14 @@ function EvidenceEditor({ evidence, allNodes, variable, onChange }) {
   );
 }
 
-
-// CPD editor with auto-balance and up/down buttons for flat and nested CPDs
+// CPD editor with auto-balance and up/down buttons
 function CPDValueEditor({ values, onChange, evidence }) {
   const isSingular = !evidence || evidence.length === 0;
 
-  // --- FIX: 'values' is now always a simple list of rows, e.g., [[0.5, 0.5], [0.5, 0.5]] ---
-  const flatRows = isSingular ? [values] : values;
+  // The 'values' state is now always a simple list of rows.
+  // For a singular node, it's a single row inside a list: [[0.5, 0.5]]
+  const rows = values || [];
 
-  // Show parent state combos for clarity, only for complex nodes.
   const combos = isSingular ? [] : getParentCombinations(evidence);
 
   function autoBalanceRow(row, idx, newValue) {
@@ -150,7 +147,7 @@ function CPDValueEditor({ values, onChange, evidence }) {
 
   return (
     <div>
-      {flatRows.map((row, rowIdx) => (
+      {rows.map((row, rowIdx) => (
         <div key={rowIdx} style={{ marginBottom: "0.5em" }}>
           <span>
             {isSingular
@@ -167,42 +164,27 @@ function CPDValueEditor({ values, onChange, evidence }) {
                 value={v}
                 onChange={e => {
                   const newRow = autoBalanceRow(row, idx, parseFloat(e.target.value) || 0);
-                  if (isSingular) {
-                    onChange(newRow); // For singular, the new row is the entire value set
-                  } else {
-                    // --- FIX: Directly update the row in the flat list ---
-                    let newFlatRows = [...flatRows];
-                    newFlatRows[rowIdx] = newRow;
-                    onChange(newFlatRows);
-                  }
+                  const newRows = [...rows];
+                  newRows[rowIdx] = newRow;
+                  onChange(newRows);
                 }}
               />
               <button
                 type="button"
                 onClick={() => {
                   const newRow = autoBalanceRow(row, idx, Math.min(1, v + 0.01));
-                  if (isSingular) {
-                    onChange(newRow);
-                  } else {
-                    // --- FIX: Directly update the row in the flat list ---
-                    let newFlatRows = [...flatRows];
-                    newFlatRows[rowIdx] = newRow;
-                    onChange(newFlatRows);
-                  }
+                  const newRows = [...rows];
+                  newRows[rowIdx] = newRow;
+                  onChange(newRows);
                 }}
               >▲</button>
               <button
                 type="button"
                 onClick={() => {
                   const newRow = autoBalanceRow(row, idx, Math.max(0, v - 0.01));
-                  if (isSingular) {
-                    onChange(newRow);
-                  } else {
-                    // --- FIX: Directly update the row in the flat list ---
-                    let newFlatRows = [...flatRows];
-                    newFlatRows[rowIdx] = newRow;
-                    onChange(newFlatRows);
-                  }
+                  const newRows = [...rows];
+                  newRows[rowIdx] = newRow;
+                  onChange(newRows);
                 }}
               >▼</button>
             </span>
@@ -472,13 +454,11 @@ function BayesianNetworkManagement() {
               allNodes={allNodes}
               variable={editCpd.variable}
               onChange={newEvidence => {
-                // When evidence changes, we must reset the values to a default state
-                // that matches the new structure.
                 const combos = getParentCombinations(newEvidence);
-                // --- FIX: Create a simple flat list of rows ---
+                // Always create a simple list of rows
                 const newValues = combos.length > 1 
                   ? Array(combos.length).fill([0.5, 0.5])
-                  : [0.5, 0.5];
+                  : [[0.5, 0.5]]; // Singular nodes also use a list of rows
                 setEditCpd({ ...editCpd, evidence: newEvidence, values: newValues });
               }}
             />
