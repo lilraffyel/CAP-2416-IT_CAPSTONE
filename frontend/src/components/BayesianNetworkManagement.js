@@ -53,62 +53,9 @@ function getParentCombinations(evidence, evidenceCard = 2) {
   return combos;
 }
 
-// Helper: Flatten multi-dimensional CPD values
-function flattenValues(values, evidence) {
-  if (!Array.isArray(values[0])) return values.map(v => [v]);
-  let combos = getParentCombinations(evidence);
-  let flat = [];
-  combos.forEach(combo => {
-    let ref = values;
-    combo.forEach(idx => { ref = ref[idx]; });
-    flat.push(ref);
-  });
-  return flat;
-}
-
-// --- START: Definitive Fix for reshapeValues ---
-// Helper: Reshape flat values back to multi-dimensional (non-destructive)
-function reshapeValues(flat, evidence) {
-  if (!evidence || evidence.length === 0) {
-    // For singular nodes, the editor works with a flat array [v1, v2].
-    return flat;
-  }
-
-  const shape = Array(evidence.length).fill(2); // e.g., [2, 2] for 2 parents
-  let index = 0;
-
-  function nest(dims) {
-    if (dims.length === 1) {
-      // At the deepest level, pull the next `dims[0]` rows from the flat array
-      const result = flat.slice(index, index + dims[0]);
-      index += dims[0];
-      return result;
-    }
-    const out = [];
-    for (let i = 0; i < dims[0]; i++) {
-      out.push(nest(dims.slice(1)));
-    }
-    return out;
-  }
-  
-  // The result from nest will be one level too deep, so we need to adjust.
-  // e.g., for 2 parents, it produces [[[[0.5,0.5],[0.5,0.5]]],[[[0.5,0.5],[0.5,0.5]]]]
-  // We need to flatten it by one level.
-  const nested = nest(shape);
-
-  // pgmpy expects the structure to be transposed from what is intuitive.
-  // For 2 parents, it wants: [[[p1,p2],[p3,p4]], [[p5,p6],[p7,p8]]]
-  // where p1/p2 is a column. Our editor provides rows.
-  // The backend will handle the final transpose. The key is getting the nesting right.
-  // The `CPDValueEditor` and this function now correctly produce a nested array of rows.
-  if (evidence.length === 1) return nested[0];
-  if (evidence.length === 2) return nested; // This should now be correct for 2 parents
-  
-  // This logic should be extended if more than 2 parents are expected.
-  // For now, this handles the common cases.
-  return nested;
-}
-// --- END: Definitive Fix for reshapeValues ---
+// --- REMOVE 'flattenValues' and 'reshapeValues' ---
+// These functions are the source of the bug and will be removed.
+// The backend will now handle all data shaping.
 
 
 // --- NEW: Component for dynamically editing evidence with dropdowns ---
@@ -162,8 +109,8 @@ function EvidenceEditor({ evidence, allNodes, variable, onChange }) {
 function CPDValueEditor({ values, onChange, evidence }) {
   const isSingular = !evidence || evidence.length === 0;
 
-  // Use existing flatten logic for complex nodes, but handle singular nodes separately.
-  const flatRows = isSingular ? [values] : flattenValues(values, evidence);
+  // --- FIX: 'values' is now always a simple list of rows, e.g., [[0.5, 0.5], [0.5, 0.5]] ---
+  const flatRows = isSingular ? [values] : values;
 
   // Show parent state combos for clarity, only for complex nodes.
   const combos = isSingular ? [] : getParentCombinations(evidence);
@@ -223,9 +170,10 @@ function CPDValueEditor({ values, onChange, evidence }) {
                   if (isSingular) {
                     onChange(newRow); // For singular, the new row is the entire value set
                   } else {
+                    // --- FIX: Directly update the row in the flat list ---
                     let newFlatRows = [...flatRows];
                     newFlatRows[rowIdx] = newRow;
-                    onChange(reshapeValues(newFlatRows, evidence));
+                    onChange(newFlatRows);
                   }
                 }}
               />
@@ -236,9 +184,10 @@ function CPDValueEditor({ values, onChange, evidence }) {
                   if (isSingular) {
                     onChange(newRow);
                   } else {
+                    // --- FIX: Directly update the row in the flat list ---
                     let newFlatRows = [...flatRows];
                     newFlatRows[rowIdx] = newRow;
-                    onChange(reshapeValues(newFlatRows, evidence));
+                    onChange(newFlatRows);
                   }
                 }}
               >▲</button>
@@ -249,9 +198,10 @@ function CPDValueEditor({ values, onChange, evidence }) {
                   if (isSingular) {
                     onChange(newRow);
                   } else {
+                    // --- FIX: Directly update the row in the flat list ---
                     let newFlatRows = [...flatRows];
                     newFlatRows[rowIdx] = newRow;
-                    onChange(reshapeValues(newFlatRows, evidence));
+                    onChange(newFlatRows);
                   }
                 }}
               >▼</button>
@@ -525,8 +475,9 @@ function BayesianNetworkManagement() {
                 // When evidence changes, we must reset the values to a default state
                 // that matches the new structure.
                 const combos = getParentCombinations(newEvidence);
+                // --- FIX: Create a simple flat list of rows ---
                 const newValues = combos.length > 1 
-                  ? reshapeValues(Array(combos.length).fill([0.5, 0.5]), newEvidence)
+                  ? Array(combos.length).fill([0.5, 0.5])
                   : [0.5, 0.5];
                 setEditCpd({ ...editCpd, evidence: newEvidence, values: newValues });
               }}
