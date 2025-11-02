@@ -420,14 +420,22 @@ def batch_update_cpds():
                     if variable not in model.nodes:
                         model.add_node(variable)
 
-                    # --- START FIX: Remove faulty reshaping logic ---
-                    # The frontend now sends the data in the correct nested format.
-                    # We can use the values directly.
-                    values_for_pgmpy = np.array(values, dtype=float)
+                    # --- START FINAL FIX ---
+                    # This block ensures the values are in the correct 2D shape for pgmpy,
+                    # whether the node has evidence or not.
+                    values_np = np.array(values, dtype=float)
 
-                    # For singular nodes, the frontend sends [[v1], [v2]], which is correct.
-                    # For complex nodes, the frontend sends the correctly nested array.
-                    # --- END FIX ---
+                    if not evidence:
+                        # For a singular node, pgmpy expects a 2D column vector like [[0.7], [0.3]].
+                        # If we receive a flat array [0.7, 0.3], we reshape it.
+                        if values_np.ndim == 1:
+                            values_for_pgmpy = values_np.reshape(2, 1)
+                        else:
+                            values_for_pgmpy = values_np
+                    else:
+                        # For nodes with evidence, the frontend sends the correct nested structure.
+                        values_for_pgmpy = values_np
+                    # --- END FINAL FIX ---
 
                     # The validation logic remains the same.
                     is_valid = np.all(np.isclose(np.sum(values_for_pgmpy, axis=0), 1.0))
