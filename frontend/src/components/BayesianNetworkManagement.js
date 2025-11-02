@@ -140,8 +140,11 @@ function EvidenceEditor({ evidence, allNodes, variable, onChange }) {
 function CPDValueEditor({ values, onChange, evidence }) {
   const isSingular = !evidence || evidence.length === 0;
 
-  // Use existing flatten logic for complex nodes, but handle singular nodes separately.
-  const flatRows = isSingular ? [values] : flattenValues(values, evidence);
+  // --- START: Definitive Fix for Singular Node Data ---
+  // For singular nodes, the editor works with a flat array like [0.5, 0.5].
+  // The 'values' prop for a singular node might come in as [[0.5], [0.5]]. We must flatten it for the UI.
+  const flatRows = isSingular ? [values.flat()] : flattenValues(values, evidence);
+  // --- END: Definitive Fix for Singular Node Data ---
 
   // Show parent state combos for clarity, only for complex nodes.
   const combos = isSingular ? [] : getParentCombinations(evidence);
@@ -199,7 +202,10 @@ function CPDValueEditor({ values, onChange, evidence }) {
                 onChange={e => {
                   const newRow = autoBalanceRow(row, idx, parseFloat(e.target.value) || 0);
                   if (isSingular) {
-                    onChange(newRow); // For singular, the new row is the entire value set
+                    // --- START: Definitive Fix for Singular Node Data ---
+                    // For singular nodes, we must convert the flat row back to a column vector for saving.
+                    onChange(newRow.map(val => [val]));
+                    // --- END: Definitive Fix for Singular Node Data ---
                   } else {
                     let newFlatRows = [...flatRows];
                     newFlatRows[rowIdx] = newRow;
@@ -212,7 +218,9 @@ function CPDValueEditor({ values, onChange, evidence }) {
                 onClick={() => {
                   const newRow = autoBalanceRow(row, idx, Math.min(1, v + 0.01));
                   if (isSingular) {
-                    onChange(newRow);
+                    // --- START: Definitive Fix for Singular Node Data ---
+                    onChange(newRow.map(val => [val]));
+                    // --- END: Definitive Fix for Singular Node Data ---
                   } else {
                     let newFlatRows = [...flatRows];
                     newFlatRows[rowIdx] = newRow;
@@ -225,7 +233,9 @@ function CPDValueEditor({ values, onChange, evidence }) {
                 onClick={() => {
                   const newRow = autoBalanceRow(row, idx, Math.max(0, v - 0.01));
                   if (isSingular) {
-                    onChange(newRow);
+                    // --- START: Definitive Fix for Singular Node Data ---
+                    onChange(newRow.map(val => [val]));
+                    // --- END: Definitive Fix for Singular Node Data ---
                   } else {
                     let newFlatRows = [...flatRows];
                     newFlatRows[rowIdx] = newRow;
@@ -324,11 +334,14 @@ function BayesianNetworkManagement() {
       return;
     }
 
-    // For singular nodes, pgmpy expects a column vector like [[0.7], [0.3]]
-    // Convert our flat array [0.7, 0.3] to that format before queueing.
+    // --- REMOVE OLD LOGIC ---
+    // The conversion to a column vector is now handled directly in the CPDValueEditor.
+    // This block is no longer needed.
+    /*
     if (isSingular && Array.isArray(values) && (values.length === 0 || !Array.isArray(values[0]))) {
       values = values.map(v => [v]);
     }
+    */
 
     queueChange("update", {
       network: selectedNetwork,
