@@ -1,513 +1,469 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import {
-  listBifFiles,
-  getCompetencies,
-} from "../api";
-import "./TutorQuery.css";
+import "./TutorLog.css";
 
 const API_BASE = "https://cap-2416-it-capstone.onrender.com";
 // const API_BASE = "${API_BASE}";
 
-function TutorQuery() {
-  // ================= STUDENT SELECTION STATES =================
-  const [showStudentDropdown, setShowStudentDropdown] = useState(false);
-  const [students, setStudents] = useState([]);
-  const [selectedStudent, setSelectedStudent] = useState(null);
-  // eslint-disable-next-line no-unused-vars
-  const [studentScores, setStudentScores] = useState([]);
+const defaultNoteEntry = {
+  id: null,
+  tutor_id: null,
+  comment: "",
+  materials: "",
+  updated_at: null,
+  last_updated_by: null,
+  last_updated_by_name: null,
+  author_id: null,
+  author_name: null,
+};
 
-  // State for BIF files and selected file
-  const [bifFiles, setBifFiles] = useState([]);
-  const [selectedBif, setSelectedBif] = useState(null);
+const normalizeSingleNote = (entry) => {
+  const base = { ...defaultNoteEntry, ...entry };
+  const authorId = base.author_id ?? base.last_updated_by ?? base.tutor_id ?? null;
+  const authorName = base.author_name ?? base.last_updated_by_name ?? "";
 
-  // State for competencies from chosen BIF
-  const [competencies, setCompetencies] = useState([]);
+  return {
+    ...base,
+    author_id: authorId,
+    author_name: authorName,
+    last_updated_by: authorId,
+    last_updated_by_name: authorName,
+    comment: (base.comment || "").trim(),
+    materials: (base.materials || "").trim(),
+  };
+};
 
-  // State for tested items (competency + score)
-  const [tested, setTested] = useState([]);
-  const [compInput, setCompInput] = useState("");
-  const [scoreInput, setScoreInput] = useState("");
+const buildNoteKey = (entry) => {
+  if (!entry) return "";
+  if (entry.id != null) return `id:${entry.id}`;
+  if (entry.updated_at) {
+    return `ts:${entry.updated_at}:${entry.comment ?? ""}`;
+  }
+  return `fallback:${entry.author_id ?? ""}:${entry.comment ?? ""}:${entry.materials ?? ""}`;
+};
 
-  // State for assessment results
-  const [manualQueryResults, setManualQueryResults] = useState(null);
-  const [isManualQueryLoading, setIsManualQueryLoading] = useState(false); // <-- Loading state for manual query
+const parseNotePayload = (notePayload = {}) => {
+  if (!notePayload || typeof notePayload !== "object") {
+    return { entries: [], latest: null };
+  }
 
-  // State for student results (like StudentResults.js)
-  const [studentResults, setStudentResults] = useState([]);
-  const [resultsError, setResultsError] = useState(null);
-  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'descending' });
-  const [filterText, setFilterText] = useState("");
-  const [showScoreSortOptions, setShowScoreSortOptions] = useState(false);
-  //State for Auto Query Results
-  const [autoQueryResults, setAutoQueryResults] = useState([]);
-  const [isAutoQueryLoading, setIsAutoQueryLoading] = useState(false); // <-- Loading state for auto query
-  const [tutorId, setTutorId] = useState(null);
-  
-  // Load BIF files on mount
-  useEffect(() => {
-    async function fetchBifList() {
-      const data = await listBifFiles();
-      setBifFiles(data.bif_files || []);
+  const lists = [];
+
+  if (Array.isArray(notePayload.entries)) {
+    lists.push(notePayload.entries);
+  }
+
+  if (Array.isArray(notePayload.history)) {
+    lists.push(notePayload.history);
+  } else if (notePayload.history && typeof notePayload.history === "object") {
+    lists.push(Object.values(notePayload.history));
+  }
+
+  const noteMap = new Map();
+
+  const addEntry = (entry) => {
+    if (!entry || typeof entry !== "object") {
+      return null;
     }
-    fetchBifList();
-  }, []);
+    const normalized = normalizeSingleNote(entry);
+    const key = buildNoteKey(normalized);
+    if (!noteMap.has(key)) {
+      noteMap.set(key, normalized);
+    }
+    return noteMap.get(key) || normalized;
+  };
 
-  // Fetch tutorId on mount
+  lists.forEach((list) => {
+    list.forEach((entry) => addEntry(entry));
+  });
+
+  let latest = null;
+  if (notePayload.latest && typeof notePayload.latest === "object") {
+    latest = addEntry(notePayload.latest);
+  }
+
+  const sortedEntries = Array.from(noteMap.values()).sort((a, b) => {
+    const timeA = a?.updated_at ? new Date(a.updated_at).getTime() : 0;
+    const timeB = b?.updated_at ? new Date(b.updated_at).getTime() : 0;
+    if (timeB !== timeA) return timeB - timeA;
+
+    const idA = Number.isFinite(a?.id) ? a.id : parseInt(a?.id ?? "0", 10) || 0;
+    const idB = Number.isFinite(b?.id) ? b.id : parseInt(b?.id ?? "0", 10) || 0;
+    if (idB !== idA) return idB - idA;
+
+    return (b.comment || "").localeCompare(a.comment || "");
+  });
+
+  const latestKey = buildNoteKey(latest) || (sortedEntries[0] ? buildNoteKey(sortedEntries[0]) : "");
+  const resolvedLatest = latestKey
+    ? sortedEntries.find((entry) => buildNoteKey(entry) === latestKey) || latest
+    : latest;
+
+  return {
+    entries: sortedEntries.map((entry) => ({ ...entry })),
+    latest: resolvedLatest ? { ...resolvedLatest } : null,
+  };
+};
+
+const isSameNoteEntry = (a, b) => {
+  if (!a || !b) return false;
+  if (a.id != null && b.id != null) {
+    return String(a.id) === String(b.id);
+  }
+  if (a.updated_at && b.updated_at) {
+    return a.updated_at === b.updated_at && (a.comment || "") === (b.comment || "");
+  }
+  return false;
+};
+
+function formatDate(value) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString();
+}
+
+export default function TutorLog() {
+  const [tutorId, setTutorId] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortKey, setSortKey] = useState("name");
+  const [selectedStudentId, setSelectedStudentId] = useState(null);
+
+  const [results, setResults] = useState([]);                // assessment history
+  const [noteEntries, setNoteEntries] = useState([]);
+  const [latestNote, setLatestNote] = useState(null);
+  const [noteDraft, setNoteDraft] = useState("");
+  const [materials, setMaterials] = useState([]);            // uploaded files list
+  const [fileToUpload, setFileToUpload] = useState(null);
+
+  const [statusMessage, setStatusMessage] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingStudents, setIsLoadingStudents] = useState(true);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [roleMismatch, setRoleMismatch] = useState(false);
+
+  // who am i
   useEffect(() => {
-    axios.get(`${API_BASE}/api/me`, { withCredentials: true })
-      .then(res => setTutorId(res.data.tutorId))
-      .catch(console.error);
+    setIsLoadingStudents(true);
+    axios
+      .get(`${API_BASE}/api/me`, { withCredentials: true })
+      .then((res) => {
+        if (res.data.role !== "Tutor") {
+          setRoleMismatch(true);
+          return;
+        }
+        setTutorId(res.data.tutorId);
+      })
+      .catch(() => setRoleMismatch(true))
+      .finally(() => setIsLoadingStudents(false));
   }, []);
 
-  // Fetch students assigned to this tutor
+  // student list for this tutor
   useEffect(() => {
     if (!tutorId) return;
-    axios.get(`${API_BASE}/api/teacher/students?tutor_id=${tutorId}`)
-      .then(res => setStudents(res.data)) // keep full objects
-      .catch(console.error);
+    setIsLoadingStudents(true);
+    axios
+      .get(`${API_BASE}/api/teacher/tutor/${tutorId}/students`, { withCredentials: true })
+      .then((res) => setStudents(res.data || []))
+      .catch(() => setStudents([]))
+      .finally(() => setIsLoadingStudents(false));
   }, [tutorId]);
 
-  // Fetch student results when a student is selected
- useEffect(() => {
-  if (!selectedStudent) {
-    setStudentResults([]);
-    return;
-  }
-  axios
-    .get(`${API_BASE}/api/teacher/results/${selectedStudent}`, { withCredentials: true })
-    .then((res) => {
-      setStudentResults(res.data);
-      console.log("studentResults", res.data); // <--- Add this line here
-    })
-    .catch((err) => {
-      console.error(err);
-      setResultsError("Failed to load results.");
-    });
-}, [selectedStudent]);
-
-  // ================== STUDENT LOGIC ====================
-  const handleToggleStudentDropdown = () => {
-    setShowStudentDropdown(!showStudentDropdown);
-  };
-
-  const handleSelectStudent = (name) => {
-    setSelectedStudent(name);
-    setShowStudentDropdown(false);
-    setStudentScores([]); // Clear previous scores if needed
-  };
-
-  // When a BIF file is selected
-  const handleSelectBif = (filename) => {
-    setSelectedBif(filename);
-    // Clear previous data
-    setCompetencies([]);
-    setTested([]);
-    setManualQueryResults(null);
-  };
-  
-  
-
-  // Load competencies for the selected BIF
-  const handleLoadCompetencies = async () => {
-    if (!selectedBif) {
-      alert("Please select a BIF file first!");
+  // details for selected student (history, note, materials)
+  useEffect(() => {
+    if (!tutorId || !selectedStudentId) {
+      setResults([]);
+      setNoteEntries([]);
+      setLatestNote(null);
+      setNoteDraft("");
+      setMaterials([]);
       return;
     }
-    try {
-      const data = await getCompetencies(selectedBif);
-      if (data.error) {
-        alert(data.error);
-      } else {
-        setCompetencies(data.competencies || []);
+    setIsLoadingDetails(true);
+
+    const base = `${API_BASE}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}`;
+    Promise.all([
+      axios.get(`${base}/results`, { withCredentials: true }).catch(() => ({ data: [] })),
+      axios.get(`${base}/note`, { withCredentials: true }).catch(() => ({ data: null })),
+      axios.get(`${base}/materials`, { withCredentials: true }).catch(() => ({ data: [] })),
+    ])
+      .then(([r1, r2, r3]) => {
+        setResults(r1.data || []);
+        const parsedNotes = parseNotePayload(r2.data);
+        setNoteEntries(parsedNotes.entries);
+        setLatestNote(parsedNotes.latest);
+        setNoteDraft("");
+        setMaterials(r3.data || []);
+      })
+      .finally(() => setIsLoadingDetails(false));
+  }, [tutorId, selectedStudentId]);
+
+  const filteredStudents = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return students;
+    return students.filter((s) => s.studentName.toLowerCase().includes(term));
+  }, [students, searchTerm]);
+
+  const sortedStudents = useMemo(() => {
+    const data = [...filteredStudents];
+    switch (sortKey) {
+      case "assigned": {
+        const g = (d) => (d ? new Date(d).getTime() : 0);
+        return data.sort((a, b) => g(b.firstAssignedAt) - g(a.firstAssignedAt));
       }
-    } catch (err) {
-      console.error("Error loading competencies:", err);
+      case "score": {
+        const g = (x) => (x?.averagePercent ?? -1);
+        return data.sort((a, b) => g(b) - g(a));
+      }
+      case "name":
+      default:
+        return data.sort((a, b) => a.studentName.localeCompare(b.studentName, undefined, { sensitivity: "base" }));
     }
-  };
+  }, [filteredStudents, sortKey]);
 
-  // When a competency button is clicked, auto-fill the competency field
-  const handleSelectCompetency = (comp) => {
-    setCompInput(comp);
-  };
+  const selectedStudent = useMemo(
+    () => students.find((s) => s.studentId === selectedStudentId) || null,
+    [students, selectedStudentId]
+  );
 
-  // Add the competency and score to the tested list
-  const handleAddTested = () => {
-    if (!compInput || !scoreInput) return;
-    // We only assess one at a time, so we replace the array content
-    setTested([{ competency: compInput, score: parseInt(scoreInput) }]);
-    setCompInput("");
-    setScoreInput("");
-  };
+  const averageDisplay = (v) => (v == null ? "No data yet" : `${v.toFixed(1)}%`);
+  const entriesToRender = noteEntries.length > 0
+    ? noteEntries
+    : latestNote
+    ? [{ ...defaultNoteEntry, ...latestNote }]
+    : [];
+  const noteLatest = latestNote || (entriesToRender.length > 0 ? entriesToRender[0] : null);
 
-  // Assess the tested competencies (and get mastery probabilities if applicable)
-  const handleAssess = async () => {
-    if (!selectedBif || tested.length === 0) {
-      alert("Please select a BIF file and add a tested competency.");
+  const handleSaveNote = async () => {
+    if (!tutorId || !selectedStudentId) return;
+    if (!noteDraft.trim()) {
+      setStatusMessage("Add some details before saving a note entry.");
       return;
     }
-    const itemToAssess = tested[0];
-    setIsManualQueryLoading(true); // <-- Set loading true
+    setIsSaving(true);
+    setStatusMessage("");
     try {
       const res = await axios.post(
-        `${API_BASE}/api/teacher/manual-query`,
-        {
-          bif_file: selectedBif,
-          competency: itemToAssess.competency,
-          score: itemToAssess.score,
-          total: 10, // --- FIX: Send a total score of 10 ---
-        },
+        `${API_BASE}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}/note`,
+        { comment: noteDraft },
         { withCredentials: true }
       );
-      setManualQueryResults(res.data);
-    } catch (err) {
-      console.error("Error assessing competencies:", err);
-      setManualQueryResults({ error: "Failed to fetch manual query result." });
+      const parsed = parseNotePayload(res.data);
+      setNoteEntries(parsed.entries);
+      setLatestNote(parsed.latest);
+      setNoteDraft("");
+      setStatusMessage("Notes saved successfully.");
+    } catch (error) {
+      const apiMessage = error?.response?.data?.error;
+      setStatusMessage(apiMessage || "Failed to save notes. Please try again.");
     } finally {
-      setIsManualQueryLoading(false); // <-- Set loading false
+      setIsSaving(false);
     }
   };
 
-  // Sorting and filtering for student results
-  const handleSort = (key, direction) => {
-    if (direction) {
-      setSortConfig({ key, direction });
-    } else {
-      const newDirection = sortConfig.key === key && sortConfig.direction === 'ascending' ? 'descending' : 'ascending';
-      setSortConfig({ key, direction: newDirection });
-    }
-    setShowScoreSortOptions(false);
-  };
-
-  // Handler for Auto Query Results
-  const handleAutoQuery = async (resultId) => {
-    setIsAutoQueryLoading(true); // <-- Set loading true
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    if (!tutorId || !selectedStudentId || !fileToUpload) return;
+    const form = new FormData();
+    form.append("file", fileToUpload);
     try {
-      const res = await axios.get(
-        // --- FIX: Use the resultId in the URL ---
-        `${API_BASE}/api/teacher/auto-query-result/${resultId}`,
+      await axios.post(
+        `${API_BASE}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}/materials`,
+        form,
+        { withCredentials: true, headers: { "Content-Type": "multipart/form-data" } }
+      );
+      setFileToUpload(null);
+      // refresh list
+      const list = await axios.get(
+        `${API_BASE}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}/materials`,
         { withCredentials: true }
       );
-      setAutoQueryResults(res.data);
+      setMaterials(list.data || []);
     } catch (err) {
-      setAutoQueryResults({ error: "Failed to fetch automatic query result." });
-    } finally {
-      setIsAutoQueryLoading(false); // <-- Set loading false
+      alert("Upload failed.");
     }
   };
 
-  const filteredAndSortedResults = useMemo(() => {
-    let sortableResults = [...studentResults];
-    if (filterText) {
-      sortableResults = sortableResults.filter(r =>
-        r.examName && r.examName.toLowerCase().includes(filterText.toLowerCase())
-      );
-    }
-    sortableResults.sort((a, b) => {
-      let aValue = a[sortConfig.key];
-      let bValue = b[sortConfig.key];
-      if (sortConfig.key === 'date') {
-        aValue = new Date(aValue);
-        bValue = new Date(bValue);
-      }
-      if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
-      if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
-      return 0;
-    });
-    return sortableResults;
-  }, [studentResults, sortConfig, filterText]);
-
-
-  // Format mastery probability as percentage
-  function formatPercent(val) {
-    if (typeof val !== "number" || isNaN(val)) return "";
-    return (val * 100).toFixed(2) + "%";
-  }
+  if (roleMismatch) return <div className="tutor-log-empty-state">Tutor Log is only available for tutors.</div>;
 
   return (
-  <div className="content-box">
-    <h2 className="section-title">Tutor Query</h2>
-    <h3>Automatic Query</h3>
+    <div className="tutor-log-container">
+      <header>
+        <h1>Tutor Log</h1>
+        <p>
+          Review your assigned students, inspect their assessment history, and capture session notes or teaching resources to revisit later.
+        </p>
+      </header>
 
-    {/* Student selection */}
-    <div style={{ marginBottom: "1.5rem" }}>
-      <button
-        className="btn btn-primary"
-        style={{ marginBottom: "0.5rem" }}
-        onClick={handleToggleStudentDropdown}
-      >
-        {selectedStudent ? `Student: ${selectedStudent}` : "Select Student"}
-      </button>
-      {showStudentDropdown && (
-        <ul className="dropdown-list" style={{ background: "#222", color: "#fff", listStyle: "none", padding: 0, borderRadius: 4, boxShadow: "0 2px 8px #0008" }}>
-          {students.map((s) => (
-  <li
-    key={s.id}
-    className="dropdown-item"
-    style={{ cursor: "pointer", padding: "0.5rem", borderBottom: "1px solid #333" }}
-    onClick={() => handleSelectStudent(s.id)}
-  >
-    {s.name}
-  </li>
-))}
-        </ul>
-      )}
-    </div>
+      <div className="tutor-log-layout">
+        <aside className="tutor-log-sidebar">
+          <h3>Your Students</h3>
+          <input
+            type="text"
+            placeholder="Search by student name"
+            className="tutor-log-search"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <select className="tutor-log-sort" value={sortKey} onChange={(e) => setSortKey(e.target.value)}>
+            <option value="name">Sort: Name (A–Z)</option>
+            <option value="assigned">Sort: Date Assigned (Newest)</option>
+            <option value="score">Sort: Average Score (High → Low)</option>
+          </select>
 
-    {/* Student Results Table */}
-    {selectedStudent && (
-  <div className="section" style={{ marginBottom: "2rem" }}>
-    <h3 style={{ margin: "0.5rem 0" }}>Results for {selectedStudent}</h3>
-    <div style={{ marginBottom: "0.5rem", display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-      <button className="btn btn-secondary" onClick={() => handleSort("date")}>Sort by Date</button>
-      <button className="btn btn-secondary" onClick={() => setShowScoreSortOptions(!showScoreSortOptions)}>
-        Sort by Score
-      </button>
-      {showScoreSortOptions && (
-        <>
-          <button className="btn btn-secondary" onClick={() => handleSort('score', 'ascending')}>Ascending</button>
-          <button className="btn btn-secondary" onClick={() => handleSort('score', 'descending')}>Descending</button>
-        </>
-      )}
-      <input
-        className="form-control"
-        style={{ marginLeft: "1rem", width: 200, display: "inline-block" }}
-        type="text"
-        value={filterText}
-        onChange={(e) => setFilterText(e.target.value)}
-        placeholder="Filter by Exam Name"
-      />
-    </div>
-    {resultsError && <div style={{ color: "red" }}>{resultsError}</div>}
-    <table className="results-table" style={{ width: "100%", borderCollapse: "collapse", marginTop: "1rem", background: "#181818" }}>
-      <thead>
-        <tr style={{ borderBottom: "1px solid #444" }}>
-          <th style={{ textAlign: "left", padding: "8px" }}>Date</th>
-          <th style={{ textAlign: "left", padding: "8px" }}>Exam Name</th>
-          <th style={{ textAlign: "left", padding: "8px" }}>Score</th>
-          <th style={{ textAlign: "left", padding: "8px" }}>Auto Query</th>
-        </tr>
-      </thead>
-      <tbody>
-        {filteredAndSortedResults.map((r, idx) => (
-          <tr key={idx} style={{ borderBottom: "1px solid #333" }}>
-            <td style={{ padding: "8px" }}>{new Date(r.date).toLocaleDateString()}</td>
-            <td style={{ padding: "8px" }}>{r.examName}</td>
-            <td style={{ padding: "8px" }}>{r.score}</td>
-            <td style={{ padding: "8px" }}>
-              {r.result_id && (
-                <button
-                  className="btn btn-info"
-                  // --- FIX: Pass the unique result_id ---
-                  onClick={() => handleAutoQuery(r.result_id)}
-                >
-                  Auto Query
-                </button>
-              )}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-)}
-
-    {/* Auto Query Button and Results */}
-{selectedStudent && (
-  <div className="section" style={{ marginBottom: "2rem" }}>
-    {isAutoQueryLoading ? (
-      <div>Loading automatic query result...</div>
-    ) : autoQueryResults && autoQueryResults.competency ? (
-      <div>
-        <div>
-          <b>Competency:</b> {autoQueryResults.competency}
-        </div>
-        <div>
-          <b>Score:</b> {autoQueryResults.score} / {autoQueryResults.total}
-        </div>
-        {autoQueryResults.mastery_probabilities && (
-          <div>
-            <b>Mastery Probabilities:</b>
-            <ul style={{ paddingLeft: 16 }}>
-              {Object.entries(autoQueryResults.mastery_probabilities).map(([k, v]) => (
-                <li key={k}>
-                  {k}: <b>{formatPercent(v)}</b>
+          {isLoadingStudents ? (
+            <div>Loading students…</div>
+          ) : sortedStudents.length === 0 ? (
+            <div>No students assigned yet.</div>
+          ) : (
+            <ul className="tutor-log-student-list">
+              {sortedStudents.map((s) => (
+                <li key={s.studentId}>
+                  <button
+                    className={`tutor-log-student-button ${s.studentId === selectedStudentId ? "active" : ""}`}
+                    onClick={() => setSelectedStudentId(s.studentId)}
+                  >
+                    <strong>{s.studentName}</strong>
+                    <div style={{ fontSize: "0.85rem", color: "#555" }}>Assigned: {formatDate(s.firstAssignedAt)}</div>
+                    <div style={{ fontSize: "0.85rem", color: "#555" }}>Avg. Score: {averageDisplay(s.averagePercent)}</div>
+                  </button>
                 </li>
               ))}
             </ul>
-          </div>
-        )}
-        {autoQueryResults.next_focus && (
-          <div>
-            <b>Next Focus:</b> {autoQueryResults.next_focus}
-          </div>
-        )}
-        {autoQueryResults.error && <span style={{ color: "red" }}>Error: {autoQueryResults.error}</span>}
+          )}
+        </aside>
+
+        <section className="tutor-log-details">
+          {!selectedStudentId ? (
+            <div className="tutor-log-empty-state">Select a student to view their progress and notes.</div>
+          ) : isLoadingDetails ? (
+            <div>Loading student details…</div>
+          ) : (
+            <>
+              <h2>{selectedStudent?.studentName}</h2>
+              <p>
+                Assigned on {formatDate(selectedStudent?.firstAssignedAt)} · Last activity {formatDate(selectedStudent?.lastSubmittedAt)} ·
+                Assessments completed: {selectedStudent?.completedAssessments || 0}
+              </p>
+
+              <h3>Assessment History</h3>
+              {results.length === 0 ? (
+                <div className="tutor-log-empty-state">No assessments recorded for this student yet.</div>
+              ) : (
+                <table className="tutor-log-table">
+                  <thead>
+                    <tr>
+                      <th>Assessment</th>
+                      <th>Score</th>
+                      <th>Attempts</th>
+                      <th>Submitted</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {results.map((r) => (
+                      <tr key={r.result_id}>
+                        <td>{r.assessment_name}</td>
+                        <td>{r.score} / {r.total}</td>
+                        <td>{r.attempt_number}</td>
+                        <td>{formatDate(r.submitted_at)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+
+              <div className="tutor-log-note">
+                <h3>Tutor Notes</h3>
+                <textarea
+                  rows={4}
+                  placeholder={
+                    noteLatest
+                      ? "Add a follow-up note; previous entries remain below for reference."
+                      : "Capture your first note for this student."
+                  }
+                  value={noteDraft}
+                  onChange={(e) => setNoteDraft(e.target.value)}
+                />
+                <button onClick={handleSaveNote} disabled={isSaving}>
+                  {isSaving ? "Saving…" : "Save Note Entry"}
+                </button>
+                {statusMessage && <p style={{ marginTop: "0.75rem", color: "#2d72d9" }}>{statusMessage}</p>}
+                <div className="tutor-log-note-history-wrapper">
+                  <h4>Saved note history</h4>
+                  {entriesToRender.length === 0 ? (
+                    <p style={{ color: "#666" }}>No notes recorded yet.</p>
+                  ) : (
+                    <table className="tutor-log-note-history-table">
+                      <thead>
+                        <tr>
+                          <th>Date saved</th>
+                          <th>Tutor</th>
+                          <th>Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {entriesToRender.map((entry, index) => {
+                          const isLatest = noteLatest ? isSameNoteEntry(entry, noteLatest) : index === 0;
+                          return (
+                            <tr
+                              key={entry.id ?? `${entry.updated_at}-${index}`}
+                              className={isLatest ? "tutor-log-note-history-latest" : ""}
+                            >
+                              <td>{formatDate(entry.updated_at)}</td>
+                              <td>
+                                {entry.author_name || entry.last_updated_by_name || entry.author_id || entry.tutor_id || "Unknown tutor"}
+                              </td>
+                              <td>
+                                <div className="tutor-log-note-text">
+                                  {isLatest && <span className="tutor-log-note-badge">Latest</span>}
+                                  {entry.comment || "(No comment provided)"}
+                                </div>
+                                {entry.materials && (
+                                  <div className="tutor-log-note-materials">Shared resources: {entry.materials}</div>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+
+              <div className="tutor-log-note">
+                <h3>Teaching Materials</h3>
+                <p style={{ marginTop: 0, color: "#555" }}>
+                  Upload educational materials only (PDF, DOC, DOCX, PPT, PPTX). Each file must be 20&nbsp;MB or smaller so
+                  it can be shared with future tutors and the student.
+                </p>
+                <form onSubmit={handleUpload}>
+                  <input type="file" onChange={(e) => setFileToUpload(e.target.files?.[0] || null)} />
+                  <button type="submit" disabled={!fileToUpload}>Upload</button>
+                </form>
+                {materials.length === 0 ? (
+                  <p style={{ color: "#666" }}>No files uploaded yet.</p>
+                ) : (
+                  <ul style={{ marginTop: "0.75rem" }}>
+                    {materials.map((m) => (
+                      <li key={m.id} style={{ marginBottom: "0.35rem" }}>
+                        <a href={`${API_BASE}/api/teacher/tutor/materials/${m.id}/download`} target="_blank" rel="noreferrer">
+                          {m.original_filename}
+                        </a>{" "}
+                        <span style={{ color: "#777", fontSize: "0.9rem" }}>
+                          · {formatDate(m.uploaded_at)}
+                          {m.uploader_name ? ` · Uploaded by ${m.uploader_name}` : ""}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </>
+          )}
+        </section>
       </div>
-    ) : autoQueryResults && autoQueryResults.error ? (
-      <div style={{ color: "red" }}>{autoQueryResults.error}</div>
-    ) : (
-      <div>No automatic query result yet.</div>
-    )}
-  </div>
-)}
-<h3 style={{ marginTop: "2rem" }}>Manual Query</h3>
-    {/* BIF file selection */}
-    <div className="section">
-      <h3>BIF Files</h3>
-      <ul className="bif-list" style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", padding: 0, listStyle: "none" }}>
-        {bifFiles.map((file) => (
-          <li key={file}>
-            <button
-              className={`btn btn-secondary${selectedBif === file ? " active" : ""}`}
-              style={{
-                padding: "0.4rem 0.8rem",
-                borderRadius: "4px",
-                backgroundColor: selectedBif === file ? "#007bff" : "#444",
-                color: "#fff",
-                border: "none"
-              }}
-              onClick={() => handleSelectBif(file)}
-            >
-              {file}
-            </button>
-          </li>
-        ))}
-      </ul>
-      <button
-        className="btn btn-success"
-        onClick={handleLoadCompetencies}
-        disabled={!selectedBif}
-        style={{ marginTop: "0.5rem" }}
-      >
-        Load Competencies
-      </button>
     </div>
-
-    {/* Competency selection */}
-    {competencies.length > 0 && (
-      <div className="section">
-        <h3>Competencies</h3>
-        <div className="competencies-list" style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-          {competencies.map((comp) => (
-            <button
-              key={comp}
-              className="btn btn-info"
-              style={{
-                padding: "0.4rem 0.8rem",
-                borderRadius: "4px",
-                border: "none",
-                backgroundColor: "#17a2b8",
-                color: "#fff"
-              }}
-              onClick={() => handleSelectCompetency(comp)}
-            >
-              {comp}
-            </button>
-          ))}
-        </div>
-      </div>
-    )}
-
-  
-
-   {/* Add tested competency and score */}
-<div className="section" style={{ marginTop: "1rem" }}>
-  <input
-    className="form-control"
-    type="text"
-    placeholder="Competency"
-    value={compInput}
-    onChange={(e) => setCompInput(e.target.value)}
-    style={{ width: 200, marginRight: 8 }}
-    disabled={competencies.length === 0} // Disable if no competencies are loaded
-  />
-  <input
-    className="form-control"
-    type="number"
-    placeholder="Score (out of 10)" // --- FIX: Update placeholder text ---
-    value={scoreInput}
-    onChange={(e) => setScoreInput(e.target.value)}
-    style={{ width: 140, marginRight: 8 }} // Increased width for new placeholder
-    min="0"
-    max="10" // --- FIX: Set max score to 10 ---
-    disabled={competencies.length === 0 || !compInput || tested.length > 0}
-  />
-  <button
-    className="btn btn-primary"
-    onClick={handleAddTested}
-    // --- FIX: Also disable if an item is already in the 'tested' list ---
-    disabled={competencies.length === 0 || !compInput || !scoreInput || tested.length > 0}
-  >
-    Add
-  </button>
-</div>
-
-    {/* Tested competencies list */}
-    {tested.length > 0 && (
-      <div className="section">
-        <h4>Tested Competencies</h4>
-        <ul style={{ padding: 0, listStyle: "none" }}>
-          {tested.map((t, idx) => (
-            <li key={idx} style={{ marginBottom: 4 }}>
-              {t.competency}: {t.score}
-              {/* --- FIX: Add a button to clear the tested item and re-enable inputs --- */}
-              <button 
-                onClick={() => setTested([])} 
-                style={{marginLeft: '1em', fontSize: '0.8em', cursor: 'pointer'}}
-              >
-                Clear
-              </button>
-            </li>
-          ))}
-        </ul>
-        <button className="btn btn-success" onClick={handleAssess}>Assess</button>
-      </div>
-    )}
-
-    {/* Manual Query Results */}
-    {isManualQueryLoading ? (
-      <div className="section">
-        <h4>Manual Query Result</h4>
-        <p>Loading manual query result...</p>
-      </div>
-    ) : manualQueryResults && (
-      <div className="section">
-        <h4>Manual Query Result</h4>
-        {manualQueryResults.competency ? (
-          <div>
-            <div>
-              <b>Competency:</b> {manualQueryResults.competency}
-            </div>
-            <div>
-              {/* --- FIX: Display the score and total correctly --- */}
-              <b>Score:</b> {manualQueryResults.score} / {manualQueryResults.total}
-            </div>
-            {manualQueryResults.mastery_probabilities && (
-              <div>
-                <b>Mastery Probabilities:</b>
-                <ul style={{ paddingLeft: 16 }}>
-                  {Object.entries(manualQueryResults.mastery_probabilities).map(([k, v]) => (
-                    <li key={k}>
-                      {k}: <b>{formatPercent(v)}</b>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {manualQueryResults.next_focus && (
-              <div>
-                <b>Next Focus:</b> {manualQueryResults.next_focus}
-              </div>
-            )}
-          </div>
-        ) : manualQueryResults.error ? (
-          <div style={{ color: "red" }}>{manualQueryResults.error}</div>
-        ) : null}
-      </div>
-    )}
-  </div>
-);
+  );
 }
-
-export default TutorQuery;
