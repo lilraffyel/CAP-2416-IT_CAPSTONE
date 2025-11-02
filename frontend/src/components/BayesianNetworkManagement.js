@@ -299,7 +299,11 @@ function BayesianNetworkManagement() {
 
   const handleAddCpd = () => {
     setIsAdding(true); // We are in "add" mode
-    setEditCpd({ variable: "", values: [0.5, 0.5], evidence: [] });
+    // --- START: Definitive Fix ---
+    // Initialize 'values' as a list containing one row.
+    // This ensures the data structure is consistent from the start.
+    setEditCpd({ variable: "", values: [[0.5, 0.5]], evidence: [] });
+    // --- END: Definitive Fix ---
   };
 
   const handleRemoveQueuedChange = (indexToRemove) => {
