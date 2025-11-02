@@ -258,16 +258,15 @@ function BayesianNetworkManagement() {
   };
 
  const handleEditClick = (variable, cpd) => {
-    let values = cpd.values;
+    // --- START: Definitive Fix ---
+    // The 'cpd.values' from the backend for a complex node is already a list of rows.
+    // For a singular node, it's a flat array. We need to wrap it in a list of rows.
     const isSingular = !cpd.evidence || cpd.evidence.length === 0;
-
-    // For singular nodes, ensure the value is a flat array like [0.7, 0.3]
-    if (isSingular && Array.isArray(values) && values.length > 0 && Array.isArray(values[0])) {
-      values = values.flat();
-    }
+    const valuesForEditor = isSingular ? [cpd.values] : cpd.values;
+    // --- END: Definitive Fix ---
     
     setIsAdding(false); // We are in "edit" mode
-    setEditCpd({ variable, ...cpd, values });
+    setEditCpd({ variable, ...cpd, values: valuesForEditor });
   };
 
   const handleSaveCpd = () => {
