@@ -426,11 +426,13 @@ def batch_update_cpds():
                     values_np = np.array(values, dtype=float)
 
                     if not evidence:
-                        # For a singular node, pgmpy expects a 2D column vector like [[0.7], [0.3]].
-                        # If we receive a flat array [0.7, 0.3], we reshape it.
+                        # For a singular node, the frontend sends a flat array like [0.7, 0.3].
+                        # pgmpy requires a 2D column vector like [[0.7], [0.3]].
+                        # We must reshape it.
                         if values_np.ndim == 1:
-                            values_for_pgmpy = values_np.reshape(2, 1)
+                            values_for_pgmpy = values_np.reshape(len(values_np), 1)
                         else:
+                            # If it's already 2D for some reason, trust it.
                             values_for_pgmpy = values_np
                     else:
                         # For nodes with evidence, the frontend sends the correct nested structure.

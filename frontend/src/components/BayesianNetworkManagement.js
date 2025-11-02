@@ -255,13 +255,15 @@ function BayesianNetworkManagement() {
   const allNodes = cpds.map(([variable, _]) => variable);
 
   useEffect(() => {
-    setNetworks([
-      "comparing.bif",
-      "estimate.bif",
-      "money.bif",
-      "place-value.bif",
-      "ordering.bif",
-    ]);
+    // --- FIX: Fetch BIF files from the backend instead of hardcoding ---
+    axios.get(`${API_BASE}/api/biffiles`, { withCredentials: true })
+      .then(res => {
+        setNetworks(res.data.bif_files || []);
+      })
+      .catch(err => {
+        console.error("Failed to fetch BIF files:", err);
+        setNetworks([]); // Set to empty array on error
+      });
   }, []);
 
   useEffect(() => {
@@ -316,16 +318,12 @@ function BayesianNetworkManagement() {
 
   const handleSaveCpd = () => {
     let { variable, values, evidence } = editCpd;
-    const isSingular = !evidence || evidence.length === 0;
 
-    // For singular nodes, pgmpy expects a column vector like [[0.7], [0.3]]
-    // Convert our flat array [0.7, 0.3] to that format before queueing.
-    if (isSingular && Array.isArray(values) && (values.length === 0 || !Array.isArray(values[0]))) {
-      values = values.map(v => [v]);
-    }
-
-    // --- FIX: The 'values' are already in the correct nested format from the editor.
-    // No further reshaping is needed here. The backend will now receive the correct structure.
+    // --- START FINAL FIX ---
+    // REMOVE the logic that converts a singular node's values to a 2D column vector.
+    // The frontend will now consistently send a flat array for singular nodes,
+    // and a nested array for complex nodes. The backend will handle all formatting.
+    // --- END FINAL FIX ---
 
     queueChange("update", {
       network: selectedNetwork,
