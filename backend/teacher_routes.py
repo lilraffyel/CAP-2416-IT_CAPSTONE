@@ -67,7 +67,23 @@ def ensure_tutor_notes_table(cursor):
         except (TypeError, KeyError):
             table_sql = table_row[0] if table_row else None
 
-    if table_sql and "UNIQUE" in table_sql.upper():
+    normalized_sql = (table_sql or "").upper()
+
+    needs_rebuild = "UNIQUE" in normalized_sql
+
+    if not needs_rebuild:
+        cursor.execute("PRAGMA index_list('tutor_notes')")
+        for index_info in cursor.fetchall():
+            # PRAGMA index_list returns (seq, name, unique, origin, partial)
+            try:
+                is_unique = bool(index_info[2])
+            except (IndexError, TypeError):
+                is_unique = False
+            if is_unique:
+                needs_rebuild = True
+                break
+
+    if needs_rebuild:
         cursor.execute("ALTER TABLE tutor_notes RENAME TO tutor_notes_legacy")
         cursor.connection.commit()
 
@@ -164,9 +180,15 @@ def build_tutor_note_payload(cursor, student_id):
             }
         )
 
-    latest = history[0] if history else None
+    latest = history[0].copy() if history else None
+    entries = [entry.copy() for entry in history]
 
-    return {"latest": latest, "history": history}
+    return {
+        "latest": latest.copy() if latest else None,
+        "history": [entry.copy() for entry in entries],
+        "entries": [entry.copy() for entry in entries],
+        "count": len(entries),
+    }
 
 
 # ─── File Upload Storage Helper ─────────────────────────────────────────────
