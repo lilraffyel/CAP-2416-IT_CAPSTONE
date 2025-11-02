@@ -5,7 +5,9 @@ import "./TutorLog.css";
 const API_BASE = "https://cap-2416-it-capstone.onrender.com";
 // const API_BASE = "${API_BASE}";
 
-const emptyNote = {
+const emptyNoteEntry = {
+  id: null,
+  tutor_id: null,
   comment: "",
   materials: "",
   updated_at: null,
@@ -13,10 +15,59 @@ const emptyNote = {
   last_updated_by_name: null,
 };
 
-const normalizeNote = (notePayload = {}) => ({
-  ...emptyNote,
-  ...((notePayload && typeof notePayload === "object") ? notePayload : {}),
-});
+const emptyNoteState = {
+  latest: null,
+  history: [],
+};
+
+const normalizeNoteResponse = (notePayload = {}) => {
+  if (!notePayload || typeof notePayload !== "object") {
+    return { ...emptyNoteState };
+  }
+
+  const history = Array.isArray(notePayload.history)
+    ? notePayload.history.map((entry) => ({ ...emptyNoteEntry, ...(entry || {}) }))
+    : [];
+
+  const toTime = (entry) => {
+    if (!entry || !entry.updated_at) return 0;
+    const value = new Date(entry.updated_at).getTime();
+    return Number.isNaN(value) ? 0 : value;
+  };
+
+  history.sort((a, b) => {
+    const diff = toTime(b) - toTime(a);
+    if (diff !== 0) return diff;
+    const idA = typeof a.id === "number" ? a.id : 0;
+    const idB = typeof b.id === "number" ? b.id : 0;
+    return idB - idA;
+  });
+
+  const latest = notePayload.latest
+    ? { ...emptyNoteEntry, ...notePayload.latest }
+    : history[0] || null;
+
+  if (latest) {
+    const matchesExisting = history.some((entry) => {
+      if (entry.id != null && latest.id != null) {
+        return entry.id === latest.id;
+      }
+      if (entry.updated_at && latest.updated_at) {
+        return entry.updated_at === latest.updated_at && entry.comment === latest.comment;
+      }
+      return false;
+    });
+
+    if (!matchesExisting) {
+      history.unshift(latest);
+    }
+  }
+
+  return {
+    latest,
+    history,
+  };
+};
 
 function formatDate(value) {
   if (!value) return "-";
@@ -33,7 +84,8 @@ export default function TutorLog() {
   const [selectedStudentId, setSelectedStudentId] = useState(null);
 
   const [results, setResults] = useState([]);                // assessment history
-  const [note, setNote] = useState(() => normalizeNote());
+  const [noteData, setNoteData] = useState(() => ({ ...emptyNoteState }));
+  const [noteDraft, setNoteDraft] = useState("");
   const [materials, setMaterials] = useState([]);            // uploaded files list
   const [fileToUpload, setFileToUpload] = useState(null);
 
@@ -74,7 +126,8 @@ export default function TutorLog() {
   useEffect(() => {
     if (!tutorId || !selectedStudentId) {
       setResults([]);
-      setNote(normalizeNote());
+      setNoteData({ ...emptyNoteState });
+      setNoteDraft("");
       setMaterials([]);
       return;
     }
@@ -88,7 +141,8 @@ export default function TutorLog() {
     ])
       .then(([r1, r2, r3]) => {
         setResults(r1.data || []);
-        setNote(normalizeNote(r2.data));
+        setNoteData(normalizeNoteResponse(r2.data));
+        setNoteDraft("");
         setMaterials(r3.data || []);
       })
       .finally(() => setIsLoadingDetails(false));
@@ -123,29 +177,30 @@ export default function TutorLog() {
   );
 
   const averageDisplay = (v) => (v == null ? "No data yet" : `${v.toFixed(1)}%`);
+  const noteHistory = noteData.history || [];
+  const noteLatest = noteHistory.length > 0 ? noteHistory[0] : noteData.latest;
+  const previousNotes = noteHistory.slice(1);
 
   const handleSaveNote = async () => {
     if (!tutorId || !selectedStudentId) return;
+    if (!noteDraft.trim()) {
+      setStatusMessage("Add some details before saving a note entry.");
+      return;
+    }
     setIsSaving(true);
     setStatusMessage("");
     try {
       const res = await axios.post(
         `${API_BASE}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}/note`,
-        { comment: note.comment, materials: note.materials },
+        { comment: noteDraft },
         { withCredentials: true }
       );
-      setNote(
-        normalizeNote({
-          comment: res.data.comment,
-          materials: res.data.materials,
-          updated_at: res.data.updated_at,
-          last_updated_by: res.data.last_updated_by ?? null,
-          last_updated_by_name: res.data.last_updated_by_name ?? null,
-        })
-      );
+      setNoteData(normalizeNoteResponse(res.data));
+      setNoteDraft("");
       setStatusMessage("Notes saved successfully.");
-    } catch {
-      setStatusMessage("Failed to save notes. Please try again.");
+    } catch (error) {
+      const apiMessage = error?.response?.data?.error;
+      setStatusMessage(apiMessage || "Failed to save notes. Please try again.");
     } finally {
       setIsSaving(false);
     }
@@ -266,20 +321,68 @@ export default function TutorLog() {
                 <h3>Tutor Notes</h3>
                 <textarea
                   rows={4}
-                  placeholder="Add observations, next steps, or tutoring highlights"
-                  value={note.comment || ""}
-                  onChange={(e) => setNote({ ...note, comment: e.target.value })}
+                  placeholder={
+                    noteLatest
+                      ? "Add a follow-up note; previous entries remain below for reference."
+                      : "Capture your first note for this student."
+                  }
+                  value={noteDraft}
+                  onChange={(e) => setNoteDraft(e.target.value)}
                 />
                 <button onClick={handleSaveNote} disabled={isSaving}>
-                  {isSaving ? "Saving…" : "Save Notes"}
+                  {isSaving ? "Saving…" : "Save Note Entry"}
                 </button>
                 {statusMessage && <p style={{ marginTop: "0.75rem", color: "#2d72d9" }}>{statusMessage}</p>}
-                {note.updated_at && (
-                  <p style={{ fontSize: "0.85rem", color: "#999" }}>
-                    Last updated {formatDate(note.updated_at)}
-                    {note.last_updated_by_name ? ` by ${note.last_updated_by_name}` : ""}
-                  </p>
-                )}
+                <div className="tutor-log-note-latest">
+                  {noteLatest ? (
+                    <>
+                      <h4>Latest entry</h4>
+                      <div className="tutor-log-note-meta">
+                        <span>{formatDate(noteLatest.updated_at)}</span>
+                        {noteLatest.last_updated_by_name && (
+                          <span> · {noteLatest.last_updated_by_name}</span>
+                        )}
+                      </div>
+                      <p className="tutor-log-note-text">{noteLatest.comment || "(No comment provided)"}</p>
+                      {noteLatest.materials && (
+                        <p className="tutor-log-note-materials">Shared resources: {noteLatest.materials}</p>
+                      )}
+                    </>
+                  ) : (
+                    <p style={{ color: "#666" }}>No notes recorded yet.</p>
+                  )}
+                </div>
+
+                <div className="tutor-log-note-history-wrapper">
+                  <h4>Previous entries</h4>
+                  {previousNotes.length === 0 ? (
+                    <p style={{ color: "#666" }}>No earlier notes on record for this student.</p>
+                  ) : (
+                    <table className="tutor-log-note-history-table">
+                      <thead>
+                        <tr>
+                          <th>Date saved</th>
+                          <th>Tutor</th>
+                          <th>Notes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {previousNotes.map((entry, index) => (
+                          <tr key={entry.id ?? `${entry.updated_at}-${index}`}>
+                            <td>{formatDate(entry.updated_at)}</td>
+                            <td>{entry.last_updated_by_name || "Unknown tutor"}</td>
+                            <td>
+                              <div className="tutor-log-note-text">{entry.comment || "(No comment provided)"}</div>
+                              {entry.materials && (
+                                <div className="tutor-log-note-materials">Shared resources: {entry.materials}</div>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
               </div>
 
               <div className="tutor-log-note">
