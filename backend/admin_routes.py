@@ -401,71 +401,54 @@ def batch_update_cpds():
                     values = change["values"]
                     evidence = change.get("evidence", [])
 
-                    # --- START: Enhanced Debugging ---
-                    print(f"--- PROCESSING CHANGE ---")
-                    print(f"Variable: {variable}")
-                    print(f"Evidence: {evidence}")
-                    print(f"Received Values: {values}")
-                    # --- END: Enhanced Debugging ---
-
                     try:
-                        # --- START: Definitive Backend Logic V2 ---
                         values_np = np.array(values, dtype=float)
+                    except ValueError:
+                        results.append(f"Error for {variable}: 'values' field contains non-numeric data.")
+                        continue
 
-                        # The frontend sends a simple list of rows.
-                        # We need to check if the number of rows matches the parent combinations.
-                        num_parents = len(evidence)
-                        expected_rows = 2 ** num_parents
-                        
-                        if values_np.shape[0] != expected_rows:
-                            # This error message will be visible in the UI
-                            raise ValueError(f"Incorrect number of probability rows. Expected {expected_rows}, but received {values_np.shape[0]}.")
+                    # --- START: Definitive Fix for Old Code ---
+                    # Ensure the variable AND all its parents exist in the model before creating the CPD.
+                    # This is the crucial step that fixes the "doesn't have proper parents" error.
+                    if variable not in model.nodes:
+                        model.add_node(variable)
+                    for parent in evidence:
+                        if parent not in model.nodes:
+                            model.add_node(parent)
+                    # --- END: Definitive Fix for Old Code ---
 
-                        if not evidence:
-                            # Case 1: Singular node.
-                            # Frontend sends [[0.7, 0.3]]. pgmpy needs [[0.7], [0.3]].
-                            values_for_pgmpy = values_np.T
-                        else:
-                            # Case 2: Node with evidence.
-                            # The UI provides rows ordered by parent combinations (00, 01, 10, 11).
-                            # pgmpy needs a transposed, multi-dimensional array.
-                            # The order of values in pgmpy is child, then parents in reverse order.
-                            # Example for 2 parents: (child, parent2, parent1)
-                            shape = tuple([2] * (num_parents + 1))
-                            # Transpose the flat list of rows and then reshape.
-                            values_for_pgmpy = values_np.T.reshape(shape)
-                        
-                        # --- END: Definitive Backend Logic V2 ---
-
-                        # The validation logic now checks columns
-                        is_valid = np.all(np.isclose(np.sum(values_for_pgmpy, axis=0), 1.0))
-                        if not is_valid:
-                            results.append(f"Error for {variable}: Probabilities in one or more columns do not sum to 1.")
+                    if not evidence:
+                        if values_np.shape != (2, 1):
+                            results.append(f"Error for singular node {variable}: Expected a column vector of shape (2, 1).")
                             continue
-                        
-                        evidence_card = [2] * len(evidence) if evidence else None
-                        
-                        all_model_nodes = model.nodes()
-                        cpd_state_names = {node: ['0', '1'] for node in all_model_nodes}
-                        if variable not in cpd_state_names:
-                            cpd_state_names[variable] = ['0', '1']
+                        values_for_pgmpy = values_np
+                    else:
+                        num_parent_combos = int(np.prod(values_np.shape) / 2)
+                        values_for_pgmpy = values_np.reshape(num_parent_combos, 2).T
 
-                        cpd = TabularCPD(
-                            variable=variable,
-                            variable_card=2,
-                            values=values_for_pgmpy.tolist(),
-                            evidence=evidence if evidence else None,
-                            evidence_card=evidence_card,
-                            state_names=cpd_state_names
-                        )
-                        model.add_cpds(cpd)
-                        results.append(f"Queued update for {variable}.")
+                    is_valid = np.isclose(values_for_pgmpy.sum(), 1.0) if not evidence else np.all(np.isclose(values_for_pgmpy.sum(axis=0), 1.0))
+                    if not is_valid:
+                        results.append(f"Error for {variable}: Probabilities do not sum to 1 correctly.")
+                        continue
+                    
+                    evidence_card = [2] * len(evidence) if evidence else None
 
-                    except Exception as e:
-                        results.append(f"Error processing {variable}: {str(e)}")
-                        # Also print the error to the console for immediate feedback
-                        print(f"!!! EXCEPTION for {variable}: {str(e)}")
-                        continue # Continue to the next change
+                    # --- START: Definitive Fix for Old Code ---
+                    # The state_names dictionary must contain ALL nodes in the model, not just the current ones.
+                    all_model_nodes = model.nodes()
+                    cpd_state_names = {node: ['0', '1'] for node in all_model_nodes}
+                    # --- END: Definitive Fix for Old Code ---
+
+                    cpd = TabularCPD(
+                        variable=variable,
+                        variable_card=2,
+                        values=values_for_pgmpy.tolist(),
+                        evidence=evidence if evidence else None,
+                        evidence_card=evidence_card,
+                        state_names=cpd_state_names
+                    )
+                    model.add_cpds(cpd)
+                    results.append(f"Queued update for {variable}.")
 
                 elif change["type"] == "delete":
                     variable = change["variable"]
