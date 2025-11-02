@@ -324,10 +324,13 @@ function BayesianNetworkManagement() {
       values = values.map(v => [v]);
     }
 
+    // --- FIX: The 'values' are already in the correct nested format from the editor.
+    // No further reshaping is needed here. The backend will now receive the correct structure.
+
     queueChange("update", {
       network: selectedNetwork,
       variable: variable,
-      values: values,
+      values: values, // Send the 'values' as-is
       evidence: evidence,
     });
     setEditCpd(null);

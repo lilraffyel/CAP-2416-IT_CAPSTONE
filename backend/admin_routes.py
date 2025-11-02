@@ -420,18 +420,19 @@ def batch_update_cpds():
                     if variable not in model.nodes:
                         model.add_node(variable)
 
-                    if not evidence:
-                        if values_np.shape != (2, 1):
-                            results.append(f"Error for singular node {variable}: Expected a column vector of shape (2, 1).")
-                            continue
-                        values_for_pgmpy = values_np
-                    else:
-                        num_parent_combos = int(np.prod(values_np.shape) / 2)
-                        values_for_pgmpy = values_np.reshape(num_parent_combos, 2).T
+                    # --- START FIX: Remove faulty reshaping logic ---
+                    # The frontend now sends the data in the correct nested format.
+                    # We can use the values directly.
+                    values_for_pgmpy = np.array(values, dtype=float)
 
-                    is_valid = np.isclose(values_for_pgmpy.sum(), 1.0) if not evidence else np.all(np.isclose(values_for_pgmpy.sum(axis=0), 1.0))
+                    # For singular nodes, the frontend sends [[v1], [v2]], which is correct.
+                    # For complex nodes, the frontend sends the correctly nested array.
+                    # --- END FIX ---
+
+                    # The validation logic remains the same.
+                    is_valid = np.all(np.isclose(np.sum(values_for_pgmpy, axis=0), 1.0))
                     if not is_valid:
-                        results.append(f"Error for {variable}: Probabilities do not sum to 1 correctly.")
+                        results.append(f"Error for {variable}: Probabilities in one or more columns do not sum to 1.")
                         continue
                     
                     evidence_card = [2] * len(evidence) if evidence else None
@@ -449,7 +450,7 @@ def batch_update_cpds():
                     cpd = TabularCPD(
                         variable=variable,
                         variable_card=2,
-                        values=values_for_pgmpy.tolist(),
+                        values=values_for_pgmpy.tolist(), # Use the validated numpy array
                         evidence=evidence if evidence else None,
                         evidence_card=evidence_card,
                         state_names=cpd_state_names
