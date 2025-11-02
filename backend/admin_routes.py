@@ -401,6 +401,16 @@ def batch_update_cpds():
                     values = change["values"]
                     evidence = change.get("evidence", [])
 
+                    # --- START FIX ---
+                    # Ensure the variable and all its parents exist in the model before creating the CPD.
+                    # This is the crucial step to prevent both errors.
+                    if variable not in model.nodes:
+                        model.add_node(variable)
+                    for parent in evidence:
+                        if parent not in model.nodes:
+                            model.add_node(parent)
+                    # --- END FIX ---
+
                     try:
                         values_np = np.array(values, dtype=float)
                     except ValueError:
