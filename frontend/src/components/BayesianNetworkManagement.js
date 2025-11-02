@@ -451,20 +451,28 @@ function BayesianNetworkManagement() {
           <br />
           <label>
             Evidence:
-            {/* --- REPLACE: Use the new EvidenceEditor component --- */}
+            {/* --- START: Definitive Fix --- */}
             <EvidenceEditor
               evidence={editCpd.evidence}
               allNodes={allNodes}
               variable={editCpd.variable}
               onChange={newEvidence => {
-                const combos = getParentCombinations(newEvidence);
-                // Always create a simple list of rows
-                const newValues = combos.length > 1 
-                  ? Array(combos.length).fill([0.5, 0.5])
-                  : [[0.5, 0.5]]; // Singular nodes also use a list of rows
-                setEditCpd({ ...editCpd, evidence: newEvidence, values: newValues });
+                // This handler is now the single source of truth for evidence changes.
+                // It must always check if the number of rows needs to be updated.
+                const newCombos = getParentCombinations(newEvidence);
+                const expectedRows = newCombos.length > 1 ? newCombos.length : 1;
+
+                // If the number of rows in state doesn't match what's needed, reset it.
+                if (editCpd.values.length !== expectedRows) {
+                  const newValues = Array(expectedRows).fill([0.5, 0.5]);
+                  setEditCpd({ ...editCpd, evidence: newEvidence, values: newValues });
+                } else {
+                  // If row count is correct, just update the evidence list.
+                  setEditCpd({ ...editCpd, evidence: newEvidence });
+                }
               }}
             />
+            {/* --- END: Definitive Fix --- */}
           </label>
           <br />
           <label>
