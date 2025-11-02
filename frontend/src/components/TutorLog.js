@@ -13,6 +13,8 @@ const emptyNoteEntry = {
   updated_at: null,
   last_updated_by: null,
   last_updated_by_name: null,
+  author_id: null,
+  author_name: null,
 };
 
 const emptyNoteState = {
@@ -25,9 +27,31 @@ const normalizeNoteResponse = (notePayload = {}) => {
     return { ...emptyNoteState };
   }
 
-  const history = Array.isArray(notePayload.history)
-    ? notePayload.history.map((entry) => ({ ...emptyNoteEntry, ...(entry || {}) }))
+  const rawHistory = Array.isArray(notePayload.history)
+    ? notePayload.history
+    : notePayload.history && typeof notePayload.history === "object"
+    ? Object.values(notePayload.history)
     : [];
+
+  const history = rawHistory
+    .filter((entry) => entry && typeof entry === "object")
+    .map((entry) => {
+      const normalized = { ...emptyNoteEntry, ...entry };
+      const authorId =
+        normalized.author_id ?? normalized.last_updated_by ?? normalized.tutor_id ?? null;
+      const authorName =
+        normalized.author_name ?? normalized.last_updated_by_name ?? "";
+
+      return {
+        ...normalized,
+        author_id: authorId,
+        author_name: authorName,
+        last_updated_by: authorId,
+        last_updated_by_name: authorName,
+        comment: (normalized.comment || "").trim(),
+        materials: (normalized.materials || "").trim(),
+      };
+    });
 
   const toTime = (entry) => {
     if (!entry || !entry.updated_at) return 0;
@@ -43,8 +67,13 @@ const normalizeNoteResponse = (notePayload = {}) => {
     return idB - idA;
   });
 
-  const latest = notePayload.latest
-    ? { ...emptyNoteEntry, ...notePayload.latest }
+  const latest = notePayload.latest && typeof notePayload.latest === "object"
+    ? {
+        ...emptyNoteEntry,
+        ...notePayload.latest,
+        comment: (notePayload.latest.comment || "").trim(),
+        materials: (notePayload.latest.materials || "").trim(),
+      }
     : history[0] || null;
 
   if (latest) {
@@ -178,8 +207,12 @@ export default function TutorLog() {
 
   const averageDisplay = (v) => (v == null ? "No data yet" : `${v.toFixed(1)}%`);
   const noteHistory = noteData.history || [];
-  const noteLatest = noteHistory.length > 0 ? noteHistory[0] : noteData.latest;
-  const previousNotes = noteHistory.slice(1);
+  const noteEntries = noteHistory.length > 0
+    ? noteHistory
+    : noteData.latest
+    ? [{ ...emptyNoteEntry, ...noteData.latest }]
+    : [];
+  const noteLatest = noteEntries.length > 0 ? noteEntries[0] : null;
 
   const handleSaveNote = async () => {
     if (!tutorId || !selectedStudentId) return;
@@ -333,30 +366,10 @@ export default function TutorLog() {
                   {isSaving ? "Saving…" : "Save Note Entry"}
                 </button>
                 {statusMessage && <p style={{ marginTop: "0.75rem", color: "#2d72d9" }}>{statusMessage}</p>}
-                <div className="tutor-log-note-latest">
-                  {noteLatest ? (
-                    <>
-                      <h4>Latest entry</h4>
-                      <div className="tutor-log-note-meta">
-                        <span>{formatDate(noteLatest.updated_at)}</span>
-                        {noteLatest.last_updated_by_name && (
-                          <span> · {noteLatest.last_updated_by_name}</span>
-                        )}
-                      </div>
-                      <p className="tutor-log-note-text">{noteLatest.comment || "(No comment provided)"}</p>
-                      {noteLatest.materials && (
-                        <p className="tutor-log-note-materials">Shared resources: {noteLatest.materials}</p>
-                      )}
-                    </>
-                  ) : (
-                    <p style={{ color: "#666" }}>No notes recorded yet.</p>
-                  )}
-                </div>
-
                 <div className="tutor-log-note-history-wrapper">
-                  <h4>Previous entries</h4>
-                  {previousNotes.length === 0 ? (
-                    <p style={{ color: "#666" }}>No earlier notes on record for this student.</p>
+                  <h4>Saved note history</h4>
+                  {noteEntries.length === 0 ? (
+                    <p style={{ color: "#666" }}>No notes recorded yet.</p>
                   ) : (
                     <table className="tutor-log-note-history-table">
                       <thead>
@@ -367,12 +380,20 @@ export default function TutorLog() {
                         </tr>
                       </thead>
                       <tbody>
-                        {previousNotes.map((entry, index) => (
-                          <tr key={entry.id ?? `${entry.updated_at}-${index}`}>
+                        {noteEntries.map((entry, index) => (
+                          <tr
+                            key={entry.id ?? `${entry.updated_at}-${index}`}
+                            className={index === 0 ? "tutor-log-note-history-latest" : ""}
+                          >
                             <td>{formatDate(entry.updated_at)}</td>
-                            <td>{entry.last_updated_by_name || "Unknown tutor"}</td>
                             <td>
-                              <div className="tutor-log-note-text">{entry.comment || "(No comment provided)"}</div>
+                              {entry.author_name || entry.last_updated_by_name || entry.author_id || entry.tutor_id || "Unknown tutor"}
+                            </td>
+                            <td>
+                              <div className="tutor-log-note-text">
+                                {index === 0 && <span className="tutor-log-note-badge">Latest</span>}
+                                {entry.comment || "(No comment provided)"}
+                              </div>
                               {entry.materials && (
                                 <div className="tutor-log-note-materials">Shared resources: {entry.materials}</div>
                               )}
@@ -388,7 +409,8 @@ export default function TutorLog() {
               <div className="tutor-log-note">
                 <h3>Teaching Materials</h3>
                 <p style={{ marginTop: 0, color: "#555" }}>
-                  Upload PDFs, Word docs, or text files you shared in this session. Students can download them later.
+                  Upload educational materials only (PDF, DOC, DOCX, PPT, PPTX). Each file must be 20&nbsp;MB or smaller so
+                  it can be shared with future tutors and the student.
                 </p>
                 <form onSubmit={handleUpload}>
                   <input type="file" onChange={(e) => setFileToUpload(e.target.files?.[0] || null)} />
