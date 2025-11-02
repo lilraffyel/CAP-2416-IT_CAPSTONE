@@ -5,6 +5,19 @@ import "./TutorLog.css";
 const API_BASE = "https://cap-2416-it-capstone.onrender.com";
 // const API_BASE = "${API_BASE}";
 
+const emptyNote = {
+  comment: "",
+  materials: "",
+  updated_at: null,
+  last_updated_by: null,
+  last_updated_by_name: null,
+};
+
+const normalizeNote = (notePayload = {}) => ({
+  ...emptyNote,
+  ...((notePayload && typeof notePayload === "object") ? notePayload : {}),
+});
+
 function formatDate(value) {
   if (!value) return "-";
   const date = new Date(value);
@@ -20,7 +33,7 @@ export default function TutorLog() {
   const [selectedStudentId, setSelectedStudentId] = useState(null);
 
   const [results, setResults] = useState([]);                // assessment history
-  const [note, setNote] = useState({ comment: "", materials: "", updated_at: null });
+  const [note, setNote] = useState(() => normalizeNote());
   const [materials, setMaterials] = useState([]);            // uploaded files list
   const [fileToUpload, setFileToUpload] = useState(null);
 
@@ -61,7 +74,7 @@ export default function TutorLog() {
   useEffect(() => {
     if (!tutorId || !selectedStudentId) {
       setResults([]);
-      setNote({ comment: "", materials: "", updated_at: null });
+      setNote(normalizeNote());
       setMaterials([]);
       return;
     }
@@ -70,12 +83,12 @@ export default function TutorLog() {
     const base = `${API_BASE}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}`;
     Promise.all([
       axios.get(`${base}/results`, { withCredentials: true }).catch(() => ({ data: [] })),
-      axios.get(`${base}/note`, { withCredentials: true }).catch(() => ({ data: { comment: "", materials: "", updated_at: null }})),
+      axios.get(`${base}/note`, { withCredentials: true }).catch(() => ({ data: null })),
       axios.get(`${base}/materials`, { withCredentials: true }).catch(() => ({ data: [] })),
     ])
       .then(([r1, r2, r3]) => {
         setResults(r1.data || []);
-        setNote(r2.data || { comment: "", materials: "", updated_at: null });
+        setNote(normalizeNote(r2.data));
         setMaterials(r3.data || []);
       })
       .finally(() => setIsLoadingDetails(false));
@@ -121,7 +134,15 @@ export default function TutorLog() {
         { comment: note.comment, materials: note.materials },
         { withCredentials: true }
       );
-      setNote({ comment: res.data.comment, materials: res.data.materials, updated_at: res.data.updated_at });
+      setNote(
+        normalizeNote({
+          comment: res.data.comment,
+          materials: res.data.materials,
+          updated_at: res.data.updated_at,
+          last_updated_by: res.data.last_updated_by ?? null,
+          last_updated_by_name: res.data.last_updated_by_name ?? null,
+        })
+      );
       setStatusMessage("Notes saved successfully.");
     } catch {
       setStatusMessage("Failed to save notes. Please try again.");
@@ -253,7 +274,12 @@ export default function TutorLog() {
                   {isSaving ? "Saving…" : "Save Notes"}
                 </button>
                 {statusMessage && <p style={{ marginTop: "0.75rem", color: "#2d72d9" }}>{statusMessage}</p>}
-                {note.updated_at && <p style={{ fontSize: "0.85rem", color: "#999" }}>Last updated {formatDate(note.updated_at)}</p>}
+                {note.updated_at && (
+                  <p style={{ fontSize: "0.85rem", color: "#999" }}>
+                    Last updated {formatDate(note.updated_at)}
+                    {note.last_updated_by_name ? ` by ${note.last_updated_by_name}` : ""}
+                  </p>
+                )}
               </div>
 
               <div className="tutor-log-note">
@@ -274,7 +300,10 @@ export default function TutorLog() {
                         <a href={`${API_BASE}/api/teacher/tutor/materials/${m.id}/download`} target="_blank" rel="noreferrer">
                           {m.original_filename}
                         </a>{" "}
-                        <span style={{ color: "#777", fontSize: "0.9rem" }}>· {formatDate(m.uploaded_at)}</span>
+                        <span style={{ color: "#777", fontSize: "0.9rem" }}>
+                          · {formatDate(m.uploaded_at)}
+                          {m.uploader_name ? ` · Uploaded by ${m.uploader_name}` : ""}
+                        </span>
                       </li>
                     ))}
                   </ul>
