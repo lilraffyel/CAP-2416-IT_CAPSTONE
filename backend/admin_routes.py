@@ -435,7 +435,16 @@ def batch_update_cpds():
                         continue
                     
                     evidence_card = [2] * len(evidence) if evidence else None
-                    cpd_state_names = {variable: ['0', '1'], **{parent: ['0', '1'] for parent in evidence}}
+                    
+                    # --- START FIX ---
+                    # The state_names dictionary must contain ALL nodes currently in the model,
+                    # not just the variable and its immediate evidence.
+                    all_model_nodes = model.nodes()
+                    cpd_state_names = {node: ['0', '1'] for node in all_model_nodes}
+                    # Ensure the new variable is included if it's not already in the model nodes list
+                    if variable not in cpd_state_names:
+                        cpd_state_names[variable] = ['0', '1']
+                    # --- END FIX ---
 
                     cpd = TabularCPD(
                         variable=variable,
