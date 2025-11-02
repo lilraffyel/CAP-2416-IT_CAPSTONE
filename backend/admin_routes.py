@@ -420,26 +420,24 @@ def batch_update_cpds():
                     if variable not in model.nodes:
                         model.add_node(variable)
 
-                    # --- START FINAL FIX ---
-                    # This block ensures the values are in the correct 2D shape for pgmpy,
-                    # whether the node has evidence or not.
+                    # --- START: Robust Backend Data Handling ---
                     values_np = np.array(values, dtype=float)
 
                     if not evidence:
-                        # For a singular node, the frontend sends a flat array like [0.7, 0.3].
-                        # pgmpy requires a 2D column vector like [[0.7], [0.3]].
-                        # We must reshape it.
+                        # For a singular node, frontend sends a flat array [0.7, 0.3].
+                        # pgmpy requires a 2D column vector like [[0.7], [0.3]]. Reshape it.
                         if values_np.ndim == 1:
                             values_for_pgmpy = values_np.reshape(len(values_np), 1)
                         else:
-                            # If it's already 2D for some reason, trust it.
                             values_for_pgmpy = values_np
                     else:
-                        # For nodes with evidence, the frontend sends the correct nested structure.
-                        values_for_pgmpy = values_np
-                    # --- END FINAL FIX ---
+                        # For nodes with evidence, the frontend now sends the correct nested structure.
+                        # pgmpy's TabularCPD expects values where columns sum to 1.
+                        # Our UI provides rows that sum to 1. We must transpose the data.
+                        values_for_pgmpy = values_np.T
+                    # --- END: Robust Backend Data Handling ---
 
-                    # The validation logic remains the same.
+                    # The validation logic now checks columns after transpose
                     is_valid = np.all(np.isclose(np.sum(values_for_pgmpy, axis=0), 1.0))
                     if not is_valid:
                         results.append(f"Error for {variable}: Probabilities in one or more columns do not sum to 1.")
