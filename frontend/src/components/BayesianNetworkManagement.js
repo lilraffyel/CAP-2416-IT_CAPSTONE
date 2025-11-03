@@ -344,7 +344,7 @@ function BayesianNetworkManagement() {
           {isLoading ? <p>Loading network structure...</p> : renderStructure(cpds)}
 
           <h3>Conditional Probability Tables (CPDs)</h3>
-          <button onClick={handleAddCpd}>Add New CPD</button>
+          {/* <button onClick={handleAddCpd}>Add New CPD</button> */}
           {pendingChanges.length > 0 && (
             <button style={{ marginLeft: "1em" }} onClick={handleSaveAll}>
               Save Changes & Reload BIFs
@@ -440,7 +440,7 @@ function BayesianNetworkManagement() {
             <input
               value={editCpd.variable}
               onChange={e => setEditCpd({ ...editCpd, variable: e.target.value })}
-              disabled={!isAdding}
+              disabled // Always disabled
             />
           </label>
           <br />
@@ -449,6 +449,7 @@ function BayesianNetworkManagement() {
             <input
               value={editCpd.evidence.join(",")}
               onChange={e => setEditCpd({ ...editCpd, evidence: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })}
+              disabled // Always disabled
             />
           </label>
           <br />
