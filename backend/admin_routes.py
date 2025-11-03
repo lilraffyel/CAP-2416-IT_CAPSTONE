@@ -211,7 +211,7 @@ def assign_tutor():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # --- FIX: Prevent duplicate assignments for the same student-tutor pair ---
+    # Prevent duplicate assignments
     cursor.execute("""
         SELECT 1 FROM tutor_assignments WHERE student_id = ? AND tutor_id = ?
     """, (student_id, tutor_id))
@@ -371,7 +371,6 @@ def delete_cpd():
 def batch_update_cpds():
     import numpy as np
     from collections import defaultdict
-    from pgmpy.models import BayesianNetwork
 
     changes = request.get_json().get("changes", [])
     results = []
@@ -386,16 +385,20 @@ def batch_update_cpds():
 
     for network, network_changes in grouped_changes.items():
         try:
+            # Load the model ONCE for this network using the lazy-loader
             model_data = get_model(network)
             if not model_data:
+                # We need a model to apply changes to. If it doesn't exist, create an empty one.
+                from pgmpy.models import BayesianNetwork
                 model = BayesianNetwork()
             else:
                 model = model_data["model"]
 
+            # Apply all changes for this network to the same model object
             for change in network_changes:
                 if change["type"] == "update":
                     variable = change["variable"]
-                    values = change.get("values", [])
+                    values = change["values"]
                     evidence = change.get("evidence", [])
 
                     try:
@@ -404,59 +407,26 @@ def batch_update_cpds():
                         results.append(f"Error for {variable}: 'values' field contains non-numeric data.")
                         continue
 
-                    if values_np.ndim == 1:
-                        if not evidence:
-                            values_np = values_np.reshape(-1, 1)
-                        else:
-                            results.append(f"Error for {variable}: Values for complex node must be 2D.")
-                            continue
-                    elif values_np.ndim != 2:
-                        results.append(f"Error for {variable}: Values must be a 2D array.")
-                        continue
-
-                    # Prepare values for pgmpy (transpose for complex nodes to match pgmpy's column-major expectation)
-                    if not evidence:
-                        values_for_pgmpy = values_np  # Already (2, 1)
-                        if values_for_pgmpy.shape != (2, 1):
-                            results.append(f"Error for singular node {variable}: Expected shape (2, 1), got {values_for_pgmpy.shape}.")
-                            continue
-                    else:
-                        values_for_pgmpy = values_np.T  # Transpose to (2, num_parent_combos)
-                        num_parent_combos = 2 ** len(evidence)
-                        if values_for_pgmpy.shape != (2, num_parent_combos):
-                            results.append(f"Error for {variable}: Transposed shape {values_for_pgmpy.shape} doesn't match expected (2, {num_parent_combos}).")
-                            continue
-
-                    # Validate probabilities sum to 1 BEFORE modifying the model
-                    if not evidence:
-                        if not np.isclose(values_for_pgmpy.sum(), 1.0):
-                            results.append(f"Error for {variable}: Probabilities do not sum to 1.")
-                            continue
-                    else:
-                        if not np.all(np.isclose(values_for_pgmpy.sum(axis=0), 1.0)):
-                            results.append(f"Error for {variable}: Each column must sum to 1.")
-                            continue
-
-                    # Now modify the model
                     if variable not in model.nodes:
                         model.add_node(variable)
-                    for parent in evidence:
-                        if parent not in model.nodes:
-                            model.add_node(parent)
-                        if not model.has_edge(parent, variable):
-                            model.add_edge(parent, variable)
 
-                    # Remove existing CPD if it exists
-                    existing_cpds = [cpd for cpd in model.get_cpds() if cpd.variable == variable]
-                    if existing_cpds:
-                        model.remove_cpds(variable)
+                    if not evidence:
+                        if values_np.shape != (2, 1):
+                            results.append(f"Error for singular node {variable}: Expected a column vector of shape (2, 1).")
+                            continue
+                        values_for_pgmpy = values_np
+                    else:
+                        num_parent_combos = int(np.prod(values_np.shape) / 2)
+                        values_for_pgmpy = values_np.reshape(num_parent_combos, 2).T
 
-                    # State names
-                    all_model_nodes = list(model.nodes())
-                    cpd_state_names = {node: ['0', '1'] for node in all_model_nodes}
-
-                    # Create and add CPD
+                    is_valid = np.isclose(values_for_pgmpy.sum(), 1.0) if not evidence else np.all(np.isclose(values_for_pgmpy.sum(axis=0), 1.0))
+                    if not is_valid:
+                        results.append(f"Error for {variable}: Probabilities do not sum to 1 correctly.")
+                        continue
+                    
                     evidence_card = [2] * len(evidence) if evidence else None
+                    cpd_state_names = {variable: ['0', '1'], **{parent: ['0', '1'] for parent in evidence}}
+
                     cpd = TabularCPD(
                         variable=variable,
                         variable_card=2,
@@ -466,16 +436,18 @@ def batch_update_cpds():
                         state_names=cpd_state_names
                     )
                     model.add_cpds(cpd)
-                    results.append(f"Queued update/add for {variable}.")
+                    results.append(f"Queued update for {variable}.")
 
                 elif change["type"] == "delete":
                     variable = change["variable"]
+                    # Check if the node actually exists before trying to remove it
                     if variable in model.nodes:
-                        model.remove_node(variable)
+                        model.remove_node(variable) # Use remove_node to clear everything
                         results.append(f"Queued delete for {variable}.")
                     else:
-                        results.append(f"Skipped delete for {variable}: Not found in model.")
+                        results.append(f"Skipped delete for {variable} as it was not found in the model.")
 
+            # After all changes for this network are applied, save it
             model.check_model()
             writer = BIFWriter(model)
             new_content = str(writer)
@@ -486,6 +458,7 @@ def batch_update_cpds():
             conn.commit()
             conn.close()
             
+            # --- OPTIMIZATION: Invalidate only the modified network from the cache ---
             clear_model_cache(network)
             results.append(f"Successfully saved and cleared cache for {network}.")
 

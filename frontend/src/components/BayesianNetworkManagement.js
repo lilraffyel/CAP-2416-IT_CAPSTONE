@@ -89,59 +89,12 @@ function reshapeValues(flat, evidence) {
   return nest(arr, shape.slice(0, -1));
 }
 
-// --- NEW: Component for dynamically editing evidence with dropdowns ---
-function EvidenceEditor({ evidence, allNodes, variable, onChange }) {
-  const availableNodes = allNodes.filter(n => n !== variable && !evidence.includes(n));
-
-  const handleEvidenceChange = (index, newValue) => {
-    const newEvidence = [...evidence];
-    newEvidence[index] = newValue;
-    onChange(newEvidence.filter(Boolean)); // Filter out any empty selections
-  };
-
-  const addEvidence = () => {
-    onChange([...evidence, ""]); // Add a placeholder for a new dropdown
-  };
-
-  const removeEvidence = (index) => {
-    const newEvidence = evidence.filter((_, i) => i !== index);
-    onChange(newEvidence);
-  };
-
-  return (
-    <div>
-      {evidence.map((ev, index) => (
-        <div key={index} style={{ marginBottom: '5px' }}>
-          <select
-            value={ev}
-            onChange={(e) => handleEvidenceChange(index, e.target.value)}
-          >
-            <option value="">-- Select Evidence --</option>
-            {/* Add the currently selected node back to the list of options for this dropdown */}
-            {ev && <option value={ev}>{ev}</option>}
-            {availableNodes.map(node => (
-              <option key={node} value={node}>{node}</option>
-            ))}
-          </select>
-          <button type="button" onClick={() => removeEvidence(index)} style={{ marginLeft: '10px' }}>
-            Remove
-          </button>
-        </div>
-      ))}
-      <button type="button" onClick={addEvidence}>
-        Add Evidence
-      </button>
-    </div>
-  );
-}
-
-
 // CPD editor with auto-balance and up/down buttons for flat and nested CPDs
 function CPDValueEditor({ values, onChange, evidence }) {
   const isSingular = !evidence || evidence.length === 0;
 
-  // For singular nodes, work with flat array but output as column vector
-  const flatRows = isSingular ? [values.flat()] : flattenValues(values, evidence);
+  // Use existing flatten logic for complex nodes, but handle singular nodes separately.
+  const flatRows = isSingular ? [values] : flattenValues(values, evidence);
 
   // Show parent state combos for clarity, only for complex nodes.
   const combos = isSingular ? [] : getParentCombinations(evidence);
@@ -199,8 +152,7 @@ function CPDValueEditor({ values, onChange, evidence }) {
                 onChange={e => {
                   const newRow = autoBalanceRow(row, idx, parseFloat(e.target.value) || 0);
                   if (isSingular) {
-                    // Output as column vector: [[v1], [v2]]
-                    onChange(newRow.map(val => [val]));
+                    onChange(newRow); // For singular, the new row is the entire value set
                   } else {
                     let newFlatRows = [...flatRows];
                     newFlatRows[rowIdx] = newRow;
@@ -213,9 +165,7 @@ function CPDValueEditor({ values, onChange, evidence }) {
                 onClick={() => {
                   const newRow = autoBalanceRow(row, idx, Math.min(1, v + 0.01));
                   if (isSingular) {
-                    // --- START: Definitive Fix for Singular Node Data ---
-                    onChange(newRow.map(val => [val]));
-                    // --- END: Definitive Fix for Singular Node Data ---
+                    onChange(newRow);
                   } else {
                     let newFlatRows = [...flatRows];
                     newFlatRows[rowIdx] = newRow;
@@ -228,9 +178,7 @@ function CPDValueEditor({ values, onChange, evidence }) {
                 onClick={() => {
                   const newRow = autoBalanceRow(row, idx, Math.max(0, v - 0.01));
                   if (isSingular) {
-                    // --- START: Definitive Fix for Singular Node Data ---
-                    onChange(newRow.map(val => [val]));
-                    // --- END: Definitive Fix for Singular Node Data ---
+                    onChange(newRow);
                   } else {
                     let newFlatRows = [...flatRows];
                     newFlatRows[rowIdx] = newRow;
@@ -256,17 +204,14 @@ function BayesianNetworkManagement() {
   const [pendingChanges, setPendingChanges] = useState([]);
   const [isLoading, setIsLoading] = useState(false); // <-- Add loading state
 
-  // --- NEW: Derive all node names from the CPDs list ---
-  const allNodes = cpds.map(([variable, _]) => variable);
-
   useEffect(() => {
     setNetworks([
       "comparing.bif",
-      "counting.bif",
       "estimate.bif",
       "money.bif",
       "place-value.bif",
       "ordering.bif",
+      "counting.bif",
       "fractions.bif",
       "operations.bif",
     ]);
@@ -326,38 +271,10 @@ function BayesianNetworkManagement() {
     let { variable, values, evidence } = editCpd;
     const isSingular = !evidence || evidence.length === 0;
 
-    if (!variable || variable.trim() === "") {
-      setMessage("Error: Variable name cannot be empty.");
-      return;
-    }
-
-    // --- FIX: Always send values as 2D array of shape [num_parent_combos, variable_card] ---
-    if (!isSingular) {
-      // If values is flat, reshape to 2D
-      if (Array.isArray(values) && values.length > 0 && !Array.isArray(values[0])) {
-        const combos = getParentCombinations(evidence);
-        const variableCard = 2; // binary
-        let reshaped = [];
-        for (let i = 0; i < combos.length; i++) {
-          reshaped.push(values.slice(i * variableCard, (i + 1) * variableCard));
-        }
-        values = reshaped;
-      }
-      // If values is nested but not [num_parent_combos, variable_card], fix it
-      if (
-        Array.isArray(values) &&
-        Array.isArray(values[0]) &&
-        values.length === 2 &&
-        values[0].length === Math.pow(2, evidence.length)
-      ) {
-        // This is [variable_card, num_parent_combos], so transpose to [num_parent_combos, variable_card]
-        values = values[0].map((_, colIndex) => values.map(row => row[colIndex]));
-      }
-    } else {
-      // Singular node: always send as [[v1], [v2]]
-      if (Array.isArray(values) && values.length === 2 && !Array.isArray(values[0])) {
-        values = values.map(v => [v]);
-      }
+    // For singular nodes, pgmpy expects a column vector like [[0.7], [0.3]]
+    // Convert our flat array [0.7, 0.3] to that format before queueing.
+    if (isSingular && Array.isArray(values) && (values.length === 0 || !Array.isArray(values[0]))) {
+      values = values.map(v => [v]);
     }
 
     queueChange("update", {
@@ -367,7 +284,7 @@ function BayesianNetworkManagement() {
       evidence: evidence,
     });
     setEditCpd(null);
-    setIsAdding(false);
+    setIsAdding(false); // Reset mode
     setMessage("Change queued. Click 'Save Changes & Reload BIFs' to apply.");
   };
 
@@ -528,18 +445,10 @@ function BayesianNetworkManagement() {
           </label>
           <br />
           <label>
-            Evidence:
-            {/* --- REPLACE: Use the new EvidenceEditor component --- */}
-            <EvidenceEditor
-              evidence={editCpd.evidence}
-              allNodes={allNodes}
-              variable={editCpd.variable}
-              onChange={newEvidence => {
-                const combos = getParentCombinations(newEvidence);
-                // Reset to default 2D shape: for singular, [[0.5], [0.5]]; for complex, matching combos
-                const newValues = combos.length === 0 ? [[0.5], [0.5]] : reshapeValues(Array(combos.length).fill([0.5, 0.5]), newEvidence);
-                setEditCpd({ ...editCpd, evidence: newEvidence, values: newValues });
-              }}
+            Evidence (comma separated):
+            <input
+              value={editCpd.evidence.join(",")}
+              onChange={e => setEditCpd({ ...editCpd, evidence: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })}
             />
           </label>
           <br />
