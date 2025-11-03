@@ -7,12 +7,12 @@ import React, { useState } from 'react';
 // import countingStructure from '../components/counting_structure.png';
 
 // Import simplified images
-import estimateSimplified from '../components/estimate_simplified.png';
-import orderingSimplified from '../components/ordering_simplified.png';
-import comparingSimplified from '../components/comparing_simplified.png';
+import estimateSimplified from '../components/Estimate.png';
+import orderingSimplified from '../components/Ordering.png';
+import comparingSimplified from '../components/Comparing.png';
 import moneySimplified from '../components/Money.png';
-import placeSimplified from '../components/Place_value.png';
-import countingSimplified from '../components/counting_simplified.png';
+import placeSimplified from '../components/PlaceValue.png';
+import countingSimplified from '../components/Counting.png';
 import fractions from '../components/Fractions.png';
 
 // const structureImages = {
