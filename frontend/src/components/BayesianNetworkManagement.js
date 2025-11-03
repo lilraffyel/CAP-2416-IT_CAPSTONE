@@ -331,20 +331,33 @@ function BayesianNetworkManagement() {
       return;
     }
 
-    // Ensure values is a 2D array for CPDs with evidence
-    if (!isSingular && Array.isArray(values) && values.length > 0 && !Array.isArray(values[0])) {
-      // Reshape flat array to 2D
-      const combos = getParentCombinations(evidence);
-      const variableCard = 2; // binary
-      let reshaped = [];
-      for (let i = 0; i < combos.length; i++) {
-        reshaped.push(values.slice(i * variableCard, (i + 1) * variableCard));
+    // --- FIX: Always send values as 2D array of shape [num_parent_combos, variable_card] ---
+    if (!isSingular) {
+      // If values is flat, reshape to 2D
+      if (Array.isArray(values) && values.length > 0 && !Array.isArray(values[0])) {
+        const combos = getParentCombinations(evidence);
+        const variableCard = 2; // binary
+        let reshaped = [];
+        for (let i = 0; i < combos.length; i++) {
+          reshaped.push(values.slice(i * variableCard, (i + 1) * variableCard));
+        }
+        values = reshaped;
       }
-      values = reshaped;
-    }
-
-    if (isSingular && Array.isArray(values) && values.length === 2 && !Array.isArray(values[0])) {
-      values = values.map(v => [v]);
+      // If values is nested but not [num_parent_combos, variable_card], fix it
+      if (
+        Array.isArray(values) &&
+        Array.isArray(values[0]) &&
+        values.length === 2 &&
+        values[0].length === Math.pow(2, evidence.length)
+      ) {
+        // This is [variable_card, num_parent_combos], so transpose to [num_parent_combos, variable_card]
+        values = values[0].map((_, colIndex) => values.map(row => row[colIndex]));
+      }
+    } else {
+      // Singular node: always send as [[v1], [v2]]
+      if (Array.isArray(values) && values.length === 2 && !Array.isArray(values[0])) {
+        values = values.map(v => [v]);
+      }
     }
 
     queueChange("update", {
