@@ -787,12 +787,14 @@ return (
     <div>
       <label htmlFor="bif-select">Select BIF:</label>
       <select id="bif-select" value={selectedBif} onChange={handleBifChange}>
-        <option value="estimate">Estimate</option>
-        <option value="ordering">Ordering</option>
         <option value="comparing">Comparing</option>
-        <option value="money">Money</option>
-        <option value="place_value">Place-Value</option>
         <option value="counting">Counting</option>
+        <option value="estimate">Estimate</option>
+        <option value="fractions">Fractions</option>
+        <option value="money">Money</option>
+        <option value="ordering">Ordering</option>
+        <option value="place_value">Place-Value</option>
+       
       </select>
     </div>
 
