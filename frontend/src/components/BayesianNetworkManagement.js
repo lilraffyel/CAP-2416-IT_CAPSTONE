@@ -306,18 +306,6 @@ function BayesianNetworkManagement() {
     if (isSingular && Array.isArray(values) && values.length > 0 && Array.isArray(values[0])) {
       values = values.flat();
     }
-    if (!isSingular) {
-      const combos = getParentCombinations(cpd.evidence);
-      if (values.length < combos.length) {
-        values = [
-          ...values,
-          ...Array(combos.length - values.length).fill().map(() => [0.5, 0.5])
-        ];
-      }
-      if (values.length > combos.length) {
-        values = values.slice(0, combos.length);
-      }
-    }
     setIsAdding(false);
     setEditCpd({ variable, ...cpd, values });
   };
