@@ -13,7 +13,7 @@ import comparingSimplified from '../components/comparing_simplified.png';
 import moneySimplified from '../components/Money.png';
 import placeSimplified from '../components/Place_value.png';
 import countingSimplified from '../components/counting_simplified.png';
-import fractions from '../components/Fractions.svg';
+import fractions from '../components/Fractions.png';
 
 // const structureImages = {
 //   // estimate: estimateStructure,

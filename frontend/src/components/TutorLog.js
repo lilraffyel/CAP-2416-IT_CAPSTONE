@@ -258,7 +258,7 @@ export default function TutorLog() {
       );
       setMaterials(list.data || []);
     } catch (err) {
-      alert("Upload failed.");
+      alert("File type/size not allowed!.");
     }
   };
 
@@ -409,8 +409,9 @@ export default function TutorLog() {
               <div className="tutor-log-note">
                 <h3>Teaching Materials</h3>
                 <p style={{ marginTop: 0, color: "#555" }}>
-                  Upload educational materials only (PDF, DOC, DOCX, PPT, PPTX). Each file must be 20&nbsp;MB or smaller so
-                  it can be shared with future tutors and the student.
+                 Add learning materials to share with your student. 
+                 Supported file types: PDF, DOC, DOCX, PPT, and PPTX (max 20 MB each). 
+                 These files will remain accessible to future tutors.
                 </p>
                 <form onSubmit={handleUpload}>
                   <input type="file" onChange={(e) => setFileToUpload(e.target.files?.[0] || null)} />
