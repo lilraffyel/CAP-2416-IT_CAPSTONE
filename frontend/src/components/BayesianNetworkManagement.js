@@ -55,9 +55,15 @@ function getParentCombinations(evidence, evidenceCard = 2) {
 
 // Helper: Flatten multi-dimensional CPD values
 function flattenValues(values, evidence) {
-  if (!Array.isArray(values[0])) return values.map(v => [v]); // Singular: [0.7, 0.3] -> [[0.7], [0.3]]
-  // For complex: values is already [[row1], [row2]], return as-is
-  return values;
+  if (!Array.isArray(values[0])) return values.map(v => [v]);
+  let combos = getParentCombinations(evidence);
+  let flat = [];
+  combos.forEach(combo => {
+    let ref = values;
+    combo.forEach(idx => { ref = ref[idx]; });
+    flat.push(ref);
+  });
+  return flat;
 }
 
 // Helper: Reshape flat values back to multi-dimensional
@@ -507,8 +513,8 @@ function BayesianNetworkManagement() {
               variable={editCpd.variable}
               onChange={newEvidence => {
                 const combos = getParentCombinations(newEvidence);
-                // Reset to default flat shape: for singular, [0.5, 0.5]; for complex, array of [0.5, 0.5] rows
-                const newValues = combos.length === 0 ? [0.5, 0.5] : Array(combos.length).fill([0.5, 0.5]);
+                // Reset to default 2D shape: for singular, [[0.5], [0.5]]; for complex, matching combos
+                const newValues = combos.length === 0 ? [[0.5], [0.5]] : reshapeValues(Array(combos.length).fill([0.5, 0.5]), newEvidence);
                 setEditCpd({ ...editCpd, evidence: newEvidence, values: newValues });
               }}
             />
