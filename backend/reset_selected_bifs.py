@@ -306,35 +306,34 @@ VALID_BIF_TEMPLATES = {
     """)
 }
 
-def reset_all_bifs():
+def reset_selected_bifs(bif_names):
     """
-    Connects to the database and updates or inserts all BIF files
-    with their known-good, complete content.
+    Updates or inserts only the specified BIF files in the database.
     """
     conn = None
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         
-        print("--- Attempting to reset all BIF files in the database ---")
+        print("--- Attempting to update selected BIF files in the database ---")
         
-        for bif_name, bif_content in VALID_BIF_TEMPLATES.items():
-            # Use textwrap.dedent to remove leading whitespace from the strings
-            clean_content = textwrap.dedent(bif_content)
+        for bif_name in bif_names:
+            if bif_name not in VALID_BIF_TEMPLATES:
+                print(f"⚠️  '{bif_name}' not found in VALID_BIF_TEMPLATES. Skipping.")
+                continue
 
-            # Check if the network already exists
+            clean_content = textwrap.dedent(VALID_BIF_TEMPLATES[bif_name])
+
             cursor.execute("SELECT name FROM bayesian_networks WHERE name = ?", (bif_name,))
             result = cursor.fetchone()
             
             if result:
-                # If it exists, update its content
                 cursor.execute(
                     "UPDATE bayesian_networks SET content = ? WHERE name = ?",
                     (clean_content, bif_name)
                 )
                 print(f"✅ Updated content for '{bif_name}'.")
             else:
-                # If it doesn't exist, insert it
                 cursor.execute(
                     "INSERT INTO bayesian_networks (name, content) VALUES (?, ?)",
                     (bif_name, clean_content)
@@ -342,7 +341,7 @@ def reset_all_bifs():
                 print(f"✅ Inserted new content for '{bif_name}'.")
 
         conn.commit()
-        print("\n--- Database reset complete. ---")
+        print("\n--- Selected BIF updates complete. ---")
             
     except Exception as e:
         print(f"❌ An error occurred: {e}")
@@ -351,8 +350,10 @@ def reset_all_bifs():
             conn.close()
 
 if __name__ == "__main__":
-    reset_all_bifs()
+    # Example: Only update 'money.bif' and 'fractions.bif'
+    bifs_to_update = ["estimation.bif", "counting.bif", "comparing.bif", "money.bif", "fractions.bif"]  # <-- Change this list as needed
+    reset_selected_bifs(bifs_to_update)
     print("\nIMPORTANT:")
-    print("1. Your local 'database.db' has been fixed with the complete BIF data.")
-    print("2. You MUST now commit the updated 'database.db' file to your Git repository.")
+    print("1. Only the specified BIFs have been updated in 'database.db'.")
+    print("2. Commit the updated 'database.db' file to your Git repository if needed.")
     print("3. Redeploy your application on Render to use the fixed database.")
