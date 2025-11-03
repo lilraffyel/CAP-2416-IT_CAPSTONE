@@ -371,7 +371,7 @@ def delete_cpd():
 def batch_update_cpds():
     import numpy as np
     from collections import defaultdict
-    from pgmpy.models import BayesianNetwork  # Ensure this import is at the top if not already
+    from pgmpy.models import BayesianNetwork
 
     changes = request.get_json().get("changes", [])
     results = []
@@ -386,72 +386,48 @@ def batch_update_cpds():
 
     for network, network_changes in grouped_changes.items():
         try:
-            # Load the model ONCE for this network using the lazy-loader
             model_data = get_model(network)
             if not model_data:
-                # Create an empty model if none exists
                 model = BayesianNetwork()
             else:
                 model = model_data["model"]
 
-            # Apply all changes for this network to the same model object
             for change in network_changes:
                 if change["type"] == "update":
                     variable = change["variable"]
                     values = change.get("values", [])
                     evidence = change.get("evidence", [])
 
-                    # Validate and convert values to numpy array
                     try:
                         values_np = np.array(values, dtype=float)
                     except ValueError:
                         results.append(f"Error for {variable}: 'values' field contains non-numeric data.")
                         continue
 
-                    # Ensure values is always 2D
                     if values_np.ndim == 1:
-                        # For singular nodes, reshape to column vector (e.g., [0.7, 0.3] -> [[0.7], [0.3]])
                         if not evidence:
                             values_np = values_np.reshape(-1, 1)
                         else:
-                            # For complex, assume it's meant to be reshaped later; log error if unexpected
                             results.append(f"Error for {variable}: Values for complex node must be 2D.")
                             continue
                     elif values_np.ndim != 2:
                         results.append(f"Error for {variable}: Values must be a 2D array.")
                         continue
 
-                    # Add variable and parents to model if not present
-                    if variable not in model.nodes:
-                        model.add_node(variable)
-                    for parent in evidence:
-                        if parent not in model.nodes:
-                            model.add_node(parent)
-                        # Ensure edge exists (parent -> variable)
-                        if not model.has_edge(parent, variable):
-                            model.add_edge(parent, variable)
-
-                    # Remove existing CPD if it exists (critical for updates)
-                    existing_cpds = [cpd for cpd in model.get_cpds() if cpd.variable == variable]
-                    if existing_cpds:
-                        model.remove_cpds(variable)
-
-                    # Prepare values for pgmpy
+                    # Prepare values for pgmpy (transpose for complex nodes to match pgmpy's column-major expectation)
                     if not evidence:
-                        # Singular node: expect shape (2, 1)
-                        if values_np.shape != (2, 1):
-                            results.append(f"Error for singular node {variable}: Expected shape (2, 1), got {values_np.shape}.")
+                        values_for_pgmpy = values_np  # Already (2, 1)
+                        if values_for_pgmpy.shape != (2, 1):
+                            results.append(f"Error for singular node {variable}: Expected shape (2, 1), got {values_for_pgmpy.shape}.")
                             continue
-                        values_for_pgmpy = values_np
                     else:
-                        # Complex node: reshape to (2, num_parent_combos)
+                        values_for_pgmpy = values_np.T  # Transpose to (2, num_parent_combos)
                         num_parent_combos = 2 ** len(evidence)
-                        if values_np.shape[1] != num_parent_combos:
-                            results.append(f"Error for {variable}: Values shape {values_np.shape} doesn't match expected columns {num_parent_combos}.")
+                        if values_for_pgmpy.shape != (2, num_parent_combos):
+                            results.append(f"Error for {variable}: Transposed shape {values_for_pgmpy.shape} doesn't match expected (2, {num_parent_combos}).")
                             continue
-                        values_for_pgmpy = values_np  # Already 2D as (2, num_combos)
 
-                    # Validate probabilities sum to 1
+                    # Validate probabilities sum to 1 BEFORE modifying the model
                     if not evidence:
                         if not np.isclose(values_for_pgmpy.sum(), 1.0):
                             results.append(f"Error for {variable}: Probabilities do not sum to 1.")
@@ -461,7 +437,21 @@ def batch_update_cpds():
                             results.append(f"Error for {variable}: Each column must sum to 1.")
                             continue
 
-                    # State names for all nodes in the model
+                    # Now modify the model
+                    if variable not in model.nodes:
+                        model.add_node(variable)
+                    for parent in evidence:
+                        if parent not in model.nodes:
+                            model.add_node(parent)
+                        if not model.has_edge(parent, variable):
+                            model.add_edge(parent, variable)
+
+                    # Remove existing CPD if it exists
+                    existing_cpds = [cpd for cpd in model.get_cpds() if cpd.variable == variable]
+                    if existing_cpds:
+                        model.remove_cpds(variable)
+
+                    # State names
                     all_model_nodes = list(model.nodes())
                     cpd_state_names = {node: ['0', '1'] for node in all_model_nodes}
 
@@ -481,12 +471,11 @@ def batch_update_cpds():
                 elif change["type"] == "delete":
                     variable = change["variable"]
                     if variable in model.nodes:
-                        model.remove_node(variable)  # Removes node, edges, and CPDs
+                        model.remove_node(variable)
                         results.append(f"Queued delete for {variable}.")
                     else:
                         results.append(f"Skipped delete for {variable}: Not found in model.")
 
-            # Validate and save the model
             model.check_model()
             writer = BIFWriter(model)
             new_content = str(writer)
@@ -504,3 +493,12 @@ def batch_update_cpds():
             results.append(f"Error processing network {network}: {str(e)}")
     
     return jsonify({"message": "Batch update complete. " + "; ".join(results)})
+
+@admin_routes.route('/networks', methods=['GET'])
+def get_networks():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT name FROM bayesian_networks ORDER BY name")
+    networks = [row['name'] for row in cursor.fetchall()]
+    conn.close()
+    return jsonify(networks)

@@ -55,15 +55,9 @@ function getParentCombinations(evidence, evidenceCard = 2) {
 
 // Helper: Flatten multi-dimensional CPD values
 function flattenValues(values, evidence) {
-  if (!Array.isArray(values[0])) return values.map(v => [v]);
-  let combos = getParentCombinations(evidence);
-  let flat = [];
-  combos.forEach(combo => {
-    let ref = values;
-    combo.forEach(idx => { ref = ref[idx]; });
-    flat.push(ref);
-  });
-  return flat;
+  if (!Array.isArray(values[0])) return values.map(v => [v]); // Singular: [0.7, 0.3] -> [[0.7], [0.3]]
+  // For complex: values is already [[row1], [row2]], return as-is
+  return values;
 }
 
 // Helper: Reshape flat values back to multi-dimensional
@@ -260,14 +254,17 @@ function BayesianNetworkManagement() {
   const allNodes = cpds.map(([variable, _]) => variable);
 
   useEffect(() => {
-    setNetworks([
-      "comparing.bif",
-      "estimate.bif",
-      "money.bif",
-      "place-value.bif",
-      "ordering.bif",
-    ]);
-  }, []);
+    // Fetch networks from the database instead of hardcoding
+    axios
+      .get(`${API_BASE}/api/admin/networks`, { withCredentials: true })
+      .then((res) => {
+        setNetworks(res.data); // res.data is the array of network names
+      })
+      .catch((err) => {
+        console.error("Error fetching networks:", err);
+        setMessage("Error loading networks.");
+      });
+  }, []); // Empty dependency array to run once on mount
 
   useEffect(() => {
     if (selectedNetwork) {
