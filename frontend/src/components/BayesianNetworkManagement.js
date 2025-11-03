@@ -326,13 +326,23 @@ function BayesianNetworkManagement() {
     let { variable, values, evidence } = editCpd;
     const isSingular = !evidence || evidence.length === 0;
 
-    // --- FIX: Prevent adding a CPD with an empty variable name ---
     if (!variable || variable.trim() === "") {
       setMessage("Error: Variable name cannot be empty.");
       return;
     }
 
-    // For singular, ensure it's [[v1], [v2]] (already handled in CPDValueEditor, but double-check)
+    // Ensure values is a 2D array for CPDs with evidence
+    if (!isSingular && Array.isArray(values) && values.length > 0 && !Array.isArray(values[0])) {
+      // Reshape flat array to 2D
+      const combos = getParentCombinations(evidence);
+      const variableCard = 2; // binary
+      let reshaped = [];
+      for (let i = 0; i < combos.length; i++) {
+        reshaped.push(values.slice(i * variableCard, (i + 1) * variableCard));
+      }
+      values = reshaped;
+    }
+
     if (isSingular && Array.isArray(values) && values.length === 2 && !Array.isArray(values[0])) {
       values = values.map(v => [v]);
     }
