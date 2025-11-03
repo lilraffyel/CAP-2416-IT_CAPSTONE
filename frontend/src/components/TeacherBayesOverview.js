@@ -10,9 +10,10 @@ import React, { useState } from 'react';
 import estimateSimplified from '../components/estimate_simplified.png';
 import orderingSimplified from '../components/ordering_simplified.png';
 import comparingSimplified from '../components/comparing_simplified.png';
-import moneySimplified from '../components/money_simplified.png';
-import placeSimplified from '../components/place_simplified.png';
+import moneySimplified from '../components/Money.png';
+import placeSimplified from '../components/Place-value.png';
 import countingSimplified from '../components/counting_simplified.png';
+import fractions from '../components/Fractions.svg';
 
 // const structureImages = {
 //   // estimate: estimateStructure,
@@ -30,6 +31,7 @@ const simplifiedStructureImages = {
   money: moneySimplified,
   place_value: placeSimplified,
   counting: countingSimplified,
+  fractions: fractions
 };
 
 function TeacherBayesOverview() {
