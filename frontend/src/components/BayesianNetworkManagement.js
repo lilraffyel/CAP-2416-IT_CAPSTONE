@@ -254,17 +254,17 @@ function BayesianNetworkManagement() {
   const allNodes = cpds.map(([variable, _]) => variable);
 
   useEffect(() => {
-    // Fetch networks from the database instead of hardcoding
-    axios
-      .get(`${API_BASE}/api/admin/networks`, { withCredentials: true })
-      .then((res) => {
-        setNetworks(res.data); // res.data is the array of network names
-      })
-      .catch((err) => {
-        console.error("Error fetching networks:", err);
-        setMessage("Error loading networks.");
-      });
-  }, []); // Empty dependency array to run once on mount
+    setNetworks([
+      "comparing.bif",
+      "counting.bif",
+      "estimate.bif",
+      "money.bif",
+      "place-value.bif",
+      "ordering.bif",
+      "fractions.bif",
+      "operations.bif",
+    ]);
+  }, []);
 
   useEffect(() => {
     if (selectedNetwork) {
@@ -507,8 +507,8 @@ function BayesianNetworkManagement() {
               variable={editCpd.variable}
               onChange={newEvidence => {
                 const combos = getParentCombinations(newEvidence);
-                // Reset to default 2D shape: for singular, [[0.5], [0.5]]; for complex, matching combos
-                const newValues = combos.length === 0 ? [[0.5], [0.5]] : reshapeValues(Array(combos.length).fill([0.5, 0.5]), newEvidence);
+                // Reset to default flat shape: for singular, [0.5, 0.5]; for complex, array of [0.5, 0.5] rows
+                const newValues = combos.length === 0 ? [0.5, 0.5] : Array(combos.length).fill([0.5, 0.5]);
                 setEditCpd({ ...editCpd, evidence: newEvidence, values: newValues });
               }}
             />

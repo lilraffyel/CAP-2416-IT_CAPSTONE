@@ -493,12 +493,3 @@ def batch_update_cpds():
             results.append(f"Error processing network {network}: {str(e)}")
     
     return jsonify({"message": "Batch update complete. " + "; ".join(results)})
-
-@admin_routes.route('/networks', methods=['GET'])
-def get_networks():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT name FROM bayesian_networks ORDER BY name")
-    networks = [row['name'] for row in cursor.fetchall()]
-    conn.close()
-    return jsonify(networks)
