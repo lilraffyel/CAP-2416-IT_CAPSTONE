@@ -303,13 +303,22 @@ function BayesianNetworkManagement() {
  const handleEditClick = (variable, cpd) => {
     let values = cpd.values;
     const isSingular = !cpd.evidence || cpd.evidence.length === 0;
-
-    // For singular nodes, ensure the value is a flat array like [0.7, 0.3]
     if (isSingular && Array.isArray(values) && values.length > 0 && Array.isArray(values[0])) {
       values = values.flat();
     }
-    
-    setIsAdding(false); // We are in "edit" mode
+    if (!isSingular) {
+      const combos = getParentCombinations(cpd.evidence);
+      if (values.length < combos.length) {
+        values = [
+          ...values,
+          ...Array(combos.length - values.length).fill().map(() => [0.5, 0.5])
+        ];
+      }
+      if (values.length > combos.length) {
+        values = values.slice(0, combos.length);
+      }
+    }
+    setIsAdding(false);
     setEditCpd({ variable, ...cpd, values });
   };
 
@@ -504,8 +513,9 @@ function BayesianNetworkManagement() {
               variable={editCpd.variable}
               onChange={newEvidence => {
                 const combos = getParentCombinations(newEvidence);
-                // Reset to default flat shape: for singular, [0.5, 0.5]; for complex, array of [0.5, 0.5] rows matching combos
-                const newValues = combos.length === 0 ? [0.5, 0.5] : Array(combos.length).fill([0.5, 0.5]);
+                const newValues = combos.length === 0
+                  ? [0.5, 0.5]
+                  : combos.map(() => [0.5, 0.5]);
                 setEditCpd({ ...editCpd, evidence: newEvidence, values: newValues });
               }}
             />
