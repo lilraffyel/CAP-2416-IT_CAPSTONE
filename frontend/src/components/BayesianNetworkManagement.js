@@ -55,9 +55,15 @@ function getParentCombinations(evidence, evidenceCard = 2) {
 
 // Helper: Flatten multi-dimensional CPD values
 function flattenValues(values, evidence) {
-  if (!Array.isArray(values[0])) return values.map(v => [v]); // Singular: [0.7, 0.3] -> [[0.7], [0.3]]
-  // For complex: values is already [[row1], [row2], ...], return as-is
-  return values;
+  if (!Array.isArray(values[0])) return values.map(v => [v]);
+  let combos = getParentCombinations(evidence);
+  let flat = [];
+  combos.forEach(combo => {
+    let ref = values;
+    combo.forEach(idx => { ref = ref[idx]; });
+    flat.push(ref);
+  });
+  return flat;
 }
 
 // Helper: Reshape flat values back to multi-dimensional
@@ -198,8 +204,7 @@ function CPDValueEditor({ values, onChange, evidence }) {
                   } else {
                     let newFlatRows = [...flatRows];
                     newFlatRows[rowIdx] = newRow;
-                    // Keep as flat 2D array for complex nodes
-                    onChange(newFlatRows);
+                    onChange(reshapeValues(newFlatRows, evidence));
                   }
                 }}
               />
@@ -208,11 +213,13 @@ function CPDValueEditor({ values, onChange, evidence }) {
                 onClick={() => {
                   const newRow = autoBalanceRow(row, idx, Math.min(1, v + 0.01));
                   if (isSingular) {
+                    // --- START: Definitive Fix for Singular Node Data ---
                     onChange(newRow.map(val => [val]));
+                    // --- END: Definitive Fix for Singular Node Data ---
                   } else {
                     let newFlatRows = [...flatRows];
                     newFlatRows[rowIdx] = newRow;
-                    onChange(newFlatRows);
+                    onChange(reshapeValues(newFlatRows, evidence));
                   }
                 }}
               >▲</button>
@@ -221,11 +228,13 @@ function CPDValueEditor({ values, onChange, evidence }) {
                 onClick={() => {
                   const newRow = autoBalanceRow(row, idx, Math.max(0, v - 0.01));
                   if (isSingular) {
+                    // --- START: Definitive Fix for Singular Node Data ---
                     onChange(newRow.map(val => [val]));
+                    // --- END: Definitive Fix for Singular Node Data ---
                   } else {
                     let newFlatRows = [...flatRows];
                     newFlatRows[rowIdx] = newRow;
-                    onChange(newFlatRows);
+                    onChange(reshapeValues(newFlatRows, evidence));
                   }
                 }}
               >▼</button>
@@ -303,10 +312,13 @@ function BayesianNetworkManagement() {
  const handleEditClick = (variable, cpd) => {
     let values = cpd.values;
     const isSingular = !cpd.evidence || cpd.evidence.length === 0;
+
+    // For singular nodes, ensure the value is a flat array like [0.7, 0.3]
     if (isSingular && Array.isArray(values) && values.length > 0 && Array.isArray(values[0])) {
       values = values.flat();
     }
-    setIsAdding(false);
+    
+    setIsAdding(false); // We are in "edit" mode
     setEditCpd({ variable, ...cpd, values });
   };
 
@@ -501,9 +513,8 @@ function BayesianNetworkManagement() {
               variable={editCpd.variable}
               onChange={newEvidence => {
                 const combos = getParentCombinations(newEvidence);
-                const newValues = combos.length === 0
-                  ? [0.5, 0.5]
-                  : combos.map(() => [0.5, 0.5]);
+                // Reset to default 2D shape: for singular, [[0.5], [0.5]]; for complex, matching combos
+                const newValues = combos.length === 0 ? [[0.5], [0.5]] : reshapeValues(Array(combos.length).fill([0.5, 0.5]), newEvidence);
                 setEditCpd({ ...editCpd, evidence: newEvidence, values: newValues });
               }}
             />
