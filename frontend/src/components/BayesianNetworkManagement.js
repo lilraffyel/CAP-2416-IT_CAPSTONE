@@ -140,11 +140,8 @@ function EvidenceEditor({ evidence, allNodes, variable, onChange }) {
 function CPDValueEditor({ values, onChange, evidence }) {
   const isSingular = !evidence || evidence.length === 0;
 
-  // --- START: Definitive Fix for Singular Node Data ---
-  // For singular nodes, the editor works with a flat array like [0.5, 0.5].
-  // The 'values' prop for a singular node might come in as [[0.5], [0.5]]. We must flatten it for the UI.
+  // For singular nodes, work with flat array but output as column vector
   const flatRows = isSingular ? [values.flat()] : flattenValues(values, evidence);
-  // --- END: Definitive Fix for Singular Node Data ---
 
   // Show parent state combos for clarity, only for complex nodes.
   const combos = isSingular ? [] : getParentCombinations(evidence);
@@ -202,10 +199,8 @@ function CPDValueEditor({ values, onChange, evidence }) {
                 onChange={e => {
                   const newRow = autoBalanceRow(row, idx, parseFloat(e.target.value) || 0);
                   if (isSingular) {
-                    // --- START: Definitive Fix for Singular Node Data ---
-                    // For singular nodes, we must convert the flat row back to a column vector for saving.
+                    // Output as column vector: [[v1], [v2]]
                     onChange(newRow.map(val => [val]));
-                    // --- END: Definitive Fix for Singular Node Data ---
                   } else {
                     let newFlatRows = [...flatRows];
                     newFlatRows[rowIdx] = newRow;
@@ -334,14 +329,10 @@ function BayesianNetworkManagement() {
       return;
     }
 
-    // --- REMOVE OLD LOGIC ---
-    // The conversion to a column vector is now handled directly in the CPDValueEditor.
-    // This block is no longer needed.
-    /*
-    if (isSingular && Array.isArray(values) && (values.length === 0 || !Array.isArray(values[0]))) {
+    // For singular, ensure it's [[v1], [v2]] (already handled in CPDValueEditor, but double-check)
+    if (isSingular && Array.isArray(values) && values.length === 2 && !Array.isArray(values[0])) {
       values = values.map(v => [v]);
     }
-    */
 
     queueChange("update", {
       network: selectedNetwork,
@@ -350,7 +341,7 @@ function BayesianNetworkManagement() {
       evidence: evidence,
     });
     setEditCpd(null);
-    setIsAdding(false); // Reset mode
+    setIsAdding(false);
     setMessage("Change queued. Click 'Save Changes & Reload BIFs' to apply.");
   };
 
@@ -518,12 +509,9 @@ function BayesianNetworkManagement() {
               allNodes={allNodes}
               variable={editCpd.variable}
               onChange={newEvidence => {
-                // When evidence changes, we must reset the values to a default state
-                // that matches the new structure.
                 const combos = getParentCombinations(newEvidence);
-                const newValues = combos.length > 1 
-                  ? reshapeValues(Array(combos.length).fill([0.5, 0.5]), newEvidence)
-                  : [0.5, 0.5];
+                // Reset to default 2D shape: for singular, [[0.5], [0.5]]; for complex, matching combos
+                const newValues = combos.length === 0 ? [[0.5], [0.5]] : reshapeValues(Array(combos.length).fill([0.5, 0.5]), newEvidence);
                 setEditCpd({ ...editCpd, evidence: newEvidence, values: newValues });
               }}
             />

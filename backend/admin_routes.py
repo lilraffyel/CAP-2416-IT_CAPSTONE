@@ -371,6 +371,7 @@ def delete_cpd():
 def batch_update_cpds():
     import numpy as np
     from collections import defaultdict
+    from pgmpy.models import BayesianNetwork  # Ensure this import is at the top if not already
 
     changes = request.get_json().get("changes", [])
     results = []
@@ -388,8 +389,7 @@ def batch_update_cpds():
             # Load the model ONCE for this network using the lazy-loader
             model_data = get_model(network)
             if not model_data:
-                # We need a model to apply changes to. If it doesn't exist, create an empty one.
-                from pgmpy.models import BayesianNetwork
+                # Create an empty model if none exists
                 model = BayesianNetwork()
             else:
                 model = model_data["model"]
@@ -398,50 +398,75 @@ def batch_update_cpds():
             for change in network_changes:
                 if change["type"] == "update":
                     variable = change["variable"]
-                    values = change["values"]
+                    values = change.get("values", [])
                     evidence = change.get("evidence", [])
 
+                    # Validate and convert values to numpy array
                     try:
                         values_np = np.array(values, dtype=float)
                     except ValueError:
                         results.append(f"Error for {variable}: 'values' field contains non-numeric data.")
                         continue
 
-                    # --- START: Definitive Fix for Old Code ---
-                    # Ensure the variable AND all its parents exist in the model before creating the CPD.
-                    # This is the crucial step that fixes the "doesn't have proper parents" error.
+                    # Ensure values is always 2D
+                    if values_np.ndim == 1:
+                        # For singular nodes, reshape to column vector (e.g., [0.7, 0.3] -> [[0.7], [0.3]])
+                        if not evidence:
+                            values_np = values_np.reshape(-1, 1)
+                        else:
+                            # For complex, assume it's meant to be reshaped later; log error if unexpected
+                            results.append(f"Error for {variable}: Values for complex node must be 2D.")
+                            continue
+                    elif values_np.ndim != 2:
+                        results.append(f"Error for {variable}: Values must be a 2D array.")
+                        continue
+
+                    # Add variable and parents to model if not present
                     if variable not in model.nodes:
                         model.add_node(variable)
                     for parent in evidence:
                         if parent not in model.nodes:
                             model.add_node(parent)
-                        # --- FIX: Add the edge from parent to child ---
+                        # Ensure edge exists (parent -> variable)
                         if not model.has_edge(parent, variable):
                             model.add_edge(parent, variable)
-                    # --- END: Definitive Fix for Old Code ---
 
+                    # Remove existing CPD if it exists (critical for updates)
+                    existing_cpds = [cpd for cpd in model.get_cpds() if cpd.variable == variable]
+                    if existing_cpds:
+                        model.remove_cpds(variable)
+
+                    # Prepare values for pgmpy
                     if not evidence:
+                        # Singular node: expect shape (2, 1)
                         if values_np.shape != (2, 1):
-                            results.append(f"Error for singular node {variable}: Expected a column vector of shape (2, 1).")
+                            results.append(f"Error for singular node {variable}: Expected shape (2, 1), got {values_np.shape}.")
                             continue
                         values_for_pgmpy = values_np
                     else:
-                        num_parent_combos = int(np.prod(values_np.shape) / 2)
-                        values_for_pgmpy = values_np.reshape(num_parent_combos, 2).T
+                        # Complex node: reshape to (2, num_parent_combos)
+                        num_parent_combos = 2 ** len(evidence)
+                        if values_np.shape[1] != num_parent_combos:
+                            results.append(f"Error for {variable}: Values shape {values_np.shape} doesn't match expected columns {num_parent_combos}.")
+                            continue
+                        values_for_pgmpy = values_np  # Already 2D as (2, num_combos)
 
-                    is_valid = np.isclose(values_for_pgmpy.sum(), 1.0) if not evidence else np.all(np.isclose(values_for_pgmpy.sum(axis=0), 1.0))
-                    if not is_valid:
-                        results.append(f"Error for {variable}: Probabilities do not sum to 1 correctly.")
-                        continue
-                    
-                    evidence_card = [2] * len(evidence) if evidence else None
+                    # Validate probabilities sum to 1
+                    if not evidence:
+                        if not np.isclose(values_for_pgmpy.sum(), 1.0):
+                            results.append(f"Error for {variable}: Probabilities do not sum to 1.")
+                            continue
+                    else:
+                        if not np.all(np.isclose(values_for_pgmpy.sum(axis=0), 1.0)):
+                            results.append(f"Error for {variable}: Each column must sum to 1.")
+                            continue
 
-                    # --- START: Definitive Fix for Old Code ---
-                    # The state_names dictionary must contain ALL nodes in the model, not just the current ones.
-                    all_model_nodes = model.nodes()
+                    # State names for all nodes in the model
+                    all_model_nodes = list(model.nodes())
                     cpd_state_names = {node: ['0', '1'] for node in all_model_nodes}
-                    # --- END: Definitive Fix for Old Code ---
 
+                    # Create and add CPD
+                    evidence_card = [2] * len(evidence) if evidence else None
                     cpd = TabularCPD(
                         variable=variable,
                         variable_card=2,
@@ -451,18 +476,17 @@ def batch_update_cpds():
                         state_names=cpd_state_names
                     )
                     model.add_cpds(cpd)
-                    results.append(f"Queued update for {variable}.")
+                    results.append(f"Queued update/add for {variable}.")
 
                 elif change["type"] == "delete":
                     variable = change["variable"]
-                    # Check if the node actually exists before trying to remove it
                     if variable in model.nodes:
-                        model.remove_node(variable) # Use remove_node to clear everything
+                        model.remove_node(variable)  # Removes node, edges, and CPDs
                         results.append(f"Queued delete for {variable}.")
                     else:
-                        results.append(f"Skipped delete for {variable} as it was not found in the model.")
+                        results.append(f"Skipped delete for {variable}: Not found in model.")
 
-            # After all changes for this network are applied, save it
+            # Validate and save the model
             model.check_model()
             writer = BIFWriter(model)
             new_content = str(writer)
@@ -473,7 +497,6 @@ def batch_update_cpds():
             conn.commit()
             conn.close()
             
-            # --- OPTIMIZATION: Invalidate only the modified network from the cache ---
             clear_model_cache(network)
             results.append(f"Successfully saved and cleared cache for {network}.")
 
