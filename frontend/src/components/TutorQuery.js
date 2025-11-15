@@ -95,20 +95,21 @@ function TutorQuery() {
     });
   }, []);
 
-  // Fetch competencies for the selected domain
+  // Fetch competencies for the selected domain and filter them
   useEffect(() => {
     if (!selectedDomain) return;
+
     axios
       .get(`${API_BASE}/api/teacher/competencies?domain=${selectedDomain}`)
       .then((res) => {
-        const tableData = res.data.map((comp) => ({
+        const filteredCompetencies = res.data.map((comp) => ({
           competency: comp.label,
           estimatedMastery: lockedMastery[comp.label] || "",
           rawScore: "",
           percentage: "",
           actualMastery: "",
         }));
-        setCompetencyTable(tableData);
+        setCompetencyTable(filteredCompetencies);
       });
   }, [selectedDomain, lockedMastery]);
 
@@ -141,6 +142,37 @@ function TutorQuery() {
     setCompetencyTable(updatedTable);
     setLockedMastery(updatedLockedMastery);
   }, [manualQueryResults]);
+
+  // Update raw score, percentage, and actual mastery after querying
+  useEffect(() => {
+    if (!selectedStudent || !selectedDomain) return;
+
+    axios
+      .get(`${API_BASE}/api/teacher/results/${selectedStudent}`, {
+        withCredentials: true,
+      })
+      .then((res) => {
+        const studentResults = res.data;
+
+        const updatedTable = competencyTable.map((row) => {
+          const result = studentResults.find(
+            (r) => r.examName === row.competency
+          );
+          if (result) {
+            const percentage = ((result.score / result.total) * 100).toFixed(2);
+            return {
+              ...row,
+              rawScore: result.score,
+              percentage: `${percentage}%`,
+              actualMastery: result.score >= 7, // Pass if score >= 7
+            };
+          }
+          return row;
+        });
+
+        setCompetencyTable(updatedTable);
+      });
+  }, [selectedStudent, selectedDomain, manualQueryResults]);
 
   // ================== STUDENT LOGIC ====================
   const handleToggleStudentDropdown = () => {

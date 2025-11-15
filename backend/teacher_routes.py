@@ -336,27 +336,23 @@ def get_domains():
 
 @teacher_routes.route('/competencies', methods=['GET'])
 def get_competencies():
-    bif_file = request.args.get('bif_file')
-    
-    # --- NEW LOGIC: If a bif_file is specified, get nodes from it ---
-    if bif_file:
-        # --- FIX: Use the get_model() function to load or retrieve the model ---
-        model_data = get_model(bif_file)
-        if not model_data:
-            return jsonify({'error': f'BIF file {bif_file} not found or failed to load.'}), 404
-        
-        model = model_data['model']
-        nodes = model.nodes()
-        return jsonify({'competencies': list(nodes)})
+    domain_id = request.args.get('domain')
 
-    # --- EXISTING LOGIC: If no bif_file, get all competencies from DB ---
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("""
-        SELECT c.id, c.title AS label, cd.name AS domain, c.content_domain_id
-        FROM competencies c
-        JOIN content_domains cd ON c.content_domain_id = cd.id
-    """)
+
+    if domain_id:
+        cursor.execute("""
+            SELECT c.id, c.title AS label
+            FROM competencies c
+            WHERE c.content_domain_id = ?
+        """, (domain_id,))
+    else:
+        cursor.execute("""
+            SELECT c.id, c.title AS label
+            FROM competencies c
+        """)
+
     competencies = [dict(row) for row in cursor.fetchall()]
     conn.close()
     return jsonify(competencies)
@@ -794,7 +790,7 @@ def delete_result(result_id):
 #     for q in questions:
 #         cursor.execute("SELECT choice_text FROM choices WHERE question_id = ?", (q['id'],))
 #         q['options'] = [c['choice_text'] for c in cursor.fetchall()]
-#         q['pinned'] = False
+#         q['pinned'] = False;
 #         q['comments'] = []
 #     conn.close()
 #     return jsonify(questions)
@@ -972,7 +968,7 @@ def get_questions(title):
     for q in questions:
         cursor.execute("SELECT choice_text FROM choices WHERE question_id = ?", (q['id'],))
         q['options'] = [c['choice_text'] for c in cursor.fetchall()]
-        q['pinned'] = False
+        q['pinned'] = False;
         q['comments'] = []
         q['correct'] = q.pop('correct_answer', '')
     conn.close()
