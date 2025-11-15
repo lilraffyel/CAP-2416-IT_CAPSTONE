@@ -1028,13 +1028,24 @@ def manual_query():
     if score is None:
         return jsonify({'error': 'Missing score for manual query'}), 400
 
+    # Run the manual query
     result, error = run_manual_query(bif_file, competency, score, total)
     if error:
         lower_error = error.lower()
         status = 404 if ('not found' in lower_error or 'not loaded' in lower_error) else 400
         return jsonify({'error': error}), status
 
-    return jsonify(result)
+    # Fetch related competencies and their probabilities
+    model, inference = get_model(bif_file)
+    related_competencies = model.get_children(competency) + [competency]
+    query_result = inference.query(variables=related_competencies, show_progress=False)
+    probabilities = {comp: query_result[comp].values[1] for comp in related_competencies}
+
+    return jsonify({
+        'mastery_probabilities': probabilities,
+        'score': score,
+        'total': total
+    })
 
 
 @teacher_routes.route('/auto-query-result/<int:result_id>', methods=['GET'])
@@ -1045,7 +1056,19 @@ def auto_query_result(result_id):
         status = 404 if ('not found' in lower_error or 'not loaded' in lower_error) else 400
         return jsonify({'error': error}), status
 
-    return jsonify(result)
+    # Fetch related competencies and their probabilities
+    bif_file = result.get('bif_file')
+    competency = result.get('competency')
+    model, inference = get_model(bif_file)
+    related_competencies = model.get_children(competency) + [competency]
+    query_result = inference.query(variables=related_competencies, show_progress=False)
+    probabilities = {comp: query_result[comp].values[1] for comp in related_competencies}
+
+    return jsonify({
+        'mastery_probabilities': probabilities,
+        'score': result.get('score'),
+        'total': result.get('total')
+    })
 
 
 @teacher_routes.route('/results/<student_id>', methods=['GET'])
@@ -1057,8 +1080,8 @@ def get_teacher_student_results(student_id):
                sr.submitted_at AS date,
                a.title AS examName,
                sr.score,
-               sr.student_id,
-               sr.assessment_id
+               sr.total,
+               (CAST(sr.score AS REAL) / sr.total) * 100 AS percentage
         FROM student_results sr
         JOIN assessments a ON sr.assessment_id = a.id
         WHERE sr.student_id = ?
