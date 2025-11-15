@@ -1129,17 +1129,4 @@ def unassign_competency():
 
 
 
-# Fetch competencies for a specific domain
-@teacher_routes.route('/competencies', methods=['GET'])
-def get_competencies():
-    domain_id = request.args.get('domain')
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT c.id, c.title AS label
-        FROM competencies c
-        WHERE c.content_domain_id = ?
-    """, (domain_id,))
-    competencies = [dict(row) for row in cursor.fetchall()]
-    conn.close()
-    return jsonify(competencies)
+
