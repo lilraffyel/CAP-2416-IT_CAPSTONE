@@ -1,13 +1,9 @@
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
-import {
-  listBifFiles,
-  getCompetencies,
-} from "../api";
+import { listBifFiles, getCompetencies } from "../api";
 import "./TutorQuery.css";
 
 const API_BASE = "https://cap-2416-it-capstone.onrender.com";
-// const API_BASE = "${API_BASE}";
 
 function TutorQuery() {
   // ================= STUDENT SELECTION STATES =================
@@ -44,6 +40,12 @@ function TutorQuery() {
   const [isAutoQueryLoading, setIsAutoQueryLoading] = useState(false); // <-- Loading state for auto query
   const [tutorId, setTutorId] = useState(null);
   
+  // New states for the table
+  const [contentDomains, setContentDomains] = useState([]);
+  const [selectedDomain, setSelectedDomain] = useState("");
+  const [competencyTable, setCompetencyTable] = useState([]);
+  const [lockedMastery, setLockedMastery] = useState({}); // To lock estimated mastery values
+
   // Load BIF files on mount
   useEffect(() => {
     async function fetchBifList() {
@@ -85,6 +87,60 @@ function TutorQuery() {
       setResultsError("Failed to load results.");
     });
 }, [selectedStudent]);
+
+  // Fetch content domains on mount
+  useEffect(() => {
+    axios.get(`${API_BASE}/api/teacher/domains`).then((res) => {
+      setContentDomains(res.data);
+    });
+  }, []);
+
+  // Fetch competencies for the selected domain
+  useEffect(() => {
+    if (!selectedDomain) return;
+    axios
+      .get(`${API_BASE}/api/teacher/competencies?domain=${selectedDomain}`)
+      .then((res) => {
+        const tableData = res.data.map((comp) => ({
+          competency: comp.label,
+          estimatedMastery: lockedMastery[comp.label] || "",
+          rawScore: "",
+          percentage: "",
+          actualMastery: "",
+        }));
+        setCompetencyTable(tableData);
+      });
+  }, [selectedDomain, lockedMastery]);
+
+  // Handle manual query results and update the table
+  useEffect(() => {
+    if (!manualQueryResults || !manualQueryResults.mastery_probabilities) return;
+
+    const updatedTable = competencyTable.map((row) => {
+      if (manualQueryResults.mastery_probabilities[row.competency] !== undefined) {
+        const estimatedMastery =
+          lockedMastery[row.competency] ||
+          manualQueryResults.mastery_probabilities[row.competency];
+        return {
+          ...row,
+          estimatedMastery,
+        };
+      }
+      return row;
+    });
+
+    // Lock the estimated mastery values
+    const updatedLockedMastery = { ...lockedMastery };
+    Object.keys(manualQueryResults.mastery_probabilities).forEach((comp) => {
+      if (!lockedMastery[comp]) {
+        updatedLockedMastery[comp] =
+          manualQueryResults.mastery_probabilities[comp];
+      }
+    });
+
+    setCompetencyTable(updatedTable);
+    setLockedMastery(updatedLockedMastery);
+  }, [manualQueryResults]);
 
   // ================== STUDENT LOGIC ====================
   const handleToggleStudentDropdown = () => {
@@ -224,10 +280,116 @@ function TutorQuery() {
     return (val * 100).toFixed(2) + "%";
   }
 
+  // Reset the table
+  const handleResetTable = () => {
+    setCompetencyTable([]);
+    setLockedMastery({});
+  };
+
+  // Fetch competencies and scores for the selected student and domain
+  useEffect(() => {
+    if (!selectedStudent || !selectedDomain) return;
+
+    axios
+      .get(`${API_BASE}/api/teacher/competencies?domain=${selectedDomain}`)
+      .then((res) => {
+        const tableData = res.data.map((comp) => ({
+          competency: comp.label,
+          estimatedMastery: lockedMastery[comp.label] || "",
+          rawScore: "",
+          percentage: "",
+          actualMastery: "",
+        }));
+
+        // Fetch the latest scores for the selected student
+        axios
+          .get(`${API_BASE}/api/teacher/results/${selectedStudent}`, {
+            withCredentials: true,
+          })
+          .then((res) => {
+            const studentResults = res.data;
+
+            // Update the table with the student's scores
+            const updatedTable = tableData.map((row) => {
+              const result = studentResults.find(
+                (r) => r.examName === row.competency
+              );
+              if (result) {
+                const percentage = ((result.score / result.total) * 100).toFixed(
+                  2
+                );
+                return {
+                  ...row,
+                  rawScore: result.score,
+                  percentage: `${percentage}%`,
+                  actualMastery: result.score >= 7, // Pass if score >= 7
+                };
+              }
+              return row;
+            });
+
+            setCompetencyTable(updatedTable);
+          });
+      });
+  }, [selectedStudent, selectedDomain, lockedMastery]);
+
   return (
   <div className="content-box">
     <h2 className="section-title">Tutor Query</h2>
-    <h3>Automatic Query</h3>
+
+    {/* New Section: Competency Table */}
+    <h3>Competency Mastery Table</h3>
+    <div>
+      <label>
+        Select Content Domain:
+        <select
+          value={selectedDomain}
+          onChange={(e) => setSelectedDomain(e.target.value)}
+        >
+          <option value="">--Select Domain--</option>
+          {contentDomains.map((domain) => (
+            <option key={domain.id} value={domain.id}>
+              {domain.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <button onClick={handleResetTable} style={{ marginLeft: "1rem" }}>
+        Reset Table
+      </button>
+    </div>
+
+    <table className="competency-table" style={{ marginTop: "1rem" }}>
+      <thead>
+        <tr>
+          <th>Competency/Node</th>
+          <th>Estimated Probability of Mastery</th>
+          <th>Raw Score</th>
+          <th>Percentage</th>
+          <th>Actual Mastery</th>
+        </tr>
+      </thead>
+      <tbody>
+        {competencyTable.map((row, idx) => (
+          <tr key={idx}>
+            <td>{row.competency}</td>
+            <td>{row.estimatedMastery || "-"}</td>
+            <td>{row.rawScore || "-"}</td>
+            <td>{row.percentage || "-"}</td>
+            <td>
+              {row.actualMastery ? (
+                <span style={{ color: "green" }}>✔ Pass</span>
+              ) : (
+                <span style={{ color: "red" }}>✘ Fail</span>
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+
+    {/* Automatic Query Section */}
+    <h3 style={{ marginTop: "2rem" }}>Automatic Query</h3>
 
     {/* Student selection */}
     <div style={{ marginBottom: "1.5rem" }}>
