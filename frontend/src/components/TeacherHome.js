@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
-const API_BASE = "https://cap-2416-it-capstone.onrender.com";
-// const API_BASE = "${API_BASE}";
+import { API_URL } from '../api.js';
 
 function TeacherHome() {
   const [students, setStudents] = useState([]);
@@ -15,7 +13,7 @@ function TeacherHome() {
 
   // Fetch tutorId on mount
   useEffect(() => {
-    fetch(`${API_BASE}/api/me`, { credentials: 'include' })
+    fetch(`${API_URL}/api/me`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => setTutorId(data.tutorId))
       .catch(console.error);
@@ -24,7 +22,7 @@ function TeacherHome() {
   // Fetch students assigned to this tutor
   useEffect(() => {
     if (!tutorId) return;
-    fetch(`${API_BASE}/api/teacher/students?tutor_id=${tutorId}`)
+    fetch(`${API_URL}/api/teacher/students?tutor_id=${tutorId}`)
       .then(res => res.json())
       .then(data => setStudents(data))
       .catch(console.error);
@@ -32,7 +30,7 @@ function TeacherHome() {
 
   // Fetch all assessments (latest results)
   useEffect(() => {
-    fetch(`${API_BASE}/api/teacher/latest-results`)
+    fetch(`${API_URL}/api/teacher/latest-results`)
       .then(res => res.json())
       .then(data => setAllAssessments(data))
       .catch(console.error);
@@ -61,7 +59,7 @@ function TeacherHome() {
     if (!matchingResult) return;
 
     try {
-      const res = await fetch(`${API_BASE}/api/teacher/comment`, {
+      const res = await fetch(`${API_URL}/api/teacher/comment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ resultId: matchingResult.result_id, comment: commentDraft }),
@@ -95,7 +93,7 @@ function TeacherHome() {
     if (!window.confirm('Are you sure you want to delete this result?')) return;
 
     try {
-      const res = await fetch(`${API_BASE}/api/teacher/result/${resultId}`, {
+      const res = await fetch(`${API_URL}/api/teacher/result/${resultId}`, {
         method: 'DELETE',
       });
       const data = await res.json();

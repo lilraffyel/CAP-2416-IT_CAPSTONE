@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
+import { API_URL } from '../api.js';
 import "./TutorQuery.css";
-
-const API_BASE = "https://cap-2416-it-capstone.onrender.com";
 
 function TutorQuery() {
   // ================= STUDENT SELECTION STATES =================
@@ -21,7 +20,7 @@ function TutorQuery() {
 
   // Fetch content domains on mount
   useEffect(() => {
-    axios.get(`${API_BASE}/api/teacher/domains`).then((res) => {
+    axios.get(`${API_URL}/api/teacher/domains`).then((res) => {
       setContentDomains(res.data);
     });
   }, []);
@@ -31,7 +30,7 @@ function TutorQuery() {
     if (!selectedDomain) return;
 
     axios
-      .get(`${API_BASE}/api/teacher/competencies?domain=${selectedDomain}`)
+      .get(`${API_URL}/api/teacher/competencies?domain=${selectedDomain}`)
       .then((res) => {
         const filteredCompetencies = res.data
           .map((comp) => ({
@@ -81,7 +80,7 @@ function TutorQuery() {
     if (!selectedStudent || !selectedDomain) return;
 
     axios
-      .get(`${API_BASE}/api/teacher/results/${selectedStudent}`, {
+      .get(`${API_URL}/api/teacher/results/${selectedStudent}`, {
         withCredentials: true,
       })
       .then((res) => {

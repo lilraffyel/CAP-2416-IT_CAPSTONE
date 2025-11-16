@@ -1,9 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-
-const API_BASE = "https://cap-2416-it-capstone.onrender.com";
-// const API_BASE = "http://localhost:5000";
+import { API_URL } from '../../api.js';
 
 function StudentHelpRequest() {
   const [studentId, setStudentId] = useState(null);
@@ -14,7 +12,7 @@ function StudentHelpRequest() {
 
   useEffect(() => {
     // Fetch the logged-in student ID from session
-    axios.get(`${API_BASE}/api/students/me`, { withCredentials: true })
+    axios.get(`${API_URL}/api/students/me`, { withCredentials: true })
       .then(res => {
         setStudentId(res.data.studentId);
       })
@@ -24,7 +22,7 @@ function StudentHelpRequest() {
       });
 
     // Fetch all available content domains
-    axios.get(`${API_BASE}/api/students/domains`, { withCredentials: true })
+    axios.get(`${API_URL}/api/students/domains`, { withCredentials: true })
       .then(res => setDomains(res.data))
       .catch(err => {
         console.error(err);
@@ -39,7 +37,7 @@ function StudentHelpRequest() {
     }
 
     axios.post(
-      `${API_BASE}/api/students/help-request`,
+      `${API_URL}/api/students/help-request`,
       {
         studentId,
         domainId: selectedDomain,

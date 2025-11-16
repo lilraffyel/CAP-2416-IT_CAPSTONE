@@ -1,4 +1,8 @@
 import os
+
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask import Flask, request, jsonify
 from flask_session import Session
 from flask_cors import CORS
@@ -20,8 +24,9 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'a-super-secret-key-for-
 app.config['SESSION_COOKIE_NAME'] = os.environ.get('SESSION_COOKIE_NAME', 'session')
 app.session_cookie_name = app.config['SESSION_COOKIE_NAME']
 
+
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SAMESITE'] = os.environ.get('SESSION_COOKIE_SAMESITE', 'Lax')
 app.config['SESSION_COOKIE_SECURE'] = os.environ.get('SESSION_COOKIE_SECURE', 'True').lower() == 'true'
 
 Session(app)

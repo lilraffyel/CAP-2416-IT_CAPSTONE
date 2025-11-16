@@ -2,9 +2,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
-const API_BASE = "https://cap-2416-it-capstone.onrender.com";
-// const API_BASE = "http://localhost:5000";
+import { API_URL } from '../api.js';
 
 function Login() {
   const navigate = useNavigate();
@@ -19,7 +17,7 @@ function Login() {
   e.preventDefault();
   try {
     const response = await axios.post(
-      `${API_BASE}/api/login`,
+      `${API_URL}/api/login`,
       { id, password },
       { withCredentials: true }  
     );

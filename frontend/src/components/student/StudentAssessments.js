@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
-
-const API_BASE = "https://cap-2416-it-capstone.onrender.com";
-// const API_BASE = "${API_BASE}";
+import { API_URL } from '../../api.js';
 
 function StudentAssessments({ setNavBlocked }) { // Receive prop
   const location = useLocation(); // Get location object
@@ -30,7 +28,7 @@ function StudentAssessments({ setNavBlocked }) { // Receive prop
 
   useEffect(() => {
     // Fetch logged-in student ID
-    axios.get(`${API_BASE}/api/students/me`, { withCredentials: true })
+    axios.get(`${API_URL}/api/students/me`, { withCredentials: true })
       .then((res) => {
         setStudentId(res.data.studentId);
       })
@@ -42,7 +40,7 @@ function StudentAssessments({ setNavBlocked }) { // Receive prop
 
   useEffect(() => {
     if (studentId) {
-      axios.get(`${API_BASE}/api/teacher/student-assessments/${studentId}`)
+      axios.get(`${API_URL}/api/teacher/student-assessments/${studentId}`)
         .then((res) => setAssignedTitles(res.data))
         .catch((err) => {
           console.error(err);
@@ -83,7 +81,7 @@ function StudentAssessments({ setNavBlocked }) { // Receive prop
     setSubmitted(false); // Reset submission state for retry
     setHasSelectedOption(false); // Reset option selection state
     axios
-      .get(`${API_BASE}/api/teacher/student-assessment/${title}`)
+      .get(`${API_URL}/api/teacher/student-assessment/${title}`)
       .then((res) => setQuestions(res.data.questions))
       .catch((err) => {
         console.error(err);
@@ -104,7 +102,7 @@ function StudentAssessments({ setNavBlocked }) { // Receive prop
 
     axios
       .post(
-        `${API_BASE}/api/teacher/submit-assessment`,
+        `${API_URL}/api/teacher/submit-assessment`,
         {
           studentId,
           assessmentTitle: selectedTitle,

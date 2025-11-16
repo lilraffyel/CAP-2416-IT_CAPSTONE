@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-
-const API_BASE = "https://cap-2416-it-capstone.onrender.com";
-// const API_BASE = "http://localhost:5000";
+import { API_URL } from '../api.js';
 
 function renderValues(values) {
   if (!Array.isArray(values)) return "";
@@ -221,7 +219,7 @@ function BayesianNetworkManagement() {
     if (selectedNetwork) {
       setIsLoading(true); // <-- Set loading to true before the request
       axios
-        .get(`${API_BASE}/api/admin/get_cpds?network=${selectedNetwork}`, { withCredentials: true })
+        .get(`${API_URL}/api/admin/get_cpds?network=${selectedNetwork}`, { withCredentials: true })
         .then((res) => {
           const data = res.data;
           if (data.cpds) {
@@ -308,7 +306,7 @@ function BayesianNetworkManagement() {
   const handleSaveAll = () => {
     axios
       .post(
-        `${API_BASE}/api/admin/batch_update_cpds`,
+        `${API_URL}/api/admin/batch_update_cpds`,
         { changes: pendingChanges },
         { withCredentials: true }
       )
@@ -316,7 +314,7 @@ function BayesianNetworkManagement() {
         setMessage(res.data.message || "All changes saved and BIFs reloaded.");
         setPendingChanges([]);
         axios
-          .get(`${API_BASE}/api/admin/get_cpds?network=${selectedNetwork}`, { withCredentials: true })
+          .get(`${API_URL}/api/admin/get_cpds?network=${selectedNetwork}`, { withCredentials: true })
           .then((res) => setCpds(Object.entries(res.data.cpds)));
       })
       .catch((err) => {

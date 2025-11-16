@@ -1,9 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { API_URL } from '../api.js';
 import "./TutorLog.css";
-
-const API_BASE = "https://cap-2416-it-capstone.onrender.com";
-// const API_BASE = "${API_BASE}";
 
 const emptyNoteEntry = {
   id: null,
@@ -128,7 +126,7 @@ export default function TutorLog() {
   useEffect(() => {
     setIsLoadingStudents(true);
     axios
-      .get(`${API_BASE}/api/me`, { withCredentials: true })
+      .get(`${API_URL}/api/me`, { withCredentials: true })
       .then((res) => {
         if (res.data.role !== "Tutor") {
           setRoleMismatch(true);
@@ -145,7 +143,7 @@ export default function TutorLog() {
     if (!tutorId) return;
     setIsLoadingStudents(true);
     axios
-      .get(`${API_BASE}/api/teacher/tutor/${tutorId}/students`, { withCredentials: true })
+      .get(`${API_URL}/api/teacher/tutor/${tutorId}/students`, { withCredentials: true })
       .then((res) => setStudents(res.data || []))
       .catch(() => setStudents([]))
       .finally(() => setIsLoadingStudents(false));
@@ -162,7 +160,7 @@ export default function TutorLog() {
     }
     setIsLoadingDetails(true);
 
-    const base = `${API_BASE}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}`;
+    const base = `${API_URL}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}`;
     Promise.all([
       axios.get(`${base}/results`, { withCredentials: true }).catch(() => ({ data: [] })),
       axios.get(`${base}/note`, { withCredentials: true }).catch(() => ({ data: null })),
@@ -224,7 +222,7 @@ export default function TutorLog() {
     setStatusMessage("");
     try {
       const res = await axios.post(
-        `${API_BASE}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}/note`,
+        `${API_URL}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}/note`,
         { comment: noteDraft },
         { withCredentials: true }
       );
@@ -246,14 +244,14 @@ export default function TutorLog() {
     form.append("file", fileToUpload);
     try {
       await axios.post(
-        `${API_BASE}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}/materials`,
+        `${API_URL}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}/materials`,
         form,
         { withCredentials: true, headers: { "Content-Type": "multipart/form-data" } }
       );
       setFileToUpload(null);
       // refresh list
       const list = await axios.get(
-        `${API_BASE}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}/materials`,
+        `${API_URL}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}/materials`,
         { withCredentials: true }
       );
       setMaterials(list.data || []);
@@ -409,7 +407,7 @@ export default function TutorLog() {
               <div className="tutor-log-note">
                 <h3>Teaching Materials</h3>
                 <p style={{ marginTop: 0, color: "#555" }}>
-                 Add learning materials to share with your student. 
+                 Upload your learning materials. 
                  Supported file types: PDF, DOC, DOCX, PPT, and PPTX (max 20 MB each). 
                  These files will remain accessible to future tutors.
                 </p>
@@ -423,7 +421,7 @@ export default function TutorLog() {
                   <ul style={{ marginTop: "0.75rem" }}>
                     {materials.map((m) => (
                       <li key={m.id} style={{ marginBottom: "0.35rem" }}>
-                        <a href={`${API_BASE}/api/teacher/tutor/materials/${m.id}/download`} target="_blank" rel="noreferrer">
+                        <a href={`${API_URL}/api/teacher/tutor/materials/${m.id}/download`} target="_blank" rel="noreferrer">
                           {m.original_filename}
                         </a>{" "}
                         <span style={{ color: "#777", fontSize: "0.9rem" }}>

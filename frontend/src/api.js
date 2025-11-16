@@ -1,5 +1,4 @@
-const API_URL = "https://cap-2416-it-capstone.onrender.com";
-// const API_URL = "http://127.0.0.1:5000";
+export const API_URL = process.env.REACT_APP_API;
 
 /**
  * 1) List all BIF files
