@@ -337,25 +337,95 @@ def get_domains():
 @teacher_routes.route('/competencies', methods=['GET'])
 def get_competencies():
     domain_id = request.args.get('domain')
-
+    print(f"[DEBUG] /competencies called with domain_id: {domain_id}")
     conn = get_db()
     cursor = conn.cursor()
-
     if domain_id:
         cursor.execute("""
-            SELECT c.id, c.title AS label
+            SELECT c.id, c.title AS label, a.competency_node, c.content_domain_id
             FROM competencies c
+            LEFT JOIN assessments a ON a.title = c.title
             WHERE c.content_domain_id = ?
         """, (domain_id,))
     else:
         cursor.execute("""
-            SELECT c.id, c.title AS label
+            SELECT c.id, c.title AS label, a.competency_node, c.content_domain_id
             FROM competencies c
+            LEFT JOIN assessments a ON a.title = c.title
         """)
-
     competencies = [dict(row) for row in cursor.fetchall()]
+    print("[DEBUG] Competencies returned:", competencies)
     conn.close()
     return jsonify(competencies)
+
+@teacher_routes.route('/student-progress', methods=['GET'])
+def get_student_progress():
+    student_id = request.args.get('student_id')
+    domain_id = request.args.get('domain_id')
+    if not student_id or not domain_id:
+        return jsonify({'error': 'Missing student_id or domain_id'}), 400
+
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            SELECT competency_node, estimated_mastery, raw_score, percentage, actual_mastery, is_locked
+            FROM student_progress
+            WHERE student_id = ? AND domain_id = ?
+        """, (student_id, domain_id))
+        
+        progress_data = {row['competency_node']: dict(row) for row in cursor.fetchall()}
+    except sqlite3.OperationalError:
+        # If the table doesn't exist, return empty data.
+        # The migration script should be run to create it.
+        progress_data = {}
+    
+    conn.close()
+    return jsonify(progress_data)
+
+@teacher_routes.route('/student-progress', methods=['POST'])
+def save_student_progress():
+    data = request.get_json()
+    student_id = data.get('student_id')
+    domain_id = data.get('domain_id')
+    progress_rows = data.get('progress')
+
+    if not student_id or not domain_id or not progress_rows:
+        return jsonify({'error': 'Missing required data'}), 400
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    for row in progress_rows:
+        cursor.execute("""
+            INSERT INTO student_progress (student_id, domain_id, competency_node, estimated_mastery, raw_score, percentage, actual_mastery, is_locked)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(student_id, domain_id, competency_node) DO UPDATE SET
+                estimated_mastery = excluded.estimated_mastery,
+                raw_score = excluded.raw_score,
+                percentage = excluded.percentage,
+                actual_mastery = excluded.actual_mastery,
+                is_locked = excluded.is_locked
+        """, (student_id, domain_id, row['node'], row['estimatedMastery'], row['rawScore'], row['percentage'], row['actualMastery'], 1 if row.get('is_locked') else 0))
+
+    conn.commit()
+    conn.close()
+    return jsonify({'message': 'Progress saved successfully'})
+
+@teacher_routes.route('/student-progress', methods=['DELETE'])
+def reset_student_progress():
+    student_id = request.args.get('student_id')
+    domain_id = request.args.get('domain_id')
+    if not student_id or not domain_id:
+        return jsonify({'error': 'Missing student_id or domain_id'}), 400
+    
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM student_progress WHERE student_id = ? AND domain_id = ?", (student_id, domain_id))
+    conn.commit()
+    conn.close()
+    return jsonify({'message': 'Progress reset successfully'})
 
 # ─── Assignment API ─────────────────────────────────────────────────────
 @teacher_routes.route('/assignments', methods=['GET'])
@@ -1039,10 +1109,13 @@ def manual_query():
 
 @teacher_routes.route('/auto-query-result/<int:result_id>', methods=['GET'])
 def auto_query_result(result_id):
+    print(f"[DEBUG] /auto-query-result called with result_id: {result_id}")
     result, error = run_auto_query(result_id)
+    print("[DEBUG] Auto query result:", result)
     if error:
         lower_error = error.lower()
         status = 404 if ('not found' in lower_error or 'not loaded' in lower_error) else 400
+        print("[DEBUG] Auto query error:", error)
         return jsonify({'error': error}), status
 
     return jsonify(result)
@@ -1122,6 +1195,21 @@ def unassign_competency():
     conn.commit()
     conn.close()
     return jsonify({'message': 'Assignment removed'})
+
+
+# teacher_routes.py
+@teacher_routes.route('/network-structure', methods=['GET'])
+def get_network_structure():
+    bif_file = request.args.get('bif_file')
+    model_data = get_model(bif_file)
+    if not model_data:
+        return jsonify({'error': 'Network not found'}), 404
+    model = model_data['model']
+    structure = []
+    for node in model.nodes():
+        parents = list(model.get_parents(node))
+        structure.append({'node': node, 'parents': parents})
+    return jsonify(structure)
 
 
 
