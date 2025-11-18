@@ -15,11 +15,11 @@ function TeacherEditAssessments() {
   const [assessmentsByDomain, setAssessmentsByDomain] = useState({});
   const [domains, setDomains] = useState([]);
   const [contentDomains, setContentDomains] = useState([]);
-const [bifFiles, setBifFiles] = useState([]);
-const [selectedDomain, setSelectedDomain] = useState("");
-const [selectedBifFile, setSelectedBifFile] = useState("");
-const [competencyNodeInput, setCompetencyNodeInput] = useState("");
-const [availableNodes, setAvailableNodes] = useState([]); // <-- New state for the dropdown options
+  const [bifFiles, setBifFiles] = useState([]);
+  const [selectedDomain, setSelectedDomain] = useState("");
+  const [selectedBifFile, setSelectedBifFile] = useState("");
+  const [competencyNodeInput, setCompetencyNodeInput] = useState("");
+  const [availableNodes, setAvailableNodes] = useState([]); // <-- New state for the dropdown options
 
 // Replace both editQuestionText and editQuestionOptions with:
 const editQuestionAll = (qId, newText, newOptions, newCorrect) => {
@@ -263,33 +263,47 @@ useEffect(() => {
     <div key={domain} style={{ marginBottom: '1rem' }}>
   <div style={{ fontWeight: 'bold', marginTop: '0.5rem' }}>{domain}</div>
   {(assessmentsByDomain[domain] || []).map(assObj => (
-    <span key={assObj.title} style={{ margin: '0.5rem' }}> {/* Add margin for spacing */}
+    <span key={assObj.title} style={{ margin: '0rem', display: 'block', marginBottom: '0.25rem'}}> 
       <button
         style={{
-          background: selectedAssessment === assObj.title ? '#2980b9' : '#3498db',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '4px',
-          padding: '0.3rem 0.8rem',
-          marginRight: '0.3rem'
+          background: selectedAssessment === assObj.title ? '#3598DA' : '#ffffffff',
+          color: '#000000ff',
+          padding: '0.3rem',
+          display: 'flex',          
+          width: '50%',            
+          justifyContent: 'space-between', 
+          alignItems: 'center',     
         }}
         onClick={() => handleAssessmentSelect(assObj.title)}
       >
-        {assObj.title}
-      </button>
-      <button
-        onClick={() => deleteAssessment(assObj.title)}
-        style={{
-          background: 'red',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          padding: '0.3rem 0.5rem',
-          marginLeft: '0.5rem' // Add spacing between buttons
-        }}
-        title="Delete assessment"
+        <div style={{
+        overflowWrap: "break-word",
+        whiteSpace: "normal",
+        flex: 1,                   
+        textAlign: "left"          
+      }} 
+      title={assObj.title}
       >
-        &times;
+        {assObj.title}
+      </div>
+      <span 
+        onClick={(e) => {
+          e.stopPropagation();  
+          deleteAssessment(assObj.title);
+        }}
+        style={{ 
+          color: 'white', 
+          marginLeft: '0.5rem', 
+          cursor: 'pointer', 
+          fontSize: '15px', 
+          fontWeight: 'bold', 
+          borderRadius: '2px',
+          backgroundColor: '#c42b1c',
+          alignItems: 'center',
+        }}
+      >
+        X
+      </span>
       </button>
     </span>
   ))}
