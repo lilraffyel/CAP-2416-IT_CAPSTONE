@@ -227,3 +227,183 @@ button {
   border-radius: 6px;
   margin-bottom: 1rem;
 }
+
+
+/* ================= STUDENT PROGRESS UI ================= */
+
+.student-progress-section {
+  margin-top: 1.5rem;
+}
+
+.student-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.student-progress-title {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--primary-blue);
+}
+
+.student-progress-subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  color: #aaaaaa;
+}
+
+.student-progress-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.domain-select-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: #cccccc;
+}
+
+.domain-select {
+  background-color: #121212;
+  color: #f5f5f5;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  padding: 0.4rem 0.75rem;
+  min-width: 180px;
+}
+
+.btn-reset-table {
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+}
+
+/* Card around the table */
+.student-progress-card {
+  margin-top: 1rem;
+  background: var(--panel-bg);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+/* Table styling */
+.competency-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.competency-table thead {
+  background: linear-gradient(90deg, #1e272e, #192a56);
+}
+
+.competency-table th,
+.competency-table td {
+  padding: 0.65rem 0.75rem;
+}
+
+.competency-table th {
+  text-align: left;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #f5f7fa;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  white-space: nowrap;
+}
+
+.competency-row:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.competency-row:nth-child(even) {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.competency-row:hover {
+  background: rgba(52, 152, 219, 0.14);
+}
+
+.competency-name {
+  font-weight: 500;
+  color: #ecf0f1;
+}
+
+.numeric-cell {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Estimated mastery = mini progress bar */
+.mastery-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 160px;
+}
+
+.mastery-bar {
+  flex: 1;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  overflow: hidden;
+}
+
+.mastery-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #27ae60, #2ecc71);
+}
+
+.mastery-label {
+  font-size: 0.8rem;
+  color: #ecf0f1;
+  min-width: 3rem;
+  text-align: right;
+}
+
+/* Actual mastery badges */
+.mastery-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.mastery-badge.pass {
+  background: rgba(46, 204, 113, 0.18);
+  color: #2ecc71;
+  border: 1px solid rgba(46, 204, 113, 0.55);
+}
+
+.mastery-badge.fail {
+  background: rgba(231, 76, 60, 0.18);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.55);
+}
+
+.mastery-badge.neutral {
+  background: rgba(189, 195, 199, 0.18);
+  color: #bdc3c7;
+  border: 1px solid rgba(189, 195, 199, 0.4);
+}
+
+/* Mobile tweaks */
+@media (max-width: 900px) {
+  .student-progress-card {
+    overflow-x: auto;
+  }
+  .competency-table {
+    min-width: 600px;
+  }
+}
