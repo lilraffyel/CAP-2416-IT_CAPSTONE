@@ -360,7 +360,22 @@ button {
 
 .mastery-bar-fill {
   height: 100%;
+  transition: width 0.3s ease;
+}
+
+/* ≥ 70% (Pass) – green bar */
+.mastery-bar-fill.pass {
   background: linear-gradient(90deg, #27ae60, #2ecc71);
+}
+
+/* < 70% (Fail) – red bar */
+.mastery-bar-fill.fail {
+  background: linear-gradient(90deg, #e74c3c, #c0392b);
+}
+
+/* No data / neutral */
+.mastery-bar-fill.neutral {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .mastery-label {
@@ -369,6 +384,7 @@ button {
   min-width: 3rem;
   text-align: right;
 }
+
 
 /* Actual mastery badges */
 .mastery-badge {
