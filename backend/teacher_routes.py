@@ -1094,11 +1094,15 @@ def manual_query():
     competency = data.get('competency')
     score = data.get('score')
     total = data.get('total', 10)
+    student_id = data.get('student_id')
+    domain_id = data.get('domain_id')
 
     if score is None:
         return jsonify({'error': 'Missing score for manual query'}), 400
+    if not student_id or not domain_id:
+        return jsonify({'error': 'Missing student_id or domain_id for query context'}), 400
 
-    result, error = run_manual_query(bif_file, competency, score, total)
+    result, error = run_manual_query(bif_file, competency, score, total, student_id, domain_id)
     if error:
         lower_error = error.lower()
         status = 404 if ('not found' in lower_error or 'not loaded' in lower_error) else 400

@@ -139,22 +139,45 @@ def assess_competencies():
 
     return jsonify({"assessment_results": results})
 
-def determine_next_focus(model, infer, failed_competency, evidence_state=0):
+def determine_next_focus(model, infer, failed_competency, student_id, domain_id, evidence_state=0):
     """
-    Determines the most likely prerequisite to focus on.
+    Determines the most likely prerequisite to focus on, excluding already passed competencies.
     evidence_state defaults to 0 (not mastered).
     """
     if failed_competency not in model.nodes():
         return {"next_focus": None, "error": f"Competency '{failed_competency}' not in model"}
+
+    # --- NEW: Get already passed competencies for the student ---
+    passed_competencies = set()
+    if student_id and domain_id:
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT competency_node FROM student_progress WHERE student_id = ? AND domain_id = ? AND actual_mastery = ?",
+                (student_id, domain_id, "✔ Pass")
+            )
+            passed_competencies = {row['competency_node'] for row in cursor.fetchall()}
+            conn.close()
+        except Exception as e:
+            print(f"Could not fetch student progress: {e}")
+    # --- END NEW ---
+
     prerequisites = model.get_parents(failed_competency)
-    if not prerequisites:
-        # If there are no parents, it's a foundational node.
-        return {"next_focus": f"This is a foundational topic. Please review '{failed_competency}' again."}
-    if len(prerequisites) == 1:
-        return {"next_focus": prerequisites[0]}
+    
+    # --- NEW: Filter out passed prerequisites ---
+    eligible_prerequisites = [p for p in prerequisites if p not in passed_competencies]
+    # --- END NEW ---
+
+    if not eligible_prerequisites:
+        # If all prerequisites are passed or there are no prerequisites, suggest reviewing the failed topic.
+        return {"next_focus": f"All prerequisites seem to be mastered. Please review '{failed_competency}' again."}
+    
+    if len(eligible_prerequisites) == 1:
+        return {"next_focus": eligible_prerequisites[0]}
 
     prob_dict = {}
-    for pre in prerequisites:
+    for pre in eligible_prerequisites:
         try:
             # ✅ FIX: The evidence value MUST be a string to match the BIF state names ('0', '1').
             evidence_dict = {failed_competency: str(evidence_state)}
@@ -172,7 +195,8 @@ def determine_next_focus(model, infer, failed_competency, evidence_state=0):
     if prob_dict:
         weakest = min(prob_dict, key=prob_dict.get)
         return {"next_focus": weakest, "mastery_probabilities": prob_dict}
-    return {"next_focus": prerequisites[0]}
+        
+    return {"next_focus": eligible_prerequisites[0]}
 
 @prereq_bp.route("/cpds", methods=["GET"])
 def get_cpds():

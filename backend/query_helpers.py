@@ -29,6 +29,8 @@ def run_manual_query(
     competency: str,
     score: float,
     total: float,
+    student_id: str,
+    domain_id: int,
 ) -> Tuple[Optional[Dict], Optional[str]]:
     """Execute a manual Bayesian query for a competency.
 
@@ -65,9 +67,15 @@ def run_manual_query(
     }
 
     if ratio < 0.7:
-        outcome = determine_next_focus(model_data["model"], model_data["infer"], competency, 0)
+        outcome = determine_next_focus(model_data["model"], model_data["infer"], competency, student_id, domain_id, 0)
         result["next_focus"] = outcome.get("next_focus") if outcome else None
         result["mastery_probabilities"] = outcome.get("mastery_probabilities") if outcome else None
+    else:
+        # Competency is passed. Show the message for any node that is not a bottom-level (leaf) node.
+        model = model_data["model"]
+        children = model.get_children(competency)
+        if children:  # If it has children, it's not a bottom-level node.
+            result["next_focus"] = "Competency Passed. Consider focusing on a sibling or parent node."
 
     return result, None
 
@@ -79,7 +87,7 @@ def run_auto_query(result_id: int) -> Tuple[Optional[Dict], Optional[str]]:
     cursor = conn.cursor()
     cursor.execute(
         """
-        SELECT sr.score, sr.total, a.title AS assessment_title, a.bif_file, a.competency_node
+        SELECT sr.student_id, sr.score, sr.total, a.title AS assessment_title, a.bif_file, a.competency_node, a.content_domain_id
         FROM student_results sr
         JOIN assessments a ON sr.assessment_id = a.id
         WHERE sr.id = ?
@@ -100,4 +108,4 @@ def run_auto_query(result_id: int) -> Tuple[Optional[Dict], Optional[str]]:
     if not competency_node:
         return None, f"Assessment '{row['assessment_title']}' is missing its competency node mapping."
 
-    return run_manual_query(bif_file, competency_node, row["score"], row["total"])
+    return run_manual_query(bif_file, competency_node, row["score"], row["total"], row["student_id"], row["content_domain_id"])

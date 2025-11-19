@@ -120,7 +120,7 @@ function TutorQuery() {
               const savedProgress = progressRes.data;
               const newLockedMastery = {};
 
-              const tableData = flatStructure.map(item => {
+              let tableData = flatStructure.map(item => {
                 const savedData = savedProgress[item.node] || {};
                 if (savedData.is_locked) {
                     newLockedMastery[item.node] = true;
@@ -135,6 +135,18 @@ function TutorQuery() {
                   actualMastery: savedData.actual_mastery || null,
                 };
               }).filter(row => row.node);
+              
+              // --- NEW: Add the domain title row at the top ---
+              const domainRow = {
+                node: domainName,
+                isDomainRow: true, // Special flag for rendering
+                indent: -1, // Use a special indent to distinguish
+                estimatedMastery: "",
+                rawScore: "",
+                percentage: "",
+                actualMastery: null, // This will be calculated later
+              };
+              tableData.unshift(domainRow);
               
               setCompetencyTable(tableData);
               setLockedMastery(newLockedMastery);
@@ -179,6 +191,9 @@ function TutorQuery() {
 
     setCompetencyTable(prevTable => {
       updatedTable = prevTable.map(row => {
+        // Skip domain row, it has no direct updates
+        if (row.isDomainRow) return row;
+
         let updatedMastery = row.estimatedMastery;
         let updatedRawScore = row.rawScore;
         let updatedPercentage = row.percentage;
@@ -213,6 +228,20 @@ function TutorQuery() {
         };
       });
 
+      // --- NEW: Calculate domain mastery after updates ---
+      const subCompetencies = updatedTable.filter(r => !r.isDomainRow && r.indent > 0);
+      const allSubCompetenciesPassed = subCompetencies.length > 0 && subCompetencies.every(
+        r => r.actualMastery === "✔ Pass"
+      );
+
+      updatedTable = updatedTable.map(row => {
+        if (row.isDomainRow) {
+          return { ...row, actualMastery: allSubCompetenciesPassed ? "✔ Pass" : null };
+        }
+        return row;
+      });
+      // --- END NEW ---
+
       // After updating state, save the entire table to the backend
       if (updatedTable.length > 0) {
         if (autoQueryResults.mastery_probabilities) {
@@ -220,10 +249,12 @@ function TutorQuery() {
                 newLocked[key] = true;
             });
         }
+        // Filter out the domain row before saving to DB
+        const progressToSave = updatedTable.filter(row => !row.isDomainRow);
         axios.post(`${API_URL}/api/teacher/student-progress`, {
             student_id: selectedStudent,
             domain_id: selectedDomain,
-            progress: updatedTable.map(row => ({...row, is_locked: newLocked[row.node] || false }))
+            progress: progressToSave.map(row => ({...row, is_locked: newLocked[row.node] || false }))
         });
       }
       return updatedTable;
@@ -290,8 +321,8 @@ function TutorQuery() {
 
   // Assess the tested competencies (and get mastery probabilities if applicable)
   const handleAssess = async () => {
-    if (!selectedBif || tested.length === 0) {
-      alert("Please select a BIF file and add a tested competency.");
+    if (!selectedBif || tested.length === 0 || !selectedStudent || !selectedDomain) {
+      alert("Please select a student, domain, BIF file, and add a tested competency.");
       return;
     }
     const itemToAssess = tested[0];
@@ -304,6 +335,8 @@ function TutorQuery() {
           competency: itemToAssess.competency,
           score: itemToAssess.score,
           total: 10, // --- FIX: Send a total score of 10 ---
+          student_id: selectedStudent,
+          domain_id: selectedDomain,
         },
         { withCredentials: true }
       );
@@ -454,14 +487,39 @@ function TutorQuery() {
               <tr>
                 <th>Competency / Node</th>
                 <th>Estimated Mastery</th>
-                <th>Raw Score</th>
-                <th>Percentage</th>
+                <th>Actual Score</th>
+                <th>Actual Percentage</th>
                 <th>Actual Mastery</th>
               </tr>
             </thead>
            
 <tbody>
   {competencyTable.map((row, idx) => {
+    // --- NEW: Handle rendering for the domain row ---
+    if (row.isDomainRow) {
+      const status = row.actualMastery === "✔ Pass" ? "pass" : "neutral";
+      return (
+        <tr key="domain-row" className="domain-title-row">
+          <td className="competency-name" style={{ fontWeight: 'bold' }}>
+            {row.node}
+          </td>
+          <td className="numeric-cell">-</td>
+          <td className="numeric-cell">-</td>
+          <td>-</td>
+          <td>
+            {row.actualMastery ? (
+              <span className={`mastery-badge ${status}`}>
+                {row.actualMastery}
+              </span>
+            ) : (
+              <span className="mastery-badge neutral">-</span>
+            )}
+          </td>
+        </tr>
+      );
+    }
+    // --- END NEW ---
+
     const status =
       row.actualMastery &&
       (row.actualMastery.toLowerCase().includes("pass")
@@ -500,6 +558,8 @@ function TutorQuery() {
           style={{ paddingLeft: `${row.indent * 1.5}rem` }}
         >
           {row.node}
+          {/* --- NEW: Add diagnostic test indicator --- */}
+          {row.indent === 0 && <span style={{ fontStyle: 'italic', marginLeft: '8px', color: '#aaa' }}>(Diagnostic Test)</span>}
         </td>
 
         {/* Estimated Mastery: plain text now */}
@@ -546,9 +606,49 @@ function TutorQuery() {
         </div>
       </section>
 
+      {/* Auto Query Button and Results */}
+      {selectedStudent && (
+        <div className="section" style={{ marginBottom: "2rem" }}>
+          <h3 style={{ marginTop: "2rem" }}>Automatic Query Result</h3>
+          {isAutoQueryLoading ? (
+            <div>Loading automatic query result...</div>
+          ) : autoQueryResults && autoQueryResults.competency ? (
+            <div>
+              <div>
+                <b>Competency:</b> {autoQueryResults.competency}
+              </div>
+              <div>
+                <b>Score:</b> {autoQueryResults.score} / {autoQueryResults.total}
+              </div>
+              {autoQueryResults.mastery_probabilities && (
+                <div>
+                  <b>Mastery Probabilities:</b>
+                  <ul style={{ paddingLeft: 16 }}>
+                    {Object.entries(autoQueryResults.mastery_probabilities).map(([k, v]) => (
+                      <li key={k}>
+                        {k}: <b>{formatPercent(v)}</b>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {autoQueryResults.next_focus && (
+                <div>
+                  <b>Next Focus:</b> {autoQueryResults.next_focus}
+                </div>
+              )}
+              {autoQueryResults.error && <span style={{ color: "red" }}>Error: {autoQueryResults.error}</span>}
+            </div>
+          ) : autoQueryResults && autoQueryResults.error ? (
+            <div style={{ color: "red" }}>{autoQueryResults.error}</div>
+          ) : (
+            <div>No automatic query result yet. Select a result from the table below to query.</div>
+          )}
+        </div>
+      )}
 
       {/* Automatic Query Section */}
-      <h3 style={{ marginTop: "2rem" }}>Automatic Query</h3>
+      <h3 style={{ marginTop: "2rem" }}>Student Assessment History</h3>
 
       {/* Student Results Table */}
       {selectedStudent && (
@@ -606,44 +706,6 @@ function TutorQuery() {
 )}
 
     {/* Auto Query Button and Results */}
-{selectedStudent && (
-  <div className="section" style={{ marginBottom: "2rem" }}>
-    {isAutoQueryLoading ? (
-      <div>Loading automatic query result...</div>
-    ) : autoQueryResults && autoQueryResults.competency ? (
-      <div>
-        <div>
-          <b>Competency:</b> {autoQueryResults.competency}
-        </div>
-        <div>
-          <b>Score:</b> {autoQueryResults.score} / {autoQueryResults.total}
-        </div>
-        {autoQueryResults.mastery_probabilities && (
-          <div>
-            <b>Mastery Probabilities:</b>
-            <ul style={{ paddingLeft: 16 }}>
-              {Object.entries(autoQueryResults.mastery_probabilities).map(([k, v]) => (
-                <li key={k}>
-                  {k}: <b>{formatPercent(v)}</b>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        {autoQueryResults.next_focus && (
-          <div>
-            <b>Next Focus:</b> {autoQueryResults.next_focus}
-          </div>
-        )}
-        {autoQueryResults.error && <span style={{ color: "red" }}>Error: {autoQueryResults.error}</span>}
-      </div>
-    ) : autoQueryResults && autoQueryResults.error ? (
-      <div style={{ color: "red" }}>{autoQueryResults.error}</div>
-    ) : (
-      <div>No automatic query result yet.</div>
-    )}
-  </div>
-)}
 <h3 style={{ marginTop: "2rem" }}>Manual Query</h3>
     {/* BIF file selection */}
     <div className="section">
@@ -808,7 +870,7 @@ function getEstimationOrder() {
   return [
     { node: "Estimation", indent: 0 },
     { node: "Multiply_Two_Numbers", indent: 1 },
-    { node: "Product_Using_Multiples", indent: 3 },
+    { node: "Product_Using_Multiples", indent: 2 },
     { node: "Sum_Difference_Rounding", indent: 2 },
     { node: "Difference_Up_To_4_Digits", indent: 3 },
     { node: "Sum_Up_To_4_Digits", indent: 3 },
