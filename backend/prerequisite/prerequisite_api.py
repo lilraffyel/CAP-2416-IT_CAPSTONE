@@ -147,7 +147,14 @@ def determine_next_focus(model, infer, failed_competency, student_id, domain_id,
     if failed_competency not in model.nodes():
         return {"next_focus": None, "error": f"Competency '{failed_competency}' not in model"}
 
-    # --- NEW: Get already passed competencies for the student ---
+    prerequisites = model.get_parents(failed_competency)
+
+    # --- NEW: Check if it's a top-level node first ---
+    if not prerequisites:
+        return {"next_focus": f"This is a foundational topic. Please review '{failed_competency}' again."}
+    # --- END NEW ---
+
+    # Get already passed competencies for the student
     passed_competencies = set()
     if student_id and domain_id:
         try:
@@ -161,17 +168,13 @@ def determine_next_focus(model, infer, failed_competency, student_id, domain_id,
             conn.close()
         except Exception as e:
             print(f"Could not fetch student progress: {e}")
-    # --- END NEW ---
 
-    prerequisites = model.get_parents(failed_competency)
-    
-    # --- NEW: Filter out passed prerequisites ---
+    # Filter out passed prerequisites
     eligible_prerequisites = [p for p in prerequisites if p not in passed_competencies]
-    # --- END NEW ---
 
     if not eligible_prerequisites:
-        # If all prerequisites are passed or there are no prerequisites, suggest reviewing the failed topic.
-        return {"next_focus": f"All prerequisites seem to be mastered. Please review '{failed_competency}' again."}
+        # This case now only handles when all prerequisites are passed.
+        return {"next_focus": f"All direct prerequisites seem to be mastered. Please review '{failed_competency}' again."}
     
     if len(eligible_prerequisites) == 1:
         return {"next_focus": eligible_prerequisites[0]}
