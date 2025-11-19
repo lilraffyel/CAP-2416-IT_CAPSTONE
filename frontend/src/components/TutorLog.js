@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { API_URL } from '../api.js';
+import { API_URL } from "../api.js";
 import "./TutorLog.css";
 
 const emptyNoteEntry = {
@@ -36,7 +36,10 @@ const normalizeNoteResponse = (notePayload = {}) => {
     .map((entry) => {
       const normalized = { ...emptyNoteEntry, ...entry };
       const authorId =
-        normalized.author_id ?? normalized.last_updated_by ?? normalized.tutor_id ?? null;
+        normalized.author_id ??
+        normalized.last_updated_by ??
+        normalized.tutor_id ??
+        null;
       const authorName =
         normalized.author_name ?? normalized.last_updated_by_name ?? "";
 
@@ -65,14 +68,15 @@ const normalizeNoteResponse = (notePayload = {}) => {
     return idB - idA;
   });
 
-  const latest = notePayload.latest && typeof notePayload.latest === "object"
-    ? {
-        ...emptyNoteEntry,
-        ...notePayload.latest,
-        comment: (notePayload.latest.comment || "").trim(),
-        materials: (notePayload.latest.materials || "").trim(),
-      }
-    : history[0] || null;
+  const latest =
+    notePayload.latest && typeof notePayload.latest === "object"
+      ? {
+          ...emptyNoteEntry,
+          ...notePayload.latest,
+          comment: (notePayload.latest.comment || "").trim(),
+          materials: (notePayload.latest.materials || "").trim(),
+        }
+      : history[0] || null;
 
   if (latest) {
     const matchesExisting = history.some((entry) => {
@@ -80,7 +84,10 @@ const normalizeNoteResponse = (notePayload = {}) => {
         return entry.id === latest.id;
       }
       if (entry.updated_at && latest.updated_at) {
-        return entry.updated_at === latest.updated_at && entry.comment === latest.comment;
+        return (
+          entry.updated_at === latest.updated_at &&
+          entry.comment === latest.comment
+        );
       }
       return false;
     });
@@ -103,6 +110,52 @@ function formatDate(value) {
   return date.toLocaleString();
 }
 
+// Hard-coded Estimation structure (same as Tutor Query)
+function getEstimationOrder() {
+  return [
+    { node: "Estimation", indent: 0 },
+    { node: "Multiply_Two_Numbers", indent: 1 },
+    { node: "Product_Using_Multiples", indent: 3 },
+    { node: "Sum_Difference_Rounding", indent: 2 },
+    { node: "Difference_Up_To_4_Digits", indent: 3 },
+    { node: "Sum_Up_To_4_Digits", indent: 3 },
+    { node: "Quotient_Using_Multiples", indent: 1 },
+    { node: "Divide_2_3_Digit_Numbers", indent: 2 },
+  ];
+}
+
+// Build hierarchy from network-structure endpoint
+function buildTree(structure) {
+  const nodes = {};
+  structure.forEach((item) => {
+    if (!nodes[item.node]) {
+      nodes[item.node] = { node: item.node, parents: item.parents, children: [] };
+    }
+    item.parents.forEach((parent) => {
+      if (!nodes[parent]) {
+        nodes[parent] = { node: parent, parents: [], children: [] };
+      }
+      nodes[parent].children.push(nodes[item.node]);
+    });
+  });
+  // Roots: nodes with no parents
+  return Object.values(nodes).filter((n) => n.parents.length === 0);
+}
+
+// Flatten tree with indentation, no repeats
+function flattenTree(tree, indent = 0, visited = new Set()) {
+  let result = [];
+  tree.forEach((node) => {
+    if (visited.has(node.node)) return;
+    visited.add(node.node);
+    result.push({ node: node.node, indent });
+    if (node.children.length > 0) {
+      result = result.concat(flattenTree(node.children, indent + 1, visited));
+    }
+  });
+  return result;
+}
+
 export default function TutorLog() {
   const [tutorId, setTutorId] = useState(null);
   const [students, setStudents] = useState([]);
@@ -110,11 +163,16 @@ export default function TutorLog() {
   const [sortKey, setSortKey] = useState("name");
   const [selectedStudentId, setSelectedStudentId] = useState(null);
 
-  const [results, setResults] = useState([]);                // assessment history
+  const [results, setResults] = useState([]); // assessment history
   const [noteData, setNoteData] = useState(() => ({ ...emptyNoteState }));
   const [noteDraft, setNoteDraft] = useState("");
-  const [materials, setMaterials] = useState([]);            // uploaded files list
+  const [materials, setMaterials] = useState([]); // uploaded files list
   const [fileToUpload, setFileToUpload] = useState(null);
+
+  // student progress (same as Tutor Query table, but read-only)
+  const [contentDomains, setContentDomains] = useState([]);
+  const [selectedDomain, setSelectedDomain] = useState("");
+  const [competencyTable, setCompetencyTable] = useState([]);
 
   const [statusMessage, setStatusMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -143,11 +201,113 @@ export default function TutorLog() {
     if (!tutorId) return;
     setIsLoadingStudents(true);
     axios
-      .get(`${API_URL}/api/teacher/tutor/${tutorId}/students`, { withCredentials: true })
+      .get(`${API_URL}/api/teacher/tutor/${tutorId}/students`, {
+        withCredentials: true,
+      })
       .then((res) => setStudents(res.data || []))
       .catch(() => setStudents([]))
       .finally(() => setIsLoadingStudents(false));
   }, [tutorId]);
+
+  // load content domains (once tutor is known)
+  useEffect(() => {
+    if (!tutorId) return;
+    axios
+      .get(`${API_URL}/api/teacher/domains`, { withCredentials: true })
+      .then((res) => setContentDomains(res.data || []))
+      .catch(() => setContentDomains([]));
+  }, [tutorId]);
+
+  // Build Student Progress table for the selected student + domain
+  useEffect(() => {
+    if (!selectedStudentId || !selectedDomain) {
+      setCompetencyTable([]);
+      return;
+    }
+
+    const domainInfo = contentDomains.find(
+      (d) => d.id === parseInt(selectedDomain, 10)
+    );
+    const domainName = domainInfo?.name;
+    if (!domainName) {
+      setCompetencyTable([]);
+      return;
+    }
+
+    const buildTableFromFlat = (flatStructure) => {
+      axios
+        .get(
+          `${API_URL}/api/teacher/student-progress?student_id=${selectedStudentId}&domain_id=${selectedDomain}`,
+          { withCredentials: true }
+        )
+        .then((progressRes) => {
+          const savedProgress = progressRes.data || {};
+          const tableData = flatStructure.map((item) => {
+            const savedData = savedProgress[item.node] || {};
+            return {
+              node: item.node,
+              indent: item.indent,
+              estimatedMastery: savedData.estimated_mastery || "",
+              rawScore:
+                savedData.raw_score !== undefined &&
+                savedData.raw_score !== null
+                  ? savedData.raw_score
+                  : "",
+              percentage: savedData.percentage || "",
+              actualMastery:
+                savedData.actual_mastery === undefined
+                  ? null
+                  : savedData.actual_mastery,
+            };
+          });
+          setCompetencyTable(tableData);
+        })
+        .catch((err) => {
+          console.error("Error loading student progress", err);
+          setCompetencyTable([]);
+        });
+    };
+
+    if (domainName === "Estimation") {
+      const hardcodedOrder = getEstimationOrder();
+      buildTableFromFlat(hardcodedOrder);
+    } else {
+      axios
+        .get(`${API_URL}/api/teacher/assessments`, { withCredentials: true })
+        .then((res) => {
+          const domainAssessments = res.data[domainName] || [];
+          const bifFile =
+            domainAssessments.length > 0
+              ? domainAssessments[0].bif_file
+              : null;
+
+          if (!bifFile) {
+            console.error(`No BIF file found for domain: ${domainName}`);
+            setCompetencyTable([]);
+            return;
+          }
+
+          axios
+            .get(
+              `${API_URL}/api/teacher/network-structure?bif_file=${bifFile}`,
+              { withCredentials: true }
+            )
+            .then((structureRes) => {
+              const tree = buildTree(structureRes.data);
+              const flat = flattenTree(tree);
+              buildTableFromFlat(flat);
+            })
+            .catch((err) => {
+              console.error("Error fetching network structure", err);
+              setCompetencyTable([]);
+            });
+        })
+        .catch((err) => {
+          console.error("Error loading assessments", err);
+          setCompetencyTable([]);
+        });
+    }
+  }, [selectedStudentId, selectedDomain, contentDomains]);
 
   // details for selected student (history, note, materials)
   useEffect(() => {
@@ -156,15 +316,22 @@ export default function TutorLog() {
       setNoteData({ ...emptyNoteState });
       setNoteDraft("");
       setMaterials([]);
+      setIsLoadingDetails(false);
       return;
     }
     setIsLoadingDetails(true);
 
     const base = `${API_URL}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}`;
     Promise.all([
-      axios.get(`${base}/results`, { withCredentials: true }).catch(() => ({ data: [] })),
-      axios.get(`${base}/note`, { withCredentials: true }).catch(() => ({ data: null })),
-      axios.get(`${base}/materials`, { withCredentials: true }).catch(() => ({ data: [] })),
+      axios
+        .get(`${base}/results`, { withCredentials: true })
+        .catch(() => ({ data: [] })),
+      axios
+        .get(`${base}/note`, { withCredentials: true })
+        .catch(() => ({ data: null })),
+      axios
+        .get(`${base}/materials`, { withCredentials: true })
+        .catch(() => ({ data: [] })),
     ])
       .then(([r1, r2, r3]) => {
         setResults(r1.data || []);
@@ -189,12 +356,16 @@ export default function TutorLog() {
         return data.sort((a, b) => g(b.firstAssignedAt) - g(a.firstAssignedAt));
       }
       case "score": {
-        const g = (x) => (x?.averagePercent ?? -1);
+        const g = (x) => x?.averagePercent ?? -1;
         return data.sort((a, b) => g(b) - g(a));
       }
       case "name":
       default:
-        return data.sort((a, b) => a.studentName.localeCompare(b.studentName, undefined, { sensitivity: "base" }));
+        return data.sort((a, b) =>
+          a.studentName.localeCompare(b.studentName, undefined, {
+            sensitivity: "base",
+          })
+        );
     }
   }, [filteredStudents, sortKey]);
 
@@ -203,13 +374,15 @@ export default function TutorLog() {
     [students, selectedStudentId]
   );
 
-  const averageDisplay = (v) => (v == null ? "No data yet" : `${v.toFixed(1)}%`);
+  const averageDisplay = (v) =>
+    v == null ? "No data yet" : `${v.toFixed(1)}%`;
   const noteHistory = noteData.history || [];
-  const noteEntries = noteHistory.length > 0
-    ? noteHistory
-    : noteData.latest
-    ? [{ ...emptyNoteEntry, ...noteData.latest }]
-    : [];
+  const noteEntries =
+    noteHistory.length > 0
+      ? noteHistory
+      : noteData.latest
+      ? [{ ...emptyNoteEntry, ...noteData.latest }]
+      : [];
   const noteLatest = noteEntries.length > 0 ? noteEntries[0] : null;
 
   const handleSaveNote = async () => {
@@ -231,7 +404,9 @@ export default function TutorLog() {
       setStatusMessage("Notes saved successfully.");
     } catch (error) {
       const apiMessage = error?.response?.data?.error;
-      setStatusMessage(apiMessage || "Failed to save notes. Please try again.");
+      setStatusMessage(
+        apiMessage || "Failed to save notes. Please try again."
+      );
     } finally {
       setIsSaving(false);
     }
@@ -246,7 +421,10 @@ export default function TutorLog() {
       await axios.post(
         `${API_URL}/api/teacher/tutor/${tutorId}/students/${selectedStudentId}/materials`,
         form,
-        { withCredentials: true, headers: { "Content-Type": "multipart/form-data" } }
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "multipart/form-data" },
+        }
       );
       setFileToUpload(null);
       // refresh list
@@ -260,14 +438,20 @@ export default function TutorLog() {
     }
   };
 
-  if (roleMismatch) return <div className="tutor-log-empty-state">Tutor Log is only available for tutors.</div>;
+  if (roleMismatch)
+    return (
+      <div className="tutor-log-empty-state">
+        Tutor Log is only available for tutors.
+      </div>
+    );
 
   return (
     <div className="tutor-log-container">
       <header>
         <h1>Tutor Log</h1>
         <p>
-          Review your assigned students, inspect their assessment history, and capture session notes or teaching resources to revisit later.
+          Review your assigned students, inspect their assessment history, and
+          capture session notes or teaching resources to revisit later.
         </p>
       </header>
 
@@ -281,7 +465,11 @@ export default function TutorLog() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <select className="tutor-log-sort" value={sortKey} onChange={(e) => setSortKey(e.target.value)}>
+          <select
+            className="tutor-log-sort"
+            value={sortKey}
+            onChange={(e) => setSortKey(e.target.value)}
+          >
             <option value="name">Sort: Name (A–Z)</option>
             <option value="assigned">Sort: Date Assigned (Newest)</option>
             <option value="score">Sort: Average Score (High → Low)</option>
@@ -296,12 +484,22 @@ export default function TutorLog() {
               {sortedStudents.map((s) => (
                 <li key={s.studentId}>
                   <button
-                    className={`tutor-log-student-button ${s.studentId === selectedStudentId ? "active" : ""}`}
+                    className={`tutor-log-student-button ${
+                      s.studentId === selectedStudentId ? "active" : ""
+                    }`}
                     onClick={() => setSelectedStudentId(s.studentId)}
                   >
                     <strong>{s.studentName}</strong>
-                    <div style={{ fontSize: "0.85rem", color: "#555" }}>Assigned: {formatDate(s.firstAssignedAt)}</div>
-                    <div style={{ fontSize: "0.85rem", color: "#555" }}>Avg. Score: {averageDisplay(s.averagePercent)}</div>
+                    <div
+                      style={{ fontSize: "0.85rem", color: "#555" }}
+                    >
+                      Assigned: {formatDate(s.firstAssignedAt)}
+                    </div>
+                    <div
+                      style={{ fontSize: "0.85rem", color: "#555" }}
+                    >
+                      Avg. Score: {averageDisplay(s.averagePercent)}
+                    </div>
                   </button>
                 </li>
               ))}
@@ -311,20 +509,92 @@ export default function TutorLog() {
 
         <section className="tutor-log-details">
           {!selectedStudentId ? (
-            <div className="tutor-log-empty-state">Select a student to view their progress and notes.</div>
+            <div className="tutor-log-empty-state">
+              Select a student to view their progress and notes.
+            </div>
           ) : isLoadingDetails ? (
             <div>Loading student details…</div>
           ) : (
             <>
               <h2>{selectedStudent?.studentName}</h2>
               <p>
-                Assigned on {formatDate(selectedStudent?.firstAssignedAt)} · Last activity {formatDate(selectedStudent?.lastSubmittedAt)} ·
-                Assessments completed: {selectedStudent?.completedAssessments || 0}
+                Assigned on {formatDate(selectedStudent?.firstAssignedAt)} ·
+                Last activity {formatDate(selectedStudent?.lastSubmittedAt)} ·
+                Assessments completed:{" "}
+                {selectedStudent?.completedAssessments || 0}
               </p>
+
+              {/* Student Progress (same table as Tutor Query, read-only) */}
+              <h3>Student Progress</h3>
+              <div className="tutor-log-progress-controls">
+                <label>
+                  Select Content Domain:
+                  <select
+                    value={selectedDomain}
+                    onChange={(e) => setSelectedDomain(e.target.value)}
+                  >
+                    <option value="">--Select Domain--</option>
+                    {contentDomains.map((domain) => (
+                      <option
+                        key={domain.id}
+                        value={domain.id}
+                        disabled={domain.name !== "Estimation"}
+                      >
+                        {domain.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              {competencyTable.length > 0 && (
+                <table
+                  className="competency-table"
+                  style={{ marginTop: "1rem" }}
+                >
+                  <thead>
+                    <tr>
+                      <th>Competency/Node</th>
+                      <th>Estimated Mastery</th>
+                      <th>Raw Score</th>
+                      <th>Percentage</th>
+                      <th>Actual Mastery</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {competencyTable.map((row, idx) => (
+                      <tr key={idx}>
+                        <td style={{ paddingLeft: `${row.indent * 2}em` }}>
+                          {row.node}
+                        </td>
+                        <td>{row.estimatedMastery || "-"}</td>
+                        <td>
+                          {row.rawScore !== "" ? row.rawScore : "-"}
+                        </td>
+                        <td>{row.percentage || "-"}</td>
+                        <td
+                        className={
+                          row.actualMastery
+                            ? row.actualMastery.toLowerCase().includes("pass")
+                              ? "mastery-pass"
+                              : "mastery-fail"
+                            : ""
+                        }
+                              >
+                                {row.actualMastery || "-"}
+                              </td>
+
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
 
               <h3>Assessment History</h3>
               {results.length === 0 ? (
-                <div className="tutor-log-empty-state">No assessments recorded for this student yet.</div>
+                <div className="tutor-log-empty-state">
+                  No assessments recorded for this student yet.
+                </div>
               ) : (
                 <table className="tutor-log-table">
                   <thead>
@@ -339,7 +609,9 @@ export default function TutorLog() {
                     {results.map((r) => (
                       <tr key={r.result_id}>
                         <td>{r.assessment_name}</td>
-                        <td>{r.score} / {r.total}</td>
+                        <td>
+                          {r.score} / {r.total}
+                        </td>
                         <td>{r.attempt_number}</td>
                         <td>{formatDate(r.submitted_at)}</td>
                       </tr>
@@ -363,11 +635,22 @@ export default function TutorLog() {
                 <button onClick={handleSaveNote} disabled={isSaving}>
                   {isSaving ? "Saving…" : "Save Note Entry"}
                 </button>
-                {statusMessage && <p style={{ marginTop: "0.75rem", color: "#2d72d9" }}>{statusMessage}</p>}
+                {statusMessage && (
+                  <p
+                    style={{
+                      marginTop: "0.75rem",
+                      color: "#2d72d9",
+                    }}
+                  >
+                    {statusMessage}
+                  </p>
+                )}
                 <div className="tutor-log-note-history-wrapper">
                   <h4>Saved note history</h4>
                   {noteEntries.length === 0 ? (
-                    <p style={{ color: "#666" }}>No notes recorded yet.</p>
+                    <p style={{ color: "#666" }}>
+                      No notes recorded yet.
+                    </p>
                   ) : (
                     <table className="tutor-log-note-history-table">
                       <thead>
@@ -380,20 +663,39 @@ export default function TutorLog() {
                       <tbody>
                         {noteEntries.map((entry, index) => (
                           <tr
-                            key={entry.id ?? `${entry.updated_at}-${index}`}
-                            className={index === 0 ? "tutor-log-note-history-latest" : ""}
+                            key={
+                              entry.id ??
+                              `${entry.updated_at}-${index}`
+                            }
+                            className={
+                              index === 0
+                                ? "tutor-log-note-history-latest"
+                                : ""
+                            }
                           >
                             <td>{formatDate(entry.updated_at)}</td>
                             <td>
-                              {entry.author_name || entry.last_updated_by_name || entry.author_id || entry.tutor_id || "Unknown tutor"}
+                              {entry.author_name ||
+                                entry.last_updated_by_name ||
+                                entry.author_id ||
+                                entry.tutor_id ||
+                                "Unknown tutor"}
                             </td>
                             <td>
                               <div className="tutor-log-note-text">
-                                {index === 0 && <span className="tutor-log-note-badge">Latest</span>}
-                                {entry.comment || "(No comment provided)"}
+                                {index === 0 && (
+                                  <span className="tutor-log-note-badge">
+                                    Latest
+                                  </span>
+                                )}
+                                {entry.comment ||
+                                  "(No comment provided)"}
                               </div>
                               {entry.materials && (
-                                <div className="tutor-log-note-materials">Shared resources: {entry.materials}</div>
+                                <div className="tutor-log-note-materials">
+                                  Shared resources:{" "}
+                                  {entry.materials}
+                                </div>
                               )}
                             </td>
                           </tr>
@@ -407,26 +709,49 @@ export default function TutorLog() {
               <div className="tutor-log-note">
                 <h3>Teaching Materials</h3>
                 <p style={{ marginTop: 0, color: "#555" }}>
-                 Upload your learning materials. 
-                 Supported file types: PDF, DOC, DOCX, PPT, and PPTX (max 20 MB each). 
-                 These files will remain accessible to future tutors.
+                  Upload your learning materials. Supported file
+                  types: PDF, DOC, DOCX, PPT, and PPTX (max 20 MB each).
+                  These files will remain accessible to future tutors.
                 </p>
                 <form onSubmit={handleUpload}>
-                  <input type="file" onChange={(e) => setFileToUpload(e.target.files?.[0] || null)} />
-                  <button type="submit" disabled={!fileToUpload}>Upload</button>
+                  <input
+                    type="file"
+                    onChange={(e) =>
+                      setFileToUpload(e.target.files?.[0] || null)
+                    }
+                  />
+                  <button type="submit" disabled={!fileToUpload}>
+                    Upload
+                  </button>
                 </form>
                 {materials.length === 0 ? (
-                  <p style={{ color: "#666" }}>No files uploaded yet.</p>
+                  <p style={{ color: "#666" }}>
+                    No files uploaded yet.
+                  </p>
                 ) : (
                   <ul style={{ marginTop: "0.75rem" }}>
                     {materials.map((m) => (
-                      <li key={m.id} style={{ marginBottom: "0.35rem" }}>
-                        <a href={`${API_URL}/api/teacher/tutor/materials/${m.id}/download`} target="_blank" rel="noreferrer">
+                      <li
+                        key={m.id}
+                        style={{ marginBottom: "0.35rem" }}
+                      >
+                        <a
+                          href={`${API_URL}/api/teacher/tutor/materials/${m.id}/download`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
                           {m.original_filename}
                         </a>{" "}
-                        <span style={{ color: "#777", fontSize: "0.9rem" }}>
+                        <span
+                          style={{
+                            color: "#777",
+                            fontSize: "0.9rem",
+                          }}
+                        >
                           · {formatDate(m.uploaded_at)}
-                          {m.uploader_name ? ` · Uploaded by ${m.uploader_name}` : ""}
+                          {m.uploader_name
+                            ? ` · Uploaded by ${m.uploader_name}`
+                            : ""}
                         </span>
                       </li>
                     ))}
