@@ -407,57 +407,120 @@ function TutorQuery() {
         </label>
       </div>
 
-      <h3>Student Progress</h3>
-      <div>
-        <label>
-          Select Content Domain:
-          <select
-            value={selectedDomain}
-            onChange={e => setSelectedDomain(e.target.value)}
-          >
-            <option value="">--Select Domain--</option>
-            {contentDomains.map(domain => (
-              <option
-                key={domain.id}
-                value={domain.id}
-                disabled={domain.name !== 'Estimation'}
-              >
-                {domain.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button onClick={handleResetTable} style={{ marginLeft: "1rem" }}>
-          Reset Table
-        </button>
-      </div>
+          {/* ================= STUDENT PROGRESS ================= */}
+      <section className="student-progress-section">
+        <div className="student-progress-header">
+          <div>
+            <h3 className="student-progress-title">Student Progress</h3>
+            <p className="student-progress-subtitle">
+              Track per-competency performance for the selected student and domain.
+            </p>
+          </div>
 
-      <table className="competency-table" style={{ marginTop: "1rem" }}>
-        <thead>
-          <tr>
-            <th>Competency/Node</th>
-            <th>Estimated Mastery</th>
-            <th>Raw Score</th>
-            <th>Percentage</th>
-            <th>Actual Mastery</th>
-          </tr>
-        </thead>
-        <tbody>
-          {competencyTable.map((row, idx) => (
-            <tr key={idx}>
-              <td style={{ paddingLeft: `${row.indent * 2}em` }}>
-                {row.node}
-              </td>
-              <td>{row.estimatedMastery || "-"}</td>
-              <td>{row.rawScore !== "" ? row.rawScore : "-"}</td>
-              <td>{row.percentage || "-"}</td>
-              <td>
-                {row.actualMastery === null ? "" : row.actualMastery}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          <div className="student-progress-controls">
+            <label className="domain-select-label">
+              <span>Content Domain</span>
+              <select
+                className="domain-select"
+                value={selectedDomain}
+                onChange={e => setSelectedDomain(e.target.value)}
+              >
+                <option value="">--Select Domain--</option>
+                {contentDomains.map(domain => (
+                  <option
+                    key={domain.id}
+                    value={domain.id}
+                    disabled={domain.name !== "Estimation"}
+                  >
+                    {domain.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <button
+              className="btn btn-secondary btn-reset-table"
+              type="button"
+              onClick={handleResetTable}
+            >
+              Reset Table
+            </button>
+          </div>
+        </div>
+
+        <div className="student-progress-card">
+          <table className="competency-table">
+            <thead>
+              <tr>
+                <th>Competency / Node</th>
+                <th>Estimated Mastery</th>
+                <th>Raw Score</th>
+                <th>Percentage</th>
+                <th>Actual Mastery</th>
+              </tr>
+            </thead>
+            <tbody>
+              {competencyTable.map((row, idx) => {
+                const status =
+                  row.actualMastery &&
+                  (row.actualMastery.toLowerCase().includes("pass")
+                    ? "pass"
+                    : row.actualMastery.toLowerCase().includes("fail")
+                    ? "fail"
+                    : "neutral");
+
+                return (
+                  <tr key={idx} className="competency-row">
+                    <td
+                      className="competency-name"
+                      style={{ paddingLeft: `${row.indent * 1.5}rem` }}
+                    >
+                      {row.node}
+                    </td>
+
+                    <td>
+                      <div className="mastery-cell">
+                        <div className="mastery-bar">
+                          <div
+                            className="mastery-bar-fill"
+                            style={{
+                              width: row.estimatedMastery
+                                ? row.estimatedMastery
+                                : "0%",
+                            }}
+                          />
+                        </div>
+                        <span className="mastery-label">
+                          {row.estimatedMastery || "-"}
+                        </span>
+                      </div>
+                    </td>
+
+                    <td className="numeric-cell">
+                      {row.rawScore !== "" ? row.rawScore : "-"}
+                    </td>
+
+                    <td className="numeric-cell">
+                      {row.percentage || "-"}
+                    </td>
+
+                    <td>
+                      {row.actualMastery ? (
+                        <span className={`mastery-badge ${status || "neutral"}`}>
+                          {row.actualMastery}
+                        </span>
+                      ) : (
+                        <span className="mastery-badge neutral">-</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
 
       {/* Automatic Query Section */}
       <h3 style={{ marginTop: "2rem" }}>Automatic Query</h3>
