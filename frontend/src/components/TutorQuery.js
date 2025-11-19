@@ -459,64 +459,89 @@ function TutorQuery() {
                 <th>Actual Mastery</th>
               </tr>
             </thead>
-            <tbody>
-              {competencyTable.map((row, idx) => {
-                const status =
-                  row.actualMastery &&
-                  (row.actualMastery.toLowerCase().includes("pass")
-                    ? "pass"
-                    : row.actualMastery.toLowerCase().includes("fail")
-                    ? "fail"
-                    : "neutral");
+           
+<tbody>
+  {competencyTable.map((row, idx) => {
+    const status =
+      row.actualMastery &&
+      (row.actualMastery.toLowerCase().includes("pass")
+        ? "pass"
+        : row.actualMastery.toLowerCase().includes("fail")
+        ? "fail"
+        : "neutral");
 
-                return (
-                  <tr key={idx} className="competency-row">
-                    <td
-                      className="competency-name"
-                      style={{ paddingLeft: `${row.indent * 1.5}rem` }}
-                    >
-                      {row.node}
-                    </td>
+    // Parse percentage like "23.73%" → 23.73 (number)
+    const percentageNumber =
+      row.percentage && row.percentage !== "-"
+        ? parseFloat(String(row.percentage).replace("%", ""))
+        : null;
 
-                    <td>
-                      <div className="mastery-cell">
-                        <div className="mastery-bar">
-                          <div
-                            className="mastery-bar-fill"
-                            style={{
-                              width: row.estimatedMastery
-                                ? row.estimatedMastery
-                                : "0%",
-                            }}
-                          />
-                        </div>
-                        <span className="mastery-label">
-                          {row.estimatedMastery || "-"}
-                        </span>
-                      </div>
-                    </td>
+    const isPass =
+      typeof percentageNumber === "number" &&
+      !Number.isNaN(percentageNumber) &&
+      percentageNumber >= 70;
 
-                    <td className="numeric-cell">
-                      {row.rawScore !== "" ? row.rawScore : "-"}
-                    </td>
+    const barWidth =
+      typeof percentageNumber === "number" && !Number.isNaN(percentageNumber)
+        ? `${percentageNumber}%`
+        : "0%";
 
-                    <td className="numeric-cell">
-                      {row.percentage || "-"}
-                    </td>
+    const barClass =
+      percentageNumber == null || Number.isNaN(percentageNumber)
+        ? "neutral"
+        : isPass
+        ? "pass"
+        : "fail";
 
-                    <td>
-                      {row.actualMastery ? (
-                        <span className={`mastery-badge ${status || "neutral"}`}>
-                          {row.actualMastery}
-                        </span>
-                      ) : (
-                        <span className="mastery-badge neutral">-</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
+    return (
+      <tr key={idx} className="competency-row">
+        <td
+          className="competency-name"
+          style={{ paddingLeft: `${row.indent * 1.5}rem` }}
+        >
+          {row.node}
+        </td>
+
+        {/* Estimated Mastery: plain text now */}
+        <td className="numeric-cell">
+          {row.estimatedMastery || "-"}
+        </td>
+
+        <td className="numeric-cell">
+          {row.rawScore !== "" ? row.rawScore : "-"}
+        </td>
+
+        {/* Percentage: bar + label */}
+        <td>
+          <div className="mastery-cell">
+            <div className="mastery-bar">
+              <div
+                className={`mastery-bar-fill ${barClass}`}
+                style={{ width: barWidth }}
+              />
+            </div>
+            <span className="mastery-label">
+              {row.percentage || "-"}
+            </span>
+          </div>
+        </td>
+
+        <td>
+          {row.actualMastery ? (
+            <span className={`mastery-badge ${status || "neutral"}`}>
+              {row.actualMastery}
+            </span>
+          ) : (
+            <span className="mastery-badge neutral">-</span>
+          )}
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
+
+
+
           </table>
         </div>
       </section>
