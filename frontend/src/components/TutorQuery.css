@@ -328,6 +328,22 @@ button {
   background: rgba(0, 0, 0, 0.25);
 }
 
+/* Center align the column headers (columns 2-5) */
+.competency-table th:nth-child(2),
+.competency-table th:nth-child(3),
+.competency-table th:nth-child(4),
+.competency-table th:nth-child(5) {
+  text-align: center;
+}
+
+/* Center align the data cells (columns 2-5) */
+.competency-table td:nth-child(2),
+.competency-table td:nth-child(3),
+.competency-table td:nth-child(4),
+.competency-table td:nth-child(5) {
+  text-align: center;
+}
+
 .competency-row:hover {
   background: rgba(52, 152, 219, 0.14);
 }
@@ -342,15 +358,17 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
+
+
 /* Estimated mastery = mini progress bar */
-.mastery-cell {
+/* .mastery-cell {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   min-width: 160px;
-}
+} */
 
-.mastery-bar {
+/* .mastery-bar {
   flex: 1;
   height: 0.5rem;
   border-radius: 999px;
@@ -364,17 +382,17 @@ button {
 }
 
 /* ≥ 70% (Pass) – green bar */
-.mastery-bar-fill.pass {
+/* .mastery-bar-fill.pass {
   background: linear-gradient(90deg, #27ae60, #2ecc71);
-}
+} */
 
 /* < 70% (Fail) – red bar */
-.mastery-bar-fill.fail {
+/* .mastery-bar-fill.fail {
   background: linear-gradient(90deg, #e74c3c, #c0392b);
 }
 
 /* No data / neutral */
-.mastery-bar-fill.neutral {
+/* .mastery-bar-fill.neutral {
   background: rgba(255, 255, 255, 0.15);
 }
 
@@ -383,7 +401,7 @@ button {
   color: #ecf0f1;
   min-width: 3rem;
   text-align: right;
-}
+} */ */ */
 
 
 /* Actual mastery badges */
