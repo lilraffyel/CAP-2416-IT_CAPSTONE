@@ -46,7 +46,6 @@ function StudentDashboard() {
           <li><SafeLink to="/student/help" isBlocked={isNavBlocked}>Request Tutoring</SafeLink></li>
           <li><SafeLink to="/student/assessments" isBlocked={isNavBlocked}>Take Assessments</SafeLink></li>
           <li><SafeLink to="/student/results" isBlocked={isNavBlocked}>View Results</SafeLink></li>
-          <li><SafeLink to="/student/tutor-query" isBlocked={isNavBlocked}>Query Bayesian Network</SafeLink></li>
           <li onClick={handleLogout} style={{ cursor: 'pointer' }}>Logout</li>
         </ul>
       </aside>
@@ -62,7 +61,6 @@ function StudentDashboard() {
           <Route path="help" element={<StudentHelpRequest />} />
           <Route path="assessments" element={<StudentAssessments setNavBlocked={setNavBlocked} />} /> {/* Pass setter down */}
           <Route path="results" element={<StudentResults />} />
-          <Route path="tutor-query" element={<StudentTutorQuery />} />
 
           {/* Redirect unknown paths to Home */}
           <Route path="*" element={<Navigate to="/student/home" replace />} />
